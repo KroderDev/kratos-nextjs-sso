@@ -5,12 +5,38 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+      day: monday
+      time: "09:00"
+    labels:
+      - dependencies
+      - javascript
     commit-message:
-      prefix: "deps"
+      prefix: deps
+      include: scope
+    versioning-strategy: increase
 
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: weekly
+      day: monday
+      time: "10:00"
+    labels:
+      - dependencies
+      - ci
     commit-message:
-      prefix: "deps"
+      prefix: deps
+      include: scope
+
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "11:00"
+    labels:
+      - dependencies
+      - docker
+    commit-message:
+      prefix: deps
+      include: scope
