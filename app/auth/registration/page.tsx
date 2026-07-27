@@ -1,0 +1,54 @@
+import Link from "next/link";
+import { getRegistrationFlow, type OryPageParams } from "@ory/nextjs/app";
+
+import { AuthShell } from "@/components/layout/auth-shell";
+import { AuthFlowPage } from "@/components/ory/auth-flow-page";
+import { OrySetupState } from "@/components/ory/setup-state";
+import config, { isOryConfigured } from "@/ory.config";
+
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Create an identity" };
+
+export default async function RegistrationPage({
+  searchParams,
+}: OryPageParams) {
+  if (!isOryConfigured) {
+    return (
+      <AuthShell
+        description="Create a workspace identity with the fields your team requires."
+        eyebrow="New identity"
+        footer={
+          <span>
+            Already have access?{" "}
+            <Link className="font-medium text-primary hover:underline" href="/auth/login">
+              Sign in
+            </Link>
+          </span>
+        }
+        title="Make room for what is next"
+      >
+        <OrySetupState />
+      </AuthShell>
+    );
+  }
+
+  const flow = (await getRegistrationFlow(config, searchParams)) || null;
+
+  return (
+    <AuthFlowPage
+      description="Create a workspace identity with the fields your team requires."
+      eyebrow="New identity"
+      flow={flow}
+      footer={
+        <span>
+          Already have access?{" "}
+          <Link className="font-medium text-primary hover:underline" href="/auth/login">
+            Sign in
+          </Link>
+        </span>
+      }
+      kind="registration"
+      title="Make room for what is next"
+    />
+  );
+}

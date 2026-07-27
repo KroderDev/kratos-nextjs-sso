@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kroder Identity
 
-## Getting Started
+A server-rendered Ory/Kratos browser-flow frontend built with Next.js App Router, React, Tailwind CSS, and Shadcn Base UI components.
 
-First, run the development server:
+## Requirements
+
+- Node.js 24 or newer
+- pnpm 11.17 or newer
+- An Ory Network project or a local Kratos frontend API
+
+## Local Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create `.env.local` from `.env.example` and set the Ory values before using a real browser flow:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_ORY_SDK_URL=https://your-project.projects.oryapis.com
+NEXT_PUBLIC_ORY_PROJECT_NAME=Kroder Identity
+ORY_PROJECT_API_TOKEN=ory_pat_...
+```
 
-## Learn More
+`NEXT_PUBLIC_ORY_SDK_URL` may also point at the public frontend API of a local Kratos deployment. `ORY_PROJECT_API_TOKEN` is server-only and is used by `proxy.ts` when the Ory Network SDK is proxied through the application.
 
-To learn more about Next.js, take a look at the following resources:
+## Routes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Route | Purpose |
+| --- | --- |
+| `/` | Public identity landing page |
+| `/auth/login` | Login browser flow |
+| `/auth/registration` | Registration browser flow |
+| `/auth/recovery` | Account recovery browser flow |
+| `/auth/verification` | Address verification browser flow |
+| `/auth/settings` | Protected settings browser flow |
+| `/auth/error` | Safe error destination for failed Ory flows |
+| `/dashboard` | Protected session dashboard |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Architecture
 
-## Deploy on Vercel
+- `ory.config.ts` derives Ory UI URLs from `NEXT_PUBLIC_APP_URL` and keeps the SDK URL configuration in one place.
+- `proxy.ts` uses `createOryMiddleware` to proxy Ory self-service endpoints, rewrite redirect URLs, and forward cookies safely.
+- `@ory/nextjs/app` creates and loads browser flows on the server. The app does not expose Ory API tokens to the browser.
+- `components/ory/ory-node.tsx` renders Ory UI nodes as native form controls while preserving Ory's action, method, hidden fields, and CSRF token.
+- `components/ory/ory-trigger-runtime.tsx` loads Ory's browser WebAuthn script only when needed and exposes an allowlist of supported trigger names; arbitrary inline Ory `onclick` JavaScript is never evaluated.
+- `/dashboard` calls `getServerSession()` and redirects unauthenticated requests to login.
+- Shadcn components live in `components/ui` and use the project's Base UI preset with semantic CSS tokens in `app/globals.css`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Validation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+```
+
+The tests cover the pure Ory node helpers. Real sign-in, registration, recovery, verification, and settings behavior requires a configured Ory project and credentials.
+
+## References
+
+- [Ory browser flows](https://www.ory.com/docs/security-model)
+- [Ory Next.js example](https://github.com/ory/kratos-nextjs-react-example)
+- [Ory Elements App Router example](https://github.com/ory/elements/tree/main/examples/nextjs-app-router)
+- [Next.js proxy convention](https://nextjs.org/docs/app/api-reference/file-conventions/proxy)

@@ -1,26 +1,114 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f5f8f9;
+  --foreground: #102f40;
+  --card: #ffffff;
+  --card-foreground: #102f40;
+  --popover: #ffffff;
+  --popover-foreground: #102f40;
+  --primary: #075ea8;
+  --primary-foreground: #f7fbfc;
+  --secondary: #e4f0f2;
+  --secondary-foreground: #174358;
+  --muted: #e9f1f3;
+  --muted-foreground: #607783;
+  --accent: #c9f4f1;
+  --accent-foreground: #0c4d5f;
+  --destructive: #b9433b;
+  --signal: #6ee7df;
+  --signal-foreground: #0c4d5f;
+  --border: #d8e4e7;
+  --input: #cbdce1;
+  --ring: #0b74bd;
+  --radius: 0.8rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-signal: var(--signal);
+  --color-signal-foreground: var(--signal-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 0.25rem);
+  --radius-md: calc(var(--radius) - 0.125rem);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.25rem);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--border);
+}
+
+html {
+  background: var(--background);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.signal-grid {
+  background-image: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--background) 12%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--background) 12%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 34px 34px;
+  mask-image: linear-gradient(to bottom, black, transparent 82%);
+}
+
+.signal-orbit {
+  animation: orbit-drift 18s ease-in-out infinite alternate;
+}
+
+.signal-orbit-delayed {
+  animation-delay: -7s;
+  animation-duration: 24s;
+}
+
+@keyframes orbit-drift {
+  from {
+    transform: translate3d(-10px, 8px, 0) rotate(-6deg);
+  }
+  to {
+    transform: translate3d(18px, -12px, 0) rotate(8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signal-orbit,
+  .signal-orbit-delayed {
+    animation: none;
+  }
 }
