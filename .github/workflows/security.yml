@@ -70,3 +70,36 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm audit
+
+  container-scan:
+    name: Container Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Build image
+        run: >
+          docker build
+          --build-arg "NEXT_PUBLIC_APP_URL=http://localhost:3000"
+          --build-arg "NEXT_PUBLIC_ORY_SDK_URL="
+          -t kratos-nextjs-sso:scan
+          .
+
+      - uses: aquasecurity/trivy-action@7b7aa264d10dc955deba1a601a77b25e65ec1f11 # 0.30.0
+        with:
+          image-ref: kratos-nextjs-sso:scan
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+
+      - uses: github/codeql-action/upload-sarif@1b549b9259bda1cb5ddde3b41741a82a2d15a841 # v3.28.15
+        if: success() || failure()
+        with:
+          sarif_file: trivy-results.sarif

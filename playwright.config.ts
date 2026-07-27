@@ -25,11 +25,12 @@ export default defineConfig({
 
   webServer: [
     {
-      command: `pnpm build && pnpm start --port ${PORT}`,
+      command: `pnpm build && node .next/standalone/server.js`,
       port: PORT,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
       env: {
+        PORT: PORT.toString(),
         NEXT_PUBLIC_APP_URL: `http://127.0.0.1:${PORT}`,
         NEXT_PUBLIC_ORY_SDK_URL: "",
         ORY_SDK_URL: "",

@@ -17,6 +17,32 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### Docker
+
+```bash
+docker build \
+  --build-arg "NEXT_PUBLIC_APP_URL=http://localhost:3000" \
+  --build-arg "NEXT_PUBLIC_ORY_SDK_URL=" \
+  -t kratos-nextjs-sso:latest .
+
+docker run --rm -p 3000:3000 kratos-nextjs-sso:latest
+```
+
+With Ory configured:
+
+```bash
+docker build \
+  --build-arg "NEXT_PUBLIC_APP_URL=https://auth.example.com" \
+  --build-arg "NEXT_PUBLIC_ORY_SDK_URL=https://your-project.projects.oryapis.com" \
+  -t kratos-nextjs-sso:latest .
+
+docker run --rm -p 3000:3000 \
+  -e ORY_PROJECT_API_TOKEN=ory_pat_... \
+  kratos-nextjs-sso:latest
+```
+
+The image runs as a non-root `nextjs` user and includes a health check at `/api/health`.
+
 Create `.env.local` from `.env.example` and set the Ory values before using a real browser flow:
 
 ```env

@@ -46,3 +46,9 @@ test("error page loads", async ({ page }) => {
   expect(response?.status()).toBe(200);
   await expect(page.getByText("That path closed early")).toBeVisible();
 });
+
+test("health endpoint returns healthy", async ({ request }) => {
+  const response = await request.get("/api/health");
+  expect(response.status()).toBe(200);
+  await expect(response.json()).resolves.toEqual({ status: "healthy" });
+});
