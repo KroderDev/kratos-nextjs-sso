@@ -12,8 +12,8 @@ importers:
         specifier: ^1.6.0
         version: 1.6.0(@types/react@19.2.17)(react-dom@19.2.4(react@19.2.8))(react@19.2.8)
       '@ory/client-fetch':
-        specifier: 1.22.22
-        version: 1.22.22
+        specifier: 1.22.65
+        version: 1.22.65
       '@ory/nextjs':
         specifier: 1.0.0-rc.1
         version: 1.0.0-rc.1(next@16.2.12(@babel/core@7.29.7(supports-color@7.2.0))(@playwright/test@1.62.0)(react-dom@19.2.4(react@19.2.8))(react@19.2.8))(react@19.2.8)
@@ -613,6 +613,9 @@ packages:
 
   '@ory/client-fetch@1.22.22':
     resolution: {integrity: sha512-MEoPKIRWETj6mTsJnWVCMJTFpZ/40885YZJUEc1vM7v7AwjLBgJPE7xsm2QvSYCSAiLBzbROETxEtvZiRCzYJw==}
+
+  '@ory/client-fetch@1.22.65':
+    resolution: {integrity: sha512-m80Vkb+3CGLdPmLMf9iTmIH5vIxMzL7GZkCgrd6YjDtBsUmUWwgyWEqqojrsXOS6rOfQRoOjz4f3VzHKyvd3/A==}
 
   '@ory/nextjs@1.0.0-rc.1':
     resolution: {integrity: sha512-6qd2OIlhWr9hnMEUumPzCBwd1Fmp7IO6SffpTOx8SCU5PnIW6cJn1nCepbaqP1M0L0AaV0ebMC/BFweYJKNEaQ==}
@@ -3816,6 +3819,8 @@ snapshots:
   '@nolyfill/is-core-module@1.0.39': {}
 
   '@ory/client-fetch@1.22.22': {}
+
+  '@ory/client-fetch@1.22.65': {}
 
   '@ory/nextjs@1.0.0-rc.1(next@16.2.12(@babel/core@7.29.7(supports-color@7.2.0))(@playwright/test@1.62.0)(react-dom@19.2.4(react@19.2.8))(react@19.2.8))(react@19.2.8)':
     dependencies:
