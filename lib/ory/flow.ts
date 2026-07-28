@@ -1,6 +1,8 @@
 import type { UiNode, UiText } from "@ory/client-fetch";
 
 type UnknownRecord = Record<string, unknown>;
+const providerReferencePattern =
+  /\b(?:ory(?:apis)?|kratos)\b|\/(?:self-service|sessions|ui|\.well-known\/ory)(?:\/|\b)/i;
 
 function asRecord(value: unknown): UnknownRecord {
   return typeof value === "object" && value !== null
@@ -46,24 +48,40 @@ export function getNodeLabel(node: UiNode) {
   const attributeLabel = asRecord(attributes.label);
   const metaLabel = asRecord(node.meta?.label);
 
-  return (
+  return getSafeText(
     getString(attributeLabel.text) ??
-    getString(metaLabel.text) ??
-    getString(attributes.name)
+      getString(metaLabel.text) ??
+      getString(attributes.name),
   );
 }
 
 export function getNodeText(node: UiNode) {
   const text = asRecord(getNodeAttributes(node).text);
-  return getString(text.text);
+  return getSafeText(getString(text.text));
 }
 
 export function getMessageText(message: UiText) {
-  return message.text.trim();
+  return getSafeText(message.text) ?? "";
 }
 
 export function getErrorMessages(messages: UiText[] | undefined) {
-  return (messages ?? []).filter((message) => message.type === "error");
+  return (messages ?? [])
+    .filter((message) => message.type === "error")
+    .map((message) => ({
+      ...message,
+      text: getMessageText(message),
+    }))
+    .filter((message) => message.text);
+}
+
+export function getSafeText(value: string | undefined) {
+  const text = value?.trim();
+
+  if (!text || providerReferencePattern.test(text)) {
+    return undefined;
+  }
+
+  return text;
 }
 
 export function isCodeInput(node: UiNode) {

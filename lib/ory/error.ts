@@ -1,5 +1,6 @@
 import { Configuration, FrontendApi, type FlowError } from "@ory/client-fetch";
 
+import { getSafeText } from "@/lib/ory/flow";
 import { orySdkUrl } from "@/ory.config";
 
 export async function getOryFlowError(id: string): Promise<FlowError | null> {
@@ -30,7 +31,7 @@ export function getOryFlowErrorMessage(flowError: FlowError | null) {
 
   for (const key of ["message", "reason", "error_description", "description"]) {
     if (typeof payload[key] === "string" && payload[key].trim()) {
-      return payload[key].trim();
+      return getSafeText(payload[key].trim()) ?? null;
     }
   }
 

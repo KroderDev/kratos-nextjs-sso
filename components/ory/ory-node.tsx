@@ -29,6 +29,7 @@ import {
   getNodeText,
   getNumber,
   getString,
+  getSafeText,
   isChecked,
   isCodeInput,
 } from "@/lib/ory/flow";
@@ -59,7 +60,7 @@ export function OryNode({ node }: OryNodeProps) {
     const disabled = attributes.disabled === true;
     const required = attributes.required === true;
     const maxLength = getNumber(attributes.maxlength);
-    const description = getString(attributes.description);
+    const description = getSafeText(getString(attributes.description));
     const errorId = `${id}-error`;
     const descriptionId = `${id}-description`;
     const describedBy = [description ? descriptionId : null, hasErrors ? errorId : null]
@@ -212,11 +213,12 @@ export function OryNode({ node }: OryNodeProps) {
   }
 
   if (node.type === "a") {
-    const title = getString(getNodeAttributes(node).title);
+    const title = getSafeText(getString(getNodeAttributes(node).title));
     const titleRecord =
       typeof getNodeAttributes(node).title === "object"
         ? (getNodeAttributes(node).title as Record<string, unknown>)
         : {};
+    const titleText = getSafeText(getString(titleRecord.text));
 
     return (
       <ButtonLink
@@ -226,7 +228,7 @@ export function OryNode({ node }: OryNodeProps) {
         variant="link"
         href={getString(attributes.href) ?? "#"}
       >
-        {title ?? getString(titleRecord.text) ?? "Continue"}
+        {title ?? titleText ?? "Continue"}
       </ButtonLink>
     );
   }
