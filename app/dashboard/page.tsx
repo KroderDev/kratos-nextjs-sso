@@ -57,7 +57,7 @@ export default async function DashboardPage() {
               Your control room is waiting.
             </h1>
             <p className="mt-5 text-muted-foreground">
-              Connect Ory to resolve a session before entering the dashboard.
+              The authentication service is not ready to accept sessions yet.
             </p>
             <div className="mt-8 max-w-lg">
               <OrySetupState />

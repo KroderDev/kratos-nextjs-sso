@@ -36,15 +36,14 @@ export default function Home() {
           <div>
             <Badge className="gap-2 border-primary/20 bg-primary/5 text-primary" variant="outline">
               <span className="size-1.5 rounded-full bg-signal" />
-              Ory-powered identity
+              Secure account access
             </Badge>
             <h1 className="mt-7 max-w-4xl text-6xl font-semibold leading-[0.93] tracking-[-0.07em] sm:text-8xl">
               A calmer way to enter the work.
             </h1>
             <p className="mt-8 max-w-xl text-lg leading-8 text-muted-foreground sm:text-xl">
-              Kroder Identity gives every protected workspace a considered,
-              server-rendered front door for sign-in, registration, recovery,
-              and account settings.
+              A considered, server-rendered entry point for sign-in, registration,
+              recovery, and account settings.
             </p>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <ButtonLink className="h-11 px-4" href="/auth/login">
@@ -91,8 +90,8 @@ export default function Home() {
               <LockKeyhole aria-hidden="true" className="size-5 text-primary" />
               <CardTitle className="mt-5 text-xl tracking-[-0.03em]">Secure by default</CardTitle>
               <CardDescription>
-                Ory browser flows keep CSRF, cookies, redirects, and flow state
-                where they belong.
+                Security controls keep cookies, redirects, and session state close
+                to the server boundary.
               </CardDescription>
             </CardHeader>
           </Card>
