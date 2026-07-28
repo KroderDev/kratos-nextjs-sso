@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { UiNode } from "@ory/client-fetch";
 
 import {
+  getMessageText,
   getNodeLabel,
   getNodeMessages,
   isChecked,
@@ -50,6 +51,23 @@ describe("Ory flow helpers", () => {
 
     expect(getNodeMessages(node)).toHaveLength(1);
     expect(getNodeMessages(node)[0]?.text).toBe("Use a valid address.");
+  });
+
+  it("does not expose provider references in user-facing messages", () => {
+    expect(
+      getMessageText({
+        id: 4002,
+        text: "The Ory service could not complete this request.",
+        type: "error",
+      }),
+    ).toBe("");
+    expect(
+      getMessageText({
+        id: 4003,
+        text: "Check the address and try again.",
+        type: "error",
+      }),
+    ).toBe("Check the address and try again.");
   });
 
   it("recognizes browser checkbox values", () => {

@@ -1,44 +1,45 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 test("landing page loads", async ({ page }) => {
   const response = await page.goto("/");
   expect(response?.status()).toBe(200);
   await expect(page.locator("h1")).toContainText("A calmer way to enter the work");
+  await expect(page.getByRole("link", { name: "CI" })).toBeVisible();
 });
 
-test("sign-in page shows Ory setup state when unconfigured", async ({ page }) => {
+test("sign-in page shows setup state when unconfigured", async ({ page }) => {
   const response = await page.goto("/auth/login");
   expect(response?.status()).toBe(200);
   await expect(page.getByText("Welcome back")).toBeVisible();
-  await expect(page.getByText("Connect the identity service")).toBeVisible();
+  await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
 });
 
-test("registration page shows Ory setup state when unconfigured", async ({ page }) => {
+test("registration page shows setup state when unconfigured", async ({ page }) => {
   const response = await page.goto("/auth/registration");
   expect(response?.status()).toBe(200);
   await expect(page.getByText("Make room for what is next")).toBeVisible();
-  await expect(page.getByText("Connect the identity service")).toBeVisible();
+  await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
 });
 
-test("recovery page shows Ory setup state when unconfigured", async ({ page }) => {
+test("recovery page shows setup state when unconfigured", async ({ page }) => {
   const response = await page.goto("/auth/recovery");
   expect(response?.status()).toBe(200);
   await expect(page.getByText("Let's get you back in")).toBeVisible();
-  await expect(page.getByText("Connect the identity service")).toBeVisible();
+  await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
 });
 
-test("verification page shows Ory setup state when unconfigured", async ({ page }) => {
+test("verification page shows setup state when unconfigured", async ({ page }) => {
   const response = await page.goto("/auth/verification");
   expect(response?.status()).toBe(200);
   await expect(page.getByText("One last clear signal")).toBeVisible();
-  await expect(page.getByText("Connect the identity service")).toBeVisible();
+  await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
 });
 
-test("dashboard shows setup state when Ory is unconfigured", async ({ page }) => {
+test("dashboard shows setup state when the service is unconfigured", async ({ page }) => {
   const response = await page.goto("/dashboard");
   expect(response?.status()).toBe(200);
   await expect(page.getByText("Your control room is waiting")).toBeVisible();
-  await expect(page.getByText("Connect the identity service")).toBeVisible();
+  await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
 });
 
 test("error page loads", async ({ page }) => {
