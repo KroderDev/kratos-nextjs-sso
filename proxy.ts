@@ -2,6 +2,7 @@ import { createOryMiddleware } from "@ory/nextjs/middleware";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+import { rewriteOryResponseLocation } from "./lib/ory/url";
 import oryConfig, { isOryConfigured } from "./ory.config";
 
 const oryMiddleware = createOryMiddleware({
@@ -13,7 +14,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  return oryMiddleware(request);
+  const response = await oryMiddleware(request);
+
+  return rewriteOryResponseLocation(response, request.nextUrl.origin);
 }
 
 export const config = {

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/layout/auth-shell";
 import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
+import { rewriteOryFlow } from "@/lib/ory/url";
 import config, { isOryConfigured } from "@/ory.config";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +35,7 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
     redirect("/auth/login?return_to=/auth/settings");
   }
 
-  const flow = (await getSettingsFlow(config, searchParams)) || null;
+  const flow = rewriteOryFlow(await getSettingsFlow(config, searchParams)) || null;
 
   return (
     <AuthFlowPage

@@ -4,6 +4,7 @@ import { getVerificationFlow, type OryPageParams } from "@ory/nextjs/app";
 import { AuthShell } from "@/components/layout/auth-shell";
 import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
+import { rewriteOryFlow } from "@/lib/ory/url";
 import config, { isOryConfigured } from "@/ory.config";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +33,8 @@ export default async function VerificationPage({
     );
   }
 
-  const flow = (await getVerificationFlow(config, searchParams)) || null;
+  const flow =
+    rewriteOryFlow(await getVerificationFlow(config, searchParams)) || null;
 
   return (
     <AuthFlowPage
