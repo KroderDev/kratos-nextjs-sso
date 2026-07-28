@@ -31,6 +31,8 @@ export default defineConfig({
       timeout: 120_000,
       env: {
         PORT: PORT.toString(),
+        NEXT_PUBLIC_BRAND_NAME: "CI",
+        NEXT_PUBLIC_BRAND_MARK: "C",
         NEXT_PUBLIC_APP_URL: `http://127.0.0.1:${PORT}`,
         NEXT_PUBLIC_ORY_SDK_URL: "",
         ORY_SDK_URL: "",
