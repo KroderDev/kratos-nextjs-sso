@@ -1,12 +1,12 @@
-# Kroder Identity
+# Identity Frontend
 
-A server-rendered Ory/Kratos browser-flow frontend built with Next.js App Router, React, Tailwind CSS, and Shadcn Base UI components.
+A server-rendered identity frontend built with Next.js App Router, React, Tailwind CSS, and shadcn/ui Base UI components.
 
 ## Requirements
 
 - Node.js 24 or newer
 - pnpm 11.17 or newer
-- An Ory Network project or a local Kratos frontend API
+- An Ory Network project or another compatible public identity API
 
 ## Local Setup
 
@@ -17,11 +17,26 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Branding
+
+The default UI uses neutral platform branding so the project can be forked without carrying an application identity:
+
+```env
+NEXT_PUBLIC_BRAND_NAME=Your Platform
+NEXT_PUBLIC_BRAND_MARK=Y
+```
+
+These public values are embedded during `next build`. Set them before building a Docker image or deploying the application. The mark accepts up to two characters and falls back to the first character of the brand name.
+
+The interface uses shadcn/ui components with Tailwind CSS semantic tokens. Customize the theme through the existing `components.json` preset and the shadcn CLI, or replace the app icon at `app/favicon.ico` with the platform's production asset.
+
 ### Docker
 
 ```bash
 docker build \
   --build-arg "NEXT_PUBLIC_APP_URL=http://localhost:3000" \
+  --build-arg "NEXT_PUBLIC_BRAND_NAME=Your Platform" \
+  --build-arg "NEXT_PUBLIC_BRAND_MARK=Y" \
   --build-arg "NEXT_PUBLIC_ORY_SDK_URL=" \
   -t kratos-nextjs-sso:latest .
 
@@ -33,6 +48,8 @@ With Ory configured:
 ```bash
 docker build \
   --build-arg "NEXT_PUBLIC_APP_URL=https://auth.example.com" \
+  --build-arg "NEXT_PUBLIC_BRAND_NAME=Your Platform" \
+  --build-arg "NEXT_PUBLIC_BRAND_MARK=Y" \
   --build-arg "NEXT_PUBLIC_ORY_SDK_URL=https://your-project.projects.oryapis.com" \
   -t kratos-nextjs-sso:latest .
 
@@ -46,19 +63,24 @@ The image runs as a non-root `nextjs` user and includes a health check at `/api/
 Create `.env.local` from `.env.example` and set the Ory values before using a real browser flow:
 
 ```env
+NEXT_PUBLIC_BRAND_NAME=Your Platform
+NEXT_PUBLIC_BRAND_MARK=Y
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_ORY_SDK_URL=https://your-project.projects.oryapis.com
-NEXT_PUBLIC_ORY_PROJECT_NAME=Kroder Identity
+NEXT_PUBLIC_ORY_CANONICAL_URL=
+NEXT_PUBLIC_ORY_PROJECT_NAME=Your Platform
 ORY_PROJECT_API_TOKEN=ory_pat_...
 ```
 
-`NEXT_PUBLIC_ORY_SDK_URL` may also point at the public frontend API of a local Kratos deployment. `ORY_PROJECT_API_TOKEN` is server-only and is used by `proxy.ts` when the Ory Network SDK is proxied through the application.
+`NEXT_PUBLIC_ORY_SDK_URL` points at the public identity API used by the browser flows. `NEXT_PUBLIC_ORY_PROJECT_NAME` is provider configuration and is not shown to end users. `ORY_PROJECT_API_TOKEN` is server-only and is used by `proxy.ts` when the provider API is proxied through the application.
+
+`NEXT_PUBLIC_*` values are build-time configuration. Keep `ORY_PROJECT_API_TOKEN` out of build arguments, source control, and browser-exposed environment variables.
 
 ## Routes
 
 | Route | Purpose |
 | --- | --- |
-| `/` | Public identity landing page |
+| `/` | Public access landing page |
 | `/auth/login` | Login browser flow |
 | `/auth/registration` | Registration browser flow |
 | `/auth/recovery` | Account recovery browser flow |
