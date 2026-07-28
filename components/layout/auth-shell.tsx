@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { brandMark } from "@/lib/branding";
 
 import { Brand } from "./brand";
 
@@ -49,7 +50,7 @@ export function AuthShell({
                 <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-signal">
                   protocol
                 </p>
-                <p className="mt-2">Ory browser flows</p>
+                <p className="mt-2">Secure browser flow</p>
               </div>
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-signal">
@@ -94,7 +95,7 @@ export function AuthShell({
             <div className="flex items-center justify-between gap-4 border-t border-border/70 pt-5 text-[11px] text-muted-foreground">
               <span>Protected browser session</span>
               <span className="font-mono uppercase tracking-[0.16em]">
-                K / 01
+                {brandMark} / 01
               </span>
             </div>
           </div>

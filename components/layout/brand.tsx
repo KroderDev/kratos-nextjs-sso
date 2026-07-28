@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { brandMark, brandName } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
 type BrandProps = {
@@ -26,12 +27,10 @@ export function Brand({ className, inverted = false }: BrandProps) {
             : "border-primary/20 bg-primary text-primary-foreground",
         )}
       >
-        <span className="relative z-10">K</span>
+        <span className="relative z-10">{brandMark}</span>
         <span className="absolute -right-2 -bottom-2 size-6 rounded-full bg-signal/70 blur-sm" />
       </span>
-      <span>
-        KRODER <span className="text-signal-foreground">/</span> IDENTITY
-      </span>
+      <span>{brandName}</span>
     </Link>
   );
 }

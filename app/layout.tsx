@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+
+import { brandName } from "@/lib/branding";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,11 +17,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Kroder Identity",
-    template: "%s | Kroder Identity",
+    default: brandName,
+    template: `%s | ${brandName}`,
   },
-  description:
-    "A considered, Ory-powered identity front door for private workspaces.",
+  description: "A secure, server-rendered access point for private workspaces.",
 };
 
 export default function RootLayout({
