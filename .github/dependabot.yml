@@ -7,12 +7,20 @@ updates:
       interval: weekly
       day: monday
       time: "09:00"
+      timezone: "America/Santiago"
     labels:
       - dependencies
-      - javascript
+      - npm
     commit-message:
       prefix: deps
       include: scope
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+        update-types: ["minor", "patch"]
+      dev-dependencies:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
     versioning-strategy: increase
 
   - package-ecosystem: github-actions
@@ -21,6 +29,7 @@ updates:
       interval: weekly
       day: monday
       time: "10:00"
+      timezone: "America/Santiago"
     labels:
       - dependencies
       - ci
@@ -33,7 +42,8 @@ updates:
     schedule:
       interval: weekly
       day: monday
-      time: "11:00"
+      time: "09:00"
+      timezone: "America/Santiago"
     labels:
       - dependencies
       - docker
