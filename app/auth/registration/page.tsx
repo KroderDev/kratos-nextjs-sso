@@ -37,7 +37,10 @@ export default async function RegistrationPage({
   try {
     flow =
       rewriteOryFlow(await getRegistrationFlow(config, searchParams)) || null;
-  } catch {
+  } catch (e) {
+    if ((e as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
+      throw e;
+    }
     // flow stays null → FlowUnavailable renders
   }
 

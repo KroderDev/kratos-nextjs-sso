@@ -37,7 +37,10 @@ export default async function VerificationPage({
   try {
     flow =
       rewriteOryFlow(await getVerificationFlow(config, searchParams)) || null;
-  } catch {
+  } catch (e) {
+    if ((e as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
+      throw e;
+    }
     // flow stays null → FlowUnavailable renders
   }
 

@@ -34,7 +34,10 @@ export default async function RecoveryPage({ searchParams }: OryPageParams) {
   let flow = null;
   try {
     flow = rewriteOryFlow(await getRecoveryFlow(config, searchParams)) || null;
-  } catch {
+  } catch (e) {
+    if ((e as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
+      throw e;
+    }
     // flow stays null → FlowUnavailable renders
   }
 
