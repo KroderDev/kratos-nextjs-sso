@@ -33,8 +33,13 @@ export default async function RegistrationPage({
     );
   }
 
-  const flow =
-    rewriteOryFlow(await getRegistrationFlow(config, searchParams)) || null;
+  let flow = null;
+  try {
+    flow =
+      rewriteOryFlow(await getRegistrationFlow(config, searchParams)) || null;
+  } catch {
+    // flow stays null → FlowUnavailable renders
+  }
 
   return (
     <AuthFlowPage

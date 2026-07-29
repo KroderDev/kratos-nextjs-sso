@@ -31,7 +31,12 @@ export default async function RecoveryPage({ searchParams }: OryPageParams) {
     );
   }
 
-  const flow = rewriteOryFlow(await getRecoveryFlow(config, searchParams)) || null;
+  let flow = null;
+  try {
+    flow = rewriteOryFlow(await getRecoveryFlow(config, searchParams)) || null;
+  } catch {
+    // flow stays null → FlowUnavailable renders
+  }
 
   return (
     <AuthFlowPage

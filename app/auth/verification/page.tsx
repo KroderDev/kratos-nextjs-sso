@@ -33,8 +33,13 @@ export default async function VerificationPage({
     );
   }
 
-  const flow =
-    rewriteOryFlow(await getVerificationFlow(config, searchParams)) || null;
+  let flow = null;
+  try {
+    flow =
+      rewriteOryFlow(await getVerificationFlow(config, searchParams)) || null;
+  } catch {
+    // flow stays null → FlowUnavailable renders
+  }
 
   return (
     <AuthFlowPage

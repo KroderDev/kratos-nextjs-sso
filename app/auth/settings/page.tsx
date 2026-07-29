@@ -35,7 +35,12 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
     redirect("/auth/login?return_to=/auth/settings");
   }
 
-  const flow = rewriteOryFlow(await getSettingsFlow(config, searchParams)) || null;
+  let flow = null;
+  try {
+    flow = rewriteOryFlow(await getSettingsFlow(config, searchParams)) || null;
+  } catch {
+    // flow stays null → FlowUnavailable renders
+  }
 
   return (
     <AuthFlowPage

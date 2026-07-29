@@ -31,7 +31,12 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
     );
   }
 
-  const flow = rewriteOryFlow(await getLoginFlow(config, searchParams)) || null;
+  let flow = null;
+  try {
+    flow = rewriteOryFlow(await getLoginFlow(config, searchParams)) || null;
+  } catch {
+    // flow stays null → FlowUnavailable renders
+  }
 
   return (
     <AuthFlowPage
