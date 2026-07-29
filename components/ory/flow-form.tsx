@@ -86,9 +86,15 @@ export function FlowForm({ flow, kind }: FlowFormProps) {
         <form action={flow.ui.action} className="flex flex-col gap-6" method={method}>
           <FlowMessages messages={flow.ui.messages} />
           <div className="flex flex-col gap-5">
-            {flow.ui.nodes.map((node, index) => (
-              <OryNode key={`${node.type}-${index}`} node={node} />
-            ))}
+            {flow.ui.nodes
+              .filter((node) => {
+                if (kind !== "registration") return true;
+                const name = getString(getNodeAttributes(node).name);
+                return name !== "traits.avatar_url";
+              })
+              .map((node, index) => (
+                <OryNode key={`${node.type}-${index}`} node={node} />
+              ))}
           </div>
         </form>
       </CardContent>
