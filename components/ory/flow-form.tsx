@@ -83,9 +83,9 @@ export function FlowForm({ flow, kind }: FlowFormProps) {
           />
         ) : null}
         <OryTriggerRuntime triggers={onloadTriggers} />
-        <form action={flow.ui.action} className="flex flex-col gap-5" method={method}>
+        <form action={flow.ui.action} className="flex flex-col gap-6" method={method}>
           <FlowMessages messages={flow.ui.messages} />
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-5">
             {flow.ui.nodes.map((node, index) => (
               <OryNode key={`${node.type}-${index}`} node={node} />
             ))}

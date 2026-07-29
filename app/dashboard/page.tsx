@@ -12,6 +12,7 @@ import {
 import { AccountMenu } from "@/components/dashboard/account-menu";
 import { Brand } from "@/components/layout/brand";
 import { OrySetupState } from "@/components/ory/setup-state";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button-link";
 import {
@@ -48,7 +49,10 @@ export default async function DashboardPage() {
     return (
       <main className="min-h-screen bg-background px-5 py-6 sm:px-8 sm:py-8">
         <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl flex-col">
-          <Brand />
+          <div className="flex items-center justify-between gap-6">
+            <Brand />
+            <ThemeToggle />
+          </div>
           <div className="my-auto max-w-xl py-16">
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
               Protected workspace
@@ -100,12 +104,15 @@ export default async function DashboardPage() {
               Settings
             </Link>
           </nav>
-          <AccountMenu
-            email={email}
-            initials={getIdentityInitials(identity)}
-            label={name}
-            logoutUrl={logoutFlow.logout_url}
-          />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <AccountMenu
+              email={email}
+              initials={getIdentityInitials(identity)}
+              label={name}
+              logoutUrl={logoutFlow.logout_url}
+            />
+          </div>
         </div>
       </header>
 

@@ -43,10 +43,12 @@ export function AccountMenu({
         <ChevronDown aria-hidden="true" data-icon="inline-end" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
-        <DropdownMenuLabel className="flex flex-col gap-1">
-          <span className="truncate text-foreground">{label}</span>
-          <span className="truncate font-normal text-muted-foreground">{email}</span>
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="flex flex-col gap-1">
+            <span className="truncate text-foreground">{label}</span>
+            <span className="truncate font-normal text-muted-foreground">{email}</span>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem render={<Link href="/auth/settings" />}>

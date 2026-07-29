@@ -1,3 +1,5 @@
+import { CircleAlert } from "lucide-react";
+
 import {
   Alert,
   AlertDescription,
@@ -6,7 +8,8 @@ import {
 
 export function FlowUnavailable() {
   return (
-    <Alert variant="destructive">
+    <Alert className="border-destructive/25 bg-destructive/5" variant="destructive">
+      <CircleAlert aria-hidden="true" />
       <AlertTitle>This flow is no longer available</AlertTitle>
       <AlertDescription className="mt-1">
         Start again from the beginning so the identity service can issue a fresh

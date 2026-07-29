@@ -1,7 +1,13 @@
 import { AuthShell } from "@/components/layout/auth-shell";
 import { ButtonLink } from "@/components/ui/button-link";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
 import { getOryFlowError, getOryFlowErrorMessage } from "@/lib/ory/error";
 import { isOryConfigured } from "@/ory.config";
+import { CircleAlert } from "lucide-react";
 
 type ErrorPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -23,15 +29,19 @@ export default async function AuthErrorPage({ searchParams }: ErrorPageProps) {
       eyebrow="Flow interrupted"
       title="That path closed early"
     >
-      <div className="flex flex-col gap-4 rounded-xl border border-destructive/20 bg-destructive/5 p-5">
-        <p className="text-sm leading-6 text-muted-foreground">
-          {errorMessage ??
-            "No credentials were changed. You can safely return to the sign-in screen and begin again."}
-        </p>
-        <ButtonLink className="w-fit" href="/auth/login">
-          Back to sign in
-        </ButtonLink>
-      </div>
+      <Alert className="border-destructive/25 bg-destructive/5" variant="destructive">
+        <CircleAlert aria-hidden="true" />
+        <AlertTitle>Flow interrupted</AlertTitle>
+        <AlertDescription className="mt-2 flex flex-col gap-4">
+          <p>
+            {errorMessage ??
+              "No credentials were changed. You can safely return to the sign-in screen and begin again."}
+          </p>
+          <ButtonLink className="w-fit" href="/auth/login">
+            Back to sign in
+          </ButtonLink>
+        </AlertDescription>
+      </Alert>
     </AuthShell>
   );
 }

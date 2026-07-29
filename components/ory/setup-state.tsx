@@ -1,3 +1,5 @@
+import { CircleAlert } from "lucide-react";
+
 import {
   Alert,
   AlertDescription,
@@ -8,7 +10,8 @@ import { orySetupMessage } from "@/ory.config";
 
 export function OrySetupState() {
   return (
-    <Alert className="border-primary/20 bg-primary/5">
+    <Alert className="border-primary/25 bg-primary/5">
+      <CircleAlert aria-hidden="true" />
       <AlertTitle>Access is temporarily unavailable</AlertTitle>
       <AlertDescription className="mt-2 flex flex-col gap-4">
         <p>{orySetupMessage}</p>

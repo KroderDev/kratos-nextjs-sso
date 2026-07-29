@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Fingerprint, LockKeyhole, MoveUpRight } from "lucide-react";
 
 import { Brand } from "@/components/layout/brand";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button-link";
 import {
@@ -18,6 +19,7 @@ export default function Home() {
       <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8 lg:px-10">
         <Brand />
         <nav className="flex items-center gap-2 text-sm" aria-label="Primary">
+          <ThemeToggle />
           <Link
             className="hidden rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
             href="/auth/login"

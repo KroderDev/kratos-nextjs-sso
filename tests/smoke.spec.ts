@@ -1,10 +1,21 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test("landing page loads", async ({ page }) => {
   const response = await page.goto("/");
   expect(response?.status()).toBe(200);
   await expect(page.locator("h1")).toContainText("A calmer way to enter the work");
   await expect(page.getByRole("link", { name: "CI" })).toBeVisible();
+});
+
+test("theme control switches between light and dark", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Change color theme" }).click();
+  await page.getByRole("menuitemradio", { name: "Dark" }).click();
+  await expect(page.locator("html")).toHaveClass(/dark/);
+
+  await page.getByRole("menuitemradio", { name: "Light" }).click();
+  await expect(page.locator("html")).not.toHaveClass(/dark/);
 });
 
 test("sign-in page shows setup state when unconfigured", async ({ page }) => {

@@ -1,7 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
+  color-scheme: light;
   --background: #f5f8f9;
   --foreground: #102f40;
   --card: #ffffff;
@@ -23,6 +26,30 @@
   --input: #cbdce1;
   --ring: #0b74bd;
   --radius: 0.8rem;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0a1922;
+  --foreground: #dce8ed;
+  --card: #0f2533;
+  --card-foreground: #dce8ed;
+  --popover: #0f2533;
+  --popover-foreground: #dce8ed;
+  --primary: #499fd4;
+  --primary-foreground: #07121a;
+  --secondary: #173548;
+  --secondary-foreground: #d5e4ec;
+  --muted: #122d3b;
+  --muted-foreground: #86a1ae;
+  --accent: #1a4a5a;
+  --accent-foreground: #b4ede4;
+  --destructive: #e8826c;
+  --signal: #4dc9b8;
+  --signal-foreground: #071a1e;
+  --border: #1e3d4a;
+  --input: #2a4f5e;
+  --ring: #5baedb;
 }
 
 @theme inline {
@@ -110,5 +137,29 @@ body {
   .signal-orbit,
   .signal-orbit-delayed {
     animation: none;
+  }
+}
+
+.relay-trace {
+  animation: relay-trace 3.8s cubic-bezier(0.22, 1, 0.36, 1) 1 both;
+}
+
+@keyframes relay-trace {
+  from {
+    stroke-dashoffset: 170;
+    opacity: 0.2;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .relay-trace {
+    animation: none;
+    opacity: 1;
+    stroke-dashoffset: 0;
   }
 }

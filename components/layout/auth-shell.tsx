@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { brandMark } from "@/lib/branding";
 
@@ -68,7 +69,12 @@ export function AuthShell({
 
         <main className="flex min-h-screen flex-col px-5 py-6 sm:px-8 sm:py-8 lg:px-14 lg:py-12 xl:px-24">
           <div className="mx-auto flex w-full max-w-xl flex-1 flex-col">
-            <Brand className="lg:hidden" />
+            <div className="flex items-center justify-between gap-4">
+              <Brand className="lg:hidden" />
+              <div className="ml-auto">
+                <ThemeToggle />
+              </div>
+            </div>
 
             <div className="my-auto py-12 sm:py-16">
               <div className="mb-8 max-w-lg">
