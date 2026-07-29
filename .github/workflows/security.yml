@@ -1,5 +1,8 @@
 name: Security
 
+env:
+  TZ: America/Santiago
+
 on:
   pull_request:
     branches: [master]
