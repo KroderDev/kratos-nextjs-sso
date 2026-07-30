@@ -65,33 +65,35 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="self-stretch border border-border/70 bg-secondary/45 p-6 text-secondary-foreground sm:p-8 lg:self-auto">
-            <div className="flex items-center justify-between gap-4 border-b border-border/70 pb-5">
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
-                identity access
-              </span>
-              <span className="size-2 rounded-full bg-primary" />
-            </div>
-            <p className="mt-10 max-w-xs text-3xl font-semibold leading-[1.05] tracking-[-0.05em]">
-              One clear entry to private work.
-            </p>
-            <p className="mt-4 max-w-xs text-sm leading-6 text-muted-foreground">
-              Sign in, create an identity, or recover access without leaving the
-              same considered surface.
-            </p>
-            <div className="mt-10 flex items-center gap-3 text-sm font-medium text-primary">
-              <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground">
-                <Fingerprint aria-hidden="true" className="size-4" />
-              </span>
-              Server-protected session
-            </div>
-          </div>
+          <Card className="h-full self-stretch bg-secondary/45 text-secondary-foreground lg:self-auto">
+            <CardHeader className="gap-0 p-6 sm:p-8">
+              <div className="flex items-center justify-between gap-4 border-b pb-5">
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+                  identity access
+                </span>
+                <span className="size-2 rounded-full bg-primary" />
+              </div>
+              <CardTitle className="mt-10 max-w-xs text-3xl leading-[1.05] tracking-[-0.05em]">
+                One clear entry to private work.
+              </CardTitle>
+              <CardDescription className="mt-4 max-w-xs leading-6">
+                Sign in, create an identity, or recover access without leaving the
+                same considered surface.
+              </CardDescription>
+              <div className="mt-10 flex items-center gap-3 text-sm font-medium text-primary">
+                <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground">
+                  <Fingerprint aria-hidden="true" />
+                </span>
+                Server-protected session
+              </div>
+            </CardHeader>
+          </Card>
         </section>
 
         <Separator />
 
         <section className="grid gap-5 py-16 sm:grid-cols-2 lg:grid-cols-3 lg:py-20">
-          <Card className="bg-transparent shadow-none">
+          <Card>
             <CardHeader>
               <LockKeyhole aria-hidden="true" className="size-5 text-primary" />
               <CardTitle className="mt-5 text-xl tracking-[-0.03em]">Secure by default</CardTitle>
@@ -101,7 +103,7 @@ export default function Home() {
               </CardDescription>
             </CardHeader>
           </Card>
-          <Card className="bg-transparent shadow-none">
+          <Card>
             <CardHeader>
               <Fingerprint aria-hidden="true" className="size-5 text-primary" />
               <CardTitle className="mt-5 text-xl tracking-[-0.03em]">Human at the center</CardTitle>
@@ -111,7 +113,7 @@ export default function Home() {
               </CardDescription>
             </CardHeader>
           </Card>
-          <Card className="bg-transparent shadow-none sm:col-span-2 lg:col-span-1">
+          <Card className="sm:col-span-2 lg:col-span-1">
             <CardHeader>
               <ArrowRight aria-hidden="true" className="size-5 text-primary" />
               <CardTitle className="mt-5 text-xl tracking-[-0.03em]">Ready for the next step</CardTitle>
@@ -123,7 +125,9 @@ export default function Home() {
           </Card>
         </section>
 
-        <section className="flex flex-col gap-6 border-t border-border/70 pt-8 text-sm sm:flex-row sm:items-center sm:justify-between">
+        <Separator />
+
+        <section className="flex flex-col gap-6 pt-8 text-sm sm:flex-row sm:items-center sm:justify-between">
           <p className="text-muted-foreground">
             Identity infrastructure for thoughtful teams.
           </p>
