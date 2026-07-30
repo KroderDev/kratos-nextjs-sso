@@ -1,17 +1,23 @@
+"use client";
+
 import { Brand } from "@/components/layout/brand";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "@/lib/i18n/client";
 
 export function PageLoading() {
+  const { t } = useTranslation();
+
   return (
     <main
       aria-busy="true"
-      aria-label="Loading home page"
+      aria-label={t("common.navigation.loadingNextPage")}
       className="min-h-screen bg-background text-foreground"
       role="status"
     >
+
       <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8 lg:px-10">
         <Brand />
         <div className="flex items-center gap-2">
