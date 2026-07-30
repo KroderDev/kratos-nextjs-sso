@@ -193,5 +193,29 @@ export const es: TranslationKeys = {
       qrCodeAlt: "Código QR para configuración de autenticador",
       identityImageAlt: "Imagen del servicio de identidad",
     },
+    forms: {
+      badge: "flujo del navegador",
+      login: {
+        label: "Formulario de inicio de sesión",
+        description: "Usa el método de identidad configurado para este espacio de trabajo.",
+      },
+      registration: {
+        label: "Formulario de registro",
+        description: "Crea una nueva identidad con los campos que requiere tu espacio de trabajo.",
+      },
+      recovery: {
+        label: "Formulario de recuperación",
+        description: "Enviaremos el siguiente paso a una dirección verificada de tu cuenta.",
+      },
+      verification: {
+        label: "Formulario de verificación",
+        description: "Confirma la dirección vinculada a tu identidad.",
+      },
+      settings: {
+        label: "Formulario de configuración",
+        description: "Actualiza los atributos de identidad y credenciales que controlas.",
+      },
+    },
   },
 };
+

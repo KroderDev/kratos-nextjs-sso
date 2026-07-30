@@ -191,8 +191,32 @@ export const en = {
       qrCodeAlt: "Authenticator setup QR code",
       identityImageAlt: "Identity service image",
     },
+    forms: {
+      badge: "browser flow",
+      login: {
+        label: "Sign-in form",
+        description: "Use the identity method configured for this workspace.",
+      },
+      registration: {
+        label: "Registration form",
+        description: "Create a new identity with the fields your workspace requires.",
+      },
+      recovery: {
+        label: "Recovery form",
+        description: "We will send the next step to a verified address on your account.",
+      },
+      verification: {
+        label: "Verification form",
+        description: "Confirm the address connected to your identity.",
+      },
+      settings: {
+        label: "Settings form",
+        description: "Update the identity attributes and credentials you control.",
+      },
+    },
   },
 } as const;
+
 
 type DeepStringify<T> = {
   [K in keyof T]: T[K] extends string
