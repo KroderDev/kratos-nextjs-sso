@@ -4,3 +4,10 @@ allowBuilds:
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
+minimumReleaseAgeExclude:
+  - brace-expansion@1.1.17
+  - postcss@8.5.25
+overrides:
+  "brace-expansion@^1.0.0": 1.1.17
+  postcss: 8.5.25
+  sharp: 0.35.3

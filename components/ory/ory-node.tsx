@@ -35,6 +35,8 @@ import {
 } from "@/lib/ory/flow";
 
 import { OryTriggerButton } from "./ory-trigger-button";
+import { allowedOryOrigins, isSafeProviderUrl } from "@/lib/ory/security";
+import { appBaseUrl, oryCanonicalUrl, orySdkUrl } from "@/ory.config";
 
 type OryNodeProps = {
   node: UiNode;
@@ -48,6 +50,7 @@ function nodeId(node: UiNode) {
 export function OryNode({ node }: OryNodeProps) {
   const attributes = getNodeAttributes(node);
   const id = nodeId(node);
+  const allowedOrigins = allowedOryOrigins([appBaseUrl ?? "", orySdkUrl, oryCanonicalUrl]);
 
   if (node.type === "input") {
     const inputType = getString(attributes.type) ?? "text";
@@ -220,13 +223,19 @@ export function OryNode({ node }: OryNodeProps) {
         : {};
     const titleText = getSafeText(getString(titleRecord.text));
 
+    const href = getString(attributes.href);
+
+    if (!href || !isSafeProviderUrl(href, allowedOrigins)) {
+      return null;
+    }
+
     return (
       <ButtonLink
         key={id}
         className="w-fit px-0"
         size="sm"
         variant="link"
-        href={getString(attributes.href) ?? "#"}
+        href={href}
       >
         {title ?? titleText ?? "Continue"}
       </ButtonLink>
@@ -237,7 +246,7 @@ export function OryNode({ node }: OryNodeProps) {
     const src = getString(attributes.src);
     const isQrCode = node.group === "totp";
 
-    if (!src) {
+    if (!isSafeProviderUrl(src, allowedOrigins)) {
       return null;
     }
 
@@ -289,7 +298,7 @@ export function OryNode({ node }: OryNodeProps) {
   if (node.type === "script") {
     const src = getString(attributes.src);
 
-    if (!src) {
+    if (!isSafeProviderUrl(src, allowedOrigins)) {
       return null;
     }
 
