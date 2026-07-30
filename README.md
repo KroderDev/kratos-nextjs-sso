@@ -30,6 +30,33 @@ These public values are embedded during `next build`. Set them before building a
 
 The interface uses shadcn/ui components with Tailwind CSS semantic tokens. Customize the theme through the existing `components.json` preset and the shadcn CLI, or replace the app icon at `app/favicon.ico` with the platform's production asset.
 
+### Applying a shadcn Theme
+
+Use the [shadcn theme builder](https://ui.shadcn.com/create) to create or select a preset. The builder provides a preset ID that can be applied from the project root:
+
+```bash
+pnpm dlx shadcn@latest apply --preset b0 --only theme
+```
+
+Replace `b0` with the preset ID from the builder. The command updates the theme tokens in `app/globals.css`; it may also update `components.json` when the preset includes configuration changes. Commit or stash existing work before applying a preset so the generated changes can be reviewed and reverted safely.
+
+Apply only the font portion when the color theme should remain unchanged:
+
+```bash
+pnpm dlx shadcn@latest apply --preset b0 --only font
+```
+
+The font preset can update `app/layout.tsx` and `app/globals.css`. The application body uses the shared `--font-sans` token, so imported shadcn fonts are applied across the UI without changing individual components.
+
+After applying a preset, inspect the diff and run the validation suite:
+
+```bash
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm test:e2e
+```
+
 ### Docker
 
 ```bash
