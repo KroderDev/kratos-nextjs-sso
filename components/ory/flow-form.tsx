@@ -73,7 +73,7 @@ export function FlowForm({ embedded = false, flow, kind }: FlowFormProps) {
 
   return (
     <Card className="border-border/70 bg-card/85 shadow-xl shadow-foreground/5 backdrop-blur-sm">
-      <CardContent className="p-6 sm:p-8">
+      <CardContent className="px-6 py-4 sm:px-8 sm:py-5">
         {needsWebAuthnScript ? (
           <Script
             id={`ory-webauthn-${flow.id}`}
@@ -86,4 +86,5 @@ export function FlowForm({ embedded = false, flow, kind }: FlowFormProps) {
       </CardContent>
     </Card>
   );
+
 }

@@ -136,14 +136,15 @@ export function AuthContentLoading() {
         <Skeleton className="mt-5 h-5 w-full max-w-md" />
         <Skeleton className="mt-2 h-5 w-4/5 max-w-sm" />
       </div>
-      <Card>
-        <CardContent className="flex flex-col gap-5">
+      <Card className="border-border/70 bg-card/85 shadow-xl shadow-foreground/5 backdrop-blur-sm">
+        <CardContent className="flex flex-col gap-5 px-6 py-4 sm:px-8 sm:py-5">
           <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
           <Skeleton className="h-11 w-full" />
-          <Skeleton className="h-11 w-full" />
-          <Skeleton className="h-12 w-full" />
         </CardContent>
       </Card>
+
       <Skeleton className="mx-auto mt-7 h-4 w-48" />
     </div>
   );
