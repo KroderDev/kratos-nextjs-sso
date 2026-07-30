@@ -20,12 +20,14 @@ export default function Home() {
         <Brand />
         <nav className="flex items-center gap-2 text-sm" aria-label="Primary">
           <ThemeToggle />
-          <Link
-            className="hidden rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+          <ButtonLink
+            className="hidden sm:inline-flex"
             href="/auth/login"
+            size="sm"
+            variant="ghost"
           >
             Sign in
-          </Link>
+          </ButtonLink>
           <ButtonLink href="/auth/registration" size="sm">
             Get started
             <ArrowRight aria-hidden="true" data-icon="inline-end" />
@@ -37,7 +39,7 @@ export default function Home() {
         <section className="grid items-end gap-12 pb-20 pt-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.6fr)] lg:gap-20 lg:pt-24">
           <div>
             <Badge className="gap-2 border-primary/20 bg-primary/5 text-primary" variant="outline">
-              <span className="size-1.5 rounded-full bg-signal" />
+              <span className="size-1.5 rounded-full bg-primary" />
               Secure account access
             </Badge>
             <h1 className="mt-7 max-w-4xl text-6xl font-semibold leading-[0.93] tracking-[-0.07em] sm:text-8xl">
@@ -63,23 +65,25 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="relative min-h-64 overflow-hidden rounded-2xl border border-border/70 bg-foreground p-6 text-background shadow-2xl shadow-foreground/10 sm:p-8">
-            <div className="signal-grid pointer-events-none absolute inset-0 opacity-50" />
-            <div className="signal-orbit pointer-events-none absolute -right-24 -bottom-28 size-72 rounded-full border border-background/20" />
-            <div className="relative flex h-full flex-col justify-between gap-12">
-              <div className="flex items-center justify-between">
-                <Fingerprint aria-hidden="true" className="size-6 text-signal" />
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-background/50">
-                  entry / 01
-                </span>
-              </div>
-              <div>
-                <p className="text-3xl font-semibold tracking-[-0.05em]">Clear signal.</p>
-                <p className="mt-3 max-w-xs text-sm leading-6 text-background/60">
-                  No noise between a person and the private work they are here
-                  to do.
-                </p>
-              </div>
+          <div className="self-stretch border border-border/70 bg-secondary/45 p-6 text-secondary-foreground sm:p-8 lg:self-auto">
+            <div className="flex items-center justify-between gap-4 border-b border-border/70 pb-5">
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+                identity access
+              </span>
+              <span className="size-2 rounded-full bg-primary" />
+            </div>
+            <p className="mt-10 max-w-xs text-3xl font-semibold leading-[1.05] tracking-[-0.05em]">
+              One clear entry to private work.
+            </p>
+            <p className="mt-4 max-w-xs text-sm leading-6 text-muted-foreground">
+              Sign in, create an identity, or recover access without leaving the
+              same considered surface.
+            </p>
+            <div className="mt-10 flex items-center gap-3 text-sm font-medium text-primary">
+              <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground">
+                <Fingerprint aria-hidden="true" className="size-4" />
+              </span>
+              Server-protected session
             </div>
           </div>
         </section>

@@ -14,21 +14,20 @@ export function Brand({ className, inverted = false }: BrandProps) {
       href="/"
       className={cn(
         "group inline-flex items-center gap-3 text-sm font-semibold tracking-[0.16em]",
-        inverted ? "text-background" : "text-foreground",
+        inverted ? "text-secondary-foreground" : "text-foreground",
         className,
       )}
     >
       <span
         aria-hidden="true"
         className={cn(
-          "relative grid size-9 place-items-center overflow-hidden rounded-xl border text-sm font-bold tracking-normal transition-transform group-hover:-rotate-6",
+          "grid size-9 place-items-center rounded-xl border text-sm font-bold tracking-normal",
           inverted
-            ? "border-background/30 bg-background/10"
+            ? "border-secondary-foreground/30 bg-secondary-foreground/10"
             : "border-primary/20 bg-primary text-primary-foreground",
         )}
       >
-        <span className="relative z-10">{brandMark}</span>
-        <span className="absolute -right-2 -bottom-2 size-6 rounded-full bg-signal/70 blur-sm" />
+        <span>{brandMark}</span>
       </span>
       <span>{brandName}</span>
     </Link>

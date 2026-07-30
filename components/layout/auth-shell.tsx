@@ -24,45 +24,41 @@ export function AuthShell({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="grid min-h-screen lg:grid-cols-[minmax(22rem,0.78fr)_minmax(34rem,1fr)]">
-        <aside className="relative hidden overflow-hidden bg-foreground px-10 py-10 text-background lg:flex lg:flex-col lg:justify-between xl:px-14">
-          <div className="signal-grid pointer-events-none absolute inset-0 opacity-60" />
-          <div className="signal-orbit pointer-events-none absolute -right-32 top-28 size-[31rem] rounded-full border border-background/10" />
-          <div className="signal-orbit signal-orbit-delayed pointer-events-none absolute -right-12 top-48 size-[18rem] rounded-full border border-signal/25" />
-
+        <aside className="relative hidden overflow-hidden bg-secondary px-10 py-10 text-secondary-foreground lg:flex lg:flex-col lg:justify-between xl:px-14">
           <div className="relative z-10">
             <Brand inverted />
           </div>
 
-          <div className="relative z-10 max-w-sm">
-            <Badge className="border-background/20 bg-background/10 text-background hover:bg-background/15">
-              <span className="mr-1.5 inline-block size-1.5 rounded-full bg-signal" />
+          <div className="relative z-10 max-w-md">
+            <Badge className="border-secondary-foreground/20 bg-secondary-foreground/10 text-secondary-foreground hover:bg-secondary-foreground/15">
+              <span className="mr-1.5 inline-block size-1.5 rounded-full bg-primary" />
               identity infrastructure
             </Badge>
-            <h2 className="mt-8 max-w-xs text-4xl font-semibold leading-[1.03] tracking-[-0.05em] xl:text-5xl">
-              Access should feel like a quiet room.
+            <h2 className="mt-8 max-w-sm text-4xl font-semibold leading-[1.03] tracking-[-0.05em] xl:text-5xl">
+              Your workspace begins with a clear handoff.
             </h2>
-            <p className="mt-6 max-w-xs text-sm leading-6 text-background/65">
-              One considered entry point for the people, projects, and private
-              work that matter to your team.
+            <p className="mt-6 max-w-xs text-sm leading-6 text-secondary-foreground/70">
+              Sign in once, then get out of the way. Your identity stays close to
+              the server while your work stays yours.
             </p>
 
-            <div className="mt-12 grid grid-cols-2 gap-3 border-t border-background/15 pt-5 text-xs text-background/55">
-              <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-signal">
-                  protocol
-                </p>
-                <p className="mt-2">Secure browser flow</p>
+            <div className="mt-10 grid max-w-md gap-3 border-t border-secondary-foreground/15 pt-5 text-xs text-secondary-foreground/70">
+              <div className="flex items-center justify-between gap-4">
+                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-primary">
+                  session
+                </span>
+                <span>Protected browser flow</span>
               </div>
-              <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-signal">
-                  posture
-                </p>
-                <p className="mt-2">Server rendered</p>
+              <div className="flex items-center justify-between gap-4">
+                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-primary">
+                  boundary
+                </span>
+                <span>Server rendered</span>
               </div>
             </div>
           </div>
 
-          <p className="relative z-10 font-mono text-[10px] uppercase tracking-[0.18em] text-background/35">
+          <p className="relative z-10 font-mono text-[10px] uppercase tracking-[0.18em] text-secondary-foreground/50">
             private by design / 2026
           </p>
         </aside>
@@ -101,7 +97,7 @@ export function AuthShell({
             <div className="flex items-center justify-between gap-4 border-t border-border/70 pt-5 text-[11px] text-muted-foreground">
               <span>Protected browser session</span>
               <span className="font-mono uppercase tracking-[0.16em]">
-                {brandMark} / 01
+                {brandMark} / access
               </span>
             </div>
           </div>

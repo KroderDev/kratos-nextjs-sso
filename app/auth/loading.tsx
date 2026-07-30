@@ -9,7 +9,7 @@ export default function AuthLoading() {
       eyebrow="Loading"
       title="Just a moment"
     >
-      <Card className="rounded-3xl">
+      <Card>
         <CardContent className="flex flex-col gap-5">
           <Skeleton className="h-4 w-32" />
           <Skeleton className="h-11 w-full" />
