@@ -51,23 +51,23 @@ function nodeId(node: UiNode) {
 }
 
 export function OryNode({ node }: OryNodeProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const attributes = getNodeAttributes(node);
   const id = nodeId(node);
   const allowedOrigins = allowedOryOrigins([appBaseUrl ?? "", orySdkUrl, oryCanonicalUrl]);
-
 
   if (node.type === "input") {
     const inputType = getString(attributes.type) ?? "text";
     const name = getString(attributes.name) ?? id;
     const value = attributes.value;
     const stringValue = getString(value);
-    const label = getNodeLabel(node);
+    const label = getNodeLabel(node, locale);
     const messages = getNodeMessages(node);
     const hasErrors = messages.some((message) => message.type === "error");
     const disabled = attributes.disabled === true;
     const required = attributes.required === true;
     const maxLength = getNumber(attributes.maxlength);
+
     const description = getSafeText(getString(attributes.description));
     const errorId = `${id}-error`;
     const descriptionId = `${id}-description`;
@@ -130,7 +130,7 @@ export function OryNode({ node }: OryNodeProps) {
             <FieldLabel htmlFor={id}>{label ?? t("ory.nodes.confirmChoice")}</FieldLabel>
             <FieldError
               id={errorId}
-              errors={getErrorMessages(messages).map((message) => ({
+              errors={getErrorMessages(messages, locale).map((message) => ({
                 message: message.text,
               }))}
             />
@@ -204,7 +204,7 @@ export function OryNode({ node }: OryNodeProps) {
   }
 
   if (node.type === "text") {
-    const text = getNodeText(node);
+    const text = getNodeText(node, locale);
 
     return text ? (
       <p
@@ -258,7 +258,7 @@ export function OryNode({ node }: OryNodeProps) {
     const image = (
       <img
         key={id}
-        alt={isQrCode ? t("ory.nodes.qrCodeAlt") : getNodeLabel(node) ?? t("ory.nodes.identityImageAlt")}
+        alt={isQrCode ? t("ory.nodes.qrCodeAlt") : getNodeLabel(node, locale) ?? t("ory.nodes.identityImageAlt")}
         className={isQrCode ? "size-full object-contain" : "max-h-48 max-w-full rounded-lg border border-border"}
         height={getNumber(attributes.height)}
         src={src}

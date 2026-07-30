@@ -17,9 +17,9 @@ type FlowMessagesProps = {
 };
 
 export function FlowMessages({ messages }: FlowMessagesProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const visibleMessages = (messages ?? []).filter((message) =>
-    getMessageText(message),
+    getMessageText(message, locale),
   );
 
   if (visibleMessages.length === 0) {
@@ -47,11 +47,12 @@ export function FlowMessages({ messages }: FlowMessagesProps) {
           >
             <Icon aria-hidden="true" />
             <AlertTitle>{titleText}</AlertTitle>
-            <AlertDescription>{getMessageText(message)}</AlertDescription>
+            <AlertDescription>{getMessageText(message, locale)}</AlertDescription>
           </Alert>
         );
       })}
     </div>
   );
 }
+
 
