@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.1](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.2.0...v0.2.1) (2026-07-30)
+
+
+### Bug Fixes
+
+* **branding:** preserve logo images when brand mark is configured ([1c9294e](https://github.com/KroderDev/kratos-nextjs-sso/commit/1c9294e5a3118d709b5653af71010b1cb5456d39))
+* **branding:** preserve logo images when brand mark is configured ([07f0a55](https://github.com/KroderDev/kratos-nextjs-sso/commit/07f0a55241c42325e5552720bb75a5241285a842))
+* **ory:** add resilient logout flow with fallback handling ([fc04d85](https://github.com/KroderDev/kratos-nextjs-sso/commit/fc04d85ec093f9455a2a91c6a268e2ceb527e8f2))
+
+
+### Documentation
+
+* add live demo, badges, and demo section ([bb4385f](https://github.com/KroderDev/kratos-nextjs-sso/commit/bb4385fc9404cfd8deb75a2231b63ea949fe5bfc))
+
 ## [0.2.0](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.1.0...v0.2.0) (2026-07-30)
 
 
