@@ -16,6 +16,7 @@ import { OryNode } from "./ory-node";
 import { OryTriggerRuntime } from "./ory-trigger-runtime";
 
 type FlowFormProps = {
+  embedded?: boolean;
   flow: OryFlow;
   kind: OryFlowKind;
 };
@@ -46,7 +47,7 @@ const flowDetails: Record<
   },
 };
 
-export function FlowForm({ flow, kind }: FlowFormProps) {
+export function FlowForm({ embedded = false, flow, kind }: FlowFormProps) {
   const detail = flowDetails[kind];
   const method = flow.ui.method.toLowerCase() === "get" ? "get" : "post";
   const needsWebAuthnScript = flow.ui.nodes.some((node) => {
@@ -61,6 +62,39 @@ export function FlowForm({ flow, kind }: FlowFormProps) {
   const onloadTriggers = flow.ui.nodes
     .map((node) => getString(getNodeAttributes(node).onloadTrigger))
     .filter((trigger): trigger is string => Boolean(trigger));
+
+  const form = (
+    <form action={flow.ui.action} className="flex flex-col gap-6" method={method}>
+      <FlowMessages messages={flow.ui.messages} />
+      <div className="flex flex-col gap-5">
+        {flow.ui.nodes
+          .filter((node) => {
+            if (kind !== "registration") return true;
+            const name = getString(getNodeAttributes(node).name);
+            return name !== "traits.avatar_url";
+          })
+          .map((node, index) => (
+            <OryNode key={`${node.type}-${index}`} node={node} />
+          ))}
+      </div>
+    </form>
+  );
+
+  if (embedded) {
+    return (
+      <div className="border-t border-border/70 pt-8">
+        {needsWebAuthnScript ? (
+          <Script
+            id={`ory-webauthn-${flow.id}`}
+            src="/.well-known/ory/webauthn.js"
+            strategy="afterInteractive"
+          />
+        ) : null}
+        <OryTriggerRuntime triggers={onloadTriggers} />
+        {form}
+      </div>
+    );
+  }
 
   return (
     <Card className="border-border/70 bg-card/85 shadow-xl shadow-foreground/5 backdrop-blur-sm">
@@ -83,20 +117,7 @@ export function FlowForm({ flow, kind }: FlowFormProps) {
           />
         ) : null}
         <OryTriggerRuntime triggers={onloadTriggers} />
-        <form action={flow.ui.action} className="flex flex-col gap-6" method={method}>
-          <FlowMessages messages={flow.ui.messages} />
-          <div className="flex flex-col gap-5">
-            {flow.ui.nodes
-              .filter((node) => {
-                if (kind !== "registration") return true;
-                const name = getString(getNodeAttributes(node).name);
-                return name !== "traits.avatar_url";
-              })
-              .map((node, index) => (
-                <OryNode key={`${node.type}-${index}`} node={node} />
-              ))}
-          </div>
-        </form>
+        {form}
       </CardContent>
     </Card>
   );

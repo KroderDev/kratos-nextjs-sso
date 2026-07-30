@@ -12,7 +12,7 @@ const uiPathMap: Record<string, string> = {
   "/registration": "/auth/registration",
   "/recovery": "/auth/recovery",
   "/verification": "/auth/verification",
-  "/settings": "/auth/settings",
+  "/settings": "/dashboard/settings",
 };
 
 function isLocalSdkUrl() {

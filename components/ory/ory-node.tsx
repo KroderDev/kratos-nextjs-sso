@@ -235,24 +235,29 @@ export function OryNode({ node }: OryNodeProps) {
 
   if (node.type === "img") {
     const src = getString(attributes.src);
+    const isQrCode = node.group === "totp";
 
     if (!src) {
       return null;
     }
 
-    return (
+    const image = (
       <img
         key={id}
-        alt={
-          node.group === "totp"
-            ? "Authenticator setup QR code"
-            : getNodeLabel(node) ?? "Identity service image"
-        }
-        className="max-h-48 max-w-full rounded-lg border border-border"
+        alt={isQrCode ? "Authenticator setup QR code" : getNodeLabel(node) ?? "Identity service image"}
+        className={isQrCode ? "size-full object-contain" : "max-h-48 max-w-full rounded-lg border border-border"}
         height={getNumber(attributes.height)}
         src={src}
         width={getNumber(attributes.width)}
       />
+    );
+
+    return isQrCode ? (
+      <div className="aspect-square w-full max-w-48 overflow-hidden rounded-lg border border-border bg-white p-2" key={id}>
+        {image}
+      </div>
+    ) : (
+      image
     );
   }
 

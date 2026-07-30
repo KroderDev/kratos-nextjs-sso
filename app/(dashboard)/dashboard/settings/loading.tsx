@@ -1,5 +1,5 @@
 import { DashboardLoading } from "@/components/dashboard/dashboard-loading";
 
-export default function DashboardPageLoading() {
+export default function SettingsLoading() {
   return <DashboardLoading />;
 }

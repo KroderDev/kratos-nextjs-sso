@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, LogOut, Settings2 } from "lucide-react";
+import { LogOut, Settings2 } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -33,25 +33,28 @@ export function AccountMenu({
       <DropdownMenuTrigger
         aria-label={`Open account menu for ${label}`}
         render={
-          <Button className="gap-2 rounded-full pl-1.5" size="sm" variant="outline" />
+          <Button className="size-9 rounded-full p-1 hover:bg-muted" size="icon-lg" variant="ghost" />
         }
       >
-        <Avatar size="sm">
+        <Avatar className="size-full">
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
-        <span className="hidden max-w-28 truncate sm:inline">{label}</span>
-        <ChevronDown aria-hidden="true" data-icon="inline-end" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuGroup>
-          <DropdownMenuLabel className="flex flex-col gap-1">
-            <span className="truncate text-foreground">{label}</span>
-            <span className="truncate font-normal text-muted-foreground">{email}</span>
+          <DropdownMenuLabel className="flex items-center gap-3">
+            <Avatar>
+              <AvatarFallback>{initials}</AvatarFallback>
+            </Avatar>
+            <span className="flex min-w-0 flex-col gap-1">
+              <span className="truncate text-foreground">{label}</span>
+              <span className="truncate font-normal text-muted-foreground">{email}</span>
+            </span>
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem render={<Link href="/auth/settings" />}>
+          <DropdownMenuItem render={<Link href="/dashboard/settings" />}>
             <Settings2 aria-hidden="true" data-icon="inline-start" />
             Account settings
           </DropdownMenuItem>
