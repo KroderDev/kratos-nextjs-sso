@@ -1,6 +1,6 @@
-# Identity Frontend
+# kratos-nextjs-sso
 
-A server-rendered identity frontend built with Next.js App Router, React, Tailwind CSS, and shadcn/ui Base UI components.
+Production-ready Next.js App Router identity and SSO frontend for Ory Kratos and Ory Network, built with React 19, Tailwind CSS, and shadcn/ui Base UI components.
 
 ## Requirements
 
