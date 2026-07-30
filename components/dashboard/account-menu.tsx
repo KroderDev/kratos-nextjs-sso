@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ChevronDown, LogOut, Settings2 } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -33,14 +32,17 @@ export function AccountMenu({
       <DropdownMenuTrigger
         aria-label={`Open account menu for ${label}`}
         render={
-          <Button className="gap-2 rounded-full pl-1.5" size="sm" variant="outline" />
+          <Button className="h-9 gap-2 rounded-lg px-2 hover:bg-muted" size="sm" variant="ghost" />
         }
       >
-        <Avatar size="sm">
-          <AvatarFallback>{initials}</AvatarFallback>
-        </Avatar>
+        <span
+          aria-hidden="true"
+          className="grid size-6 shrink-0 place-items-center rounded-md bg-primary text-[10px] font-semibold tracking-tight text-primary-foreground"
+        >
+          {initials}
+        </span>
         <span className="hidden max-w-28 truncate sm:inline">{label}</span>
-        <ChevronDown aria-hidden="true" data-icon="inline-end" />
+        <ChevronDown aria-hidden="true" className="text-muted-foreground" data-icon="inline-end" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuGroup>
