@@ -26,7 +26,7 @@ NEXT_PUBLIC_BRAND_NAME=Your Platform
 NEXT_PUBLIC_BRAND_MARK=Y
 ```
 
-These public values are embedded during `next build`. Set them before building a Docker image or deploying the application. The mark accepts up to two characters and falls back to the first character of the brand name.
+These public values are embedded during `next build`. Set them before building a Docker image or deploying the application. `NEXT_PUBLIC_BRAND_MARK=Y` uses the Next.js logo in the visual brand mark; other values continue to render as text marks up to two characters and fall back to the first character of the brand name.
 
 The interface uses shadcn/ui components with Tailwind CSS semantic tokens. Customize the theme through the existing `components.json` preset and the shadcn CLI, or replace the app icon at `app/favicon.ico` with the platform's production asset.
 

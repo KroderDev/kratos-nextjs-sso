@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { brandMark, brandName } from "@/lib/branding";
@@ -27,7 +28,17 @@ export function Brand({ className, inverted = false }: BrandProps) {
             : "border-primary/20 bg-primary text-primary-foreground",
         )}
       >
-        <span>{brandMark}</span>
+        {brandMark === "Y" ? (
+          <Image
+            src="/next.svg"
+            alt=""
+            width={24}
+            height={24}
+            className={cn("size-6", inverted && "invert")}
+          />
+        ) : (
+          <span>{brandMark}</span>
+        )}
       </span>
       <span>{brandName}</span>
     </Link>
