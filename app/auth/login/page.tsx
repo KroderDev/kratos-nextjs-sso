@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getLoginFlow, type OryPageParams } from "@ory/nextjs/app";
 
-import { AuthShell } from "@/components/layout/auth-shell";
+import { AuthContent } from "@/components/layout/auth-shell";
 import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
 import { rewriteOryFlow } from "@/lib/ory/url";
@@ -13,7 +13,7 @@ export const metadata = { title: "Sign in" };
 export default async function LoginPage({ searchParams }: OryPageParams) {
   if (!isOryConfigured) {
     return (
-      <AuthShell
+        <AuthContent
         description="Use the identity method configured for this workspace."
         eyebrow="Secure access"
         footer={
@@ -27,7 +27,7 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
         title="Welcome back"
       >
         <OrySetupState />
-      </AuthShell>
+        </AuthContent>
     );
   }
 

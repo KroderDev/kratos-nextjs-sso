@@ -1,4 +1,4 @@
-import { AuthShell } from "@/components/layout/auth-shell";
+import { AuthContent } from "@/components/layout/auth-shell";
 import { ButtonLink } from "@/components/ui/button-link";
 import {
   Alert,
@@ -24,7 +24,7 @@ export default async function AuthErrorPage({ searchParams }: ErrorPageProps) {
   const errorMessage = getOryFlowErrorMessage(flowError);
 
   return (
-    <AuthShell
+    <AuthContent
       description="The identity service could not complete that request. Start a fresh browser flow and try again."
       eyebrow="Flow interrupted"
       title="That path closed early"
@@ -42,6 +42,6 @@ export default async function AuthErrorPage({ searchParams }: ErrorPageProps) {
           </ButtonLink>
         </AlertDescription>
       </Alert>
-    </AuthShell>
+    </AuthContent>
   );
 }

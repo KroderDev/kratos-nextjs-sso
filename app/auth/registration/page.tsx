@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getRegistrationFlow, type OryPageParams } from "@ory/nextjs/app";
 
-import { AuthShell } from "@/components/layout/auth-shell";
+import { AuthContent } from "@/components/layout/auth-shell";
 import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
 import { rewriteOryFlow } from "@/lib/ory/url";
@@ -15,7 +15,7 @@ export default async function RegistrationPage({
 }: OryPageParams) {
   if (!isOryConfigured) {
     return (
-      <AuthShell
+        <AuthContent
         description="Create a workspace identity with the fields your team requires."
         eyebrow="New identity"
         footer={
@@ -29,7 +29,7 @@ export default async function RegistrationPage({
         title="Make room for what is next"
       >
         <OrySetupState />
-      </AuthShell>
+        </AuthContent>
     );
   }
 

@@ -137,6 +137,10 @@ pnpm build
 
 The tests cover the pure Ory node helpers. Real sign-in, registration, recovery, verification, and settings behavior requires a configured Ory project and credentials.
 
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
 ## References
 
 - [Ory browser flows](https://www.ory.com/docs/security-model)

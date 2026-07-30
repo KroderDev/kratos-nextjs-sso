@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getRecoveryFlow, type OryPageParams } from "@ory/nextjs/app";
 
-import { AuthShell } from "@/components/layout/auth-shell";
+import { AuthContent } from "@/components/layout/auth-shell";
 import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
 import { rewriteOryFlow } from "@/lib/ory/url";
@@ -13,7 +13,7 @@ export const metadata = { title: "Recover access" };
 export default async function RecoveryPage({ searchParams }: OryPageParams) {
   if (!isOryConfigured) {
     return (
-      <AuthShell
+        <AuthContent
         description="We will send the next step to a verified address on your account."
         eyebrow="Account recovery"
         footer={
@@ -27,7 +27,7 @@ export default async function RecoveryPage({ searchParams }: OryPageParams) {
         title="Let's get you back in"
       >
         <OrySetupState />
-      </AuthShell>
+        </AuthContent>
     );
   }
 

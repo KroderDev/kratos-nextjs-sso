@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getServerSession, getSettingsFlow, type OryPageParams } from "@ory/nextjs/app";
 import { redirect } from "next/navigation";
 
-import { AuthShell } from "@/components/layout/auth-shell";
+import { AuthContent } from "@/components/layout/auth-shell";
 import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
 import { rewriteOryFlow } from "@/lib/ory/url";
@@ -14,7 +14,7 @@ export const metadata = { title: "Account settings" };
 export default async function SettingsPage({ searchParams }: OryPageParams) {
   if (!isOryConfigured) {
     return (
-      <AuthShell
+        <AuthContent
         description="Update the identity attributes and credentials you control."
         eyebrow="Account settings"
         footer={
@@ -25,7 +25,7 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
         title="Keep your identity current"
       >
         <OrySetupState />
-      </AuthShell>
+        </AuthContent>
     );
   }
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { NavigationFeedback } from "@/components/layout/navigation-feedback";
 import { brandName } from "@/lib/branding";
 
 import "./globals.css";
@@ -43,6 +44,7 @@ export default function RootLayout({
           disableTransitionOnChange
           enableSystem
         >
+          <NavigationFeedback />
           {children}
         </ThemeProvider>
       </body>

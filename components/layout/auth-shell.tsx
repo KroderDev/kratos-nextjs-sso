@@ -2,11 +2,18 @@ import type { ReactNode } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { brandMark } from "@/lib/branding";
 
+import { AuthContentReady } from "./auth-content-ready";
 import { Brand } from "./brand";
 
-type AuthShellProps = {
+type AuthFrameProps = {
+  children: ReactNode;
+};
+
+type AuthContentProps = {
   eyebrow: string;
   title: string;
   description: string;
@@ -14,13 +21,7 @@ type AuthShellProps = {
   footer?: ReactNode;
 };
 
-export function AuthShell({
-  eyebrow,
-  title,
-  description,
-  children,
-  footer,
-}: AuthShellProps) {
+export function AuthFrame({ children }: AuthFrameProps) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="grid min-h-screen lg:grid-cols-[minmax(22rem,0.78fr)_minmax(34rem,1fr)]">
@@ -72,27 +73,7 @@ export function AuthShell({
               </div>
             </div>
 
-            <div className="my-auto py-12 sm:py-16">
-              <div className="mb-8 max-w-lg">
-                <p className="font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-primary">
-                  {eyebrow}
-                </p>
-                <h1 className="mt-4 text-4xl font-semibold leading-none tracking-[-0.055em] sm:text-5xl">
-                  {title}
-                </h1>
-                <p className="mt-5 max-w-md text-base leading-7 text-muted-foreground">
-                  {description}
-                </p>
-              </div>
-
-              {children}
-
-              {footer ? (
-                <div className="mt-7 text-center text-sm text-muted-foreground">
-                  {footer}
-                </div>
-              ) : null}
-            </div>
+            <div className="my-auto py-12 sm:py-16">{children}</div>
 
             <div className="flex items-center justify-between gap-4 border-t border-border/70 pt-5 text-[11px] text-muted-foreground">
               <span>Protected browser session</span>
@@ -103,6 +84,61 @@ export function AuthShell({
           </div>
         </main>
       </div>
+    </div>
+  );
+}
+
+export function AuthContent({
+  eyebrow,
+  title,
+  description,
+  children,
+  footer,
+}: AuthContentProps) {
+  return (
+    <div>
+      <AuthContentReady />
+      <div className="mb-8 max-w-lg">
+        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-primary">
+          {eyebrow}
+        </p>
+        <h1 className="mt-4 text-4xl font-semibold leading-none tracking-[-0.055em] sm:text-5xl">
+          {title}
+        </h1>
+        <p className="mt-5 max-w-md text-base leading-7 text-muted-foreground">
+          {description}
+        </p>
+      </div>
+
+      {children}
+
+      {footer ? (
+        <div className="mt-7 text-center text-sm text-muted-foreground">
+          {footer}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export function AuthContentLoading() {
+  return (
+    <div className="max-w-lg" aria-label="Loading authentication form" role="status">
+      <div className="mb-8">
+        <Skeleton className="h-3 w-28" />
+        <Skeleton className="mt-4 h-11 w-64 max-w-full" />
+        <Skeleton className="mt-5 h-5 w-full max-w-md" />
+        <Skeleton className="mt-2 h-5 w-4/5 max-w-sm" />
+      </div>
+      <Card>
+        <CardContent className="flex flex-col gap-5">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-11 w-full" />
+          <Skeleton className="h-11 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </CardContent>
+      </Card>
+      <Skeleton className="mx-auto mt-7 h-4 w-48" />
     </div>
   );
 }
