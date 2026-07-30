@@ -32,7 +32,7 @@ export function AccountMenu({
       <DropdownMenuTrigger
         aria-label={`Open account menu for ${label}`}
         render={
-          <Button className="h-9 gap-2 rounded-lg px-2 hover:bg-muted" size="sm" variant="ghost" />
+          <Button className="gap-2 rounded-lg px-2 hover:bg-muted" size="sm" variant="ghost" />
         }
       >
         <span
