@@ -3,7 +3,13 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { AuthContentLoading, AuthFrame } from "./auth-shell";
+
 const NAVIGATION_TIMEOUT = 10_000;
+
+type PendingNavigation =
+  | { kind: "route"; targetPathname: string }
+  | { kind: "document" };
 
 function isNavigableLink(anchor: HTMLAnchorElement) {
   if (
@@ -25,16 +31,35 @@ function isNavigableLink(anchor: HTMLAnchorElement) {
 
 export function NavigationFeedback() {
   const pathname = usePathname();
-  const [pendingPathname, setPendingPathname] = useState<string | null>(null);
-  const pending = pendingPathname === pathname;
+  const [pendingNavigation, setPendingNavigation] =
+    useState<PendingNavigation | null>(null);
+  const pending = pendingNavigation !== null;
+  const authPending =
+    pending &&
+    pendingNavigation?.kind === "route" &&
+    pendingNavigation.targetPathname.startsWith("/auth");
+
+  useEffect(() => {
+    if (
+      pendingNavigation?.kind !== "route" ||
+      pendingNavigation.targetPathname !== pathname ||
+      pendingNavigation.targetPathname.startsWith("/auth")
+    ) {
+      return;
+    }
+
+    const cleanup = window.setTimeout(() => setPendingNavigation(null), 0);
+
+    return () => window.clearTimeout(cleanup);
+  }, [pathname, pendingNavigation]);
 
   useEffect(() => {
     let timeout: number | undefined;
 
-    function start() {
-      setPendingPathname(pathname);
+    function start(navigation: PendingNavigation) {
+      setPendingNavigation(navigation);
       window.clearTimeout(timeout);
-      timeout = window.setTimeout(() => setPendingPathname(null), NAVIGATION_TIMEOUT);
+      timeout = window.setTimeout(() => setPendingNavigation(null), NAVIGATION_TIMEOUT);
     }
 
     function handleClick(event: MouseEvent) {
@@ -51,47 +76,77 @@ export function NavigationFeedback() {
       const anchor = target.closest("a");
 
       if (anchor instanceof HTMLAnchorElement && isNavigableLink(anchor)) {
-        start();
+        const url = new URL(anchor.href, window.location.href);
+        start({ kind: "route", targetPathname: url.pathname });
       }
     }
 
     function handleSubmit(event: SubmitEvent) {
       if (!event.defaultPrevented) {
-        start();
+        start({ kind: "document" });
       }
     }
 
-    function handlePageShow() {
-      setPendingPathname(null);
+    function clear() {
+      setPendingNavigation(null);
       window.clearTimeout(timeout);
+    }
+
+    function handleAuthReady(event: Event) {
+      const path = (event as CustomEvent<string>).detail;
+
+      setPendingNavigation((navigation) => {
+        if (
+          navigation?.kind === "route" &&
+          navigation.targetPathname === path
+        ) {
+          window.clearTimeout(timeout);
+          return null;
+        }
+
+        return navigation;
+      });
     }
 
     document.addEventListener("click", handleClick, true);
     document.addEventListener("submit", handleSubmit, true);
-    window.addEventListener("pageshow", handlePageShow);
+    window.addEventListener("pageshow", clear);
+    window.addEventListener("popstate", clear);
+    window.addEventListener("auth-content-ready", handleAuthReady);
 
     return () => {
       document.removeEventListener("click", handleClick, true);
       document.removeEventListener("submit", handleSubmit, true);
-      window.removeEventListener("pageshow", handlePageShow);
+      window.removeEventListener("pageshow", clear);
+      window.removeEventListener("popstate", clear);
+      window.removeEventListener("auth-content-ready", handleAuthReady);
       window.clearTimeout(timeout);
     };
-  }, [pathname]);
+  }, []);
 
   return (
-    <div
-      aria-busy={pending}
-      aria-label="Loading next page"
-      className="pointer-events-none fixed inset-x-0 top-0 z-50 h-0.5 bg-primary/15"
-      role="status"
-    >
+    <>
+      {authPending ? (
+        <div className="fixed inset-0 z-40 overflow-auto bg-background">
+          <AuthFrame>
+            <AuthContentLoading />
+          </AuthFrame>
+        </div>
+      ) : null}
       <div
-        className={
-          pending
-            ? "navigation-progress h-full w-full bg-primary"
-            : "h-full w-0"
-        }
-      />
-    </div>
+        aria-busy={pending}
+        aria-label="Loading next page"
+        className="pointer-events-none fixed inset-x-0 top-0 z-50 h-0.5 bg-primary/15"
+        role="status"
+      >
+        <div
+          className={
+            pending
+              ? "navigation-progress h-full w-full bg-primary"
+              : "h-full w-0"
+          }
+        />
+      </div>
+    </>
   );
 }

@@ -1,5 +1,5 @@
-import { PageLoading } from "@/components/layout/page-loading";
+import { RouteLoading } from "@/components/layout/route-loading";
 
 export default function Loading() {
-  return <PageLoading />;
+  return <RouteLoading />;
 }
