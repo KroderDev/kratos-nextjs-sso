@@ -1,4 +1,5 @@
-import { getLogoutFlow, getServerSession } from "@ory/nextjs/app";
+import { getServerSession } from "@ory/nextjs/app";
+import { getSafeLogoutFlow } from "@/lib/ory/logout";
 import { redirect } from "next/navigation";
 import {
   ArrowUpRight,
@@ -83,9 +84,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const identity = session.identity;
   const name = getIdentityName(identity);
   const email = getIdentityEmail(identity);
-  const logoutFlow = await getLogoutFlow(
-    appBaseUrl ? { returnTo: appBaseUrl } : undefined,
-  );
+  const logoutFlow = await getSafeLogoutFlow(appBaseUrl);
 
   return (
     <DashboardShell

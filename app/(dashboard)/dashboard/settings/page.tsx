@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getLogoutFlow, getServerSession, getSettingsFlow, type OryPageParams } from "@ory/nextjs/app";
+import { getServerSession, getSettingsFlow, type OryPageParams } from "@ory/nextjs/app";
+import { getSafeLogoutFlow } from "@/lib/ory/logout";
 import { redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
@@ -96,9 +97,7 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
 
   const identity = session.identity;
   const name = getIdentityName(identity);
-  const logoutFlow = await getLogoutFlow(
-    appBaseUrl ? { returnTo: appBaseUrl } : undefined,
-  );
+  const logoutFlow = await getSafeLogoutFlow(appBaseUrl);
   let flow = null;
 
   try {
