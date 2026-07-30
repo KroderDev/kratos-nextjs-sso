@@ -26,34 +26,45 @@ import {
   getIdentityName,
 } from "@/lib/ory/identity";
 import { appBaseUrl, isOryConfigured } from "@/ory.config";
+import { getTranslations } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Overview" };
 
-function formatDate(value: Date | undefined) {
+type DashboardPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export async function generateMetadata({ searchParams }: DashboardPageProps) {
+  const { t } = await getTranslations(searchParams);
+  return { title: t("common.navigation.overview") };
+}
+
+function formatDate(value: Date | undefined, locale: string, notAvailableText: string) {
   if (!value) {
-    return "Not available";
+    return notAvailableText;
   }
 
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(value);
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+  const { t, locale } = await getTranslations(searchParams);
+
   if (!isOryConfigured) {
     return (
       <DashboardShell activeNav="overview">
         <div className="min-h-[calc(100vh-12rem)] max-w-xl py-16">
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
-              Protected workspace
+              {t("dashboard.overview.unconfigured.eyebrow")}
             </p>
             <h1 className="mt-4 text-4xl font-semibold tracking-[-0.05em]">
-              Your control room is waiting.
+              {t("dashboard.overview.unconfigured.title")}
             </h1>
             <p className="mt-5 text-muted-foreground">
-              The authentication service is not ready to accept sessions yet.
+              {t("dashboard.overview.unconfigured.description")}
             </p>
             <div className="mt-8 max-w-lg">
               <OrySetupState />
@@ -91,19 +102,18 @@ export default async function DashboardPage() {
             <div className="flex flex-wrap items-start justify-between gap-6">
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
-                  Control room / overview
+                  {t("dashboard.overview.eyebrow")}
                 </p>
                 <h1 className="mt-4 max-w-2xl text-4xl font-semibold leading-[1.03] tracking-[-0.055em] sm:text-6xl">
-                  Good to see you, {name.split(" ")[0]}.
+                  {t("dashboard.overview.title", { name: name.split(" ")[0] })}
                 </h1>
                 <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground">
-                  Your identity is active and your private workspace is ready
-                  for the next considered move.
+                  {t("dashboard.overview.description")}
                 </p>
               </div>
               <Badge className="gap-2 border-primary/20 bg-primary/5 text-primary" variant="outline">
                 <span className="size-1.5 rounded-full bg-primary" />
-                Session active
+                {t("dashboard.overview.sessionActive")}
               </Badge>
             </div>
 
@@ -113,20 +123,20 @@ export default async function DashboardPage() {
                   <div className="flex items-center justify-between">
                     <Fingerprint aria-hidden="true" className="size-5" />
                     <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary-foreground/55">
-                      identity
+                      {t("dashboard.overview.identityCard.tag")}
                     </span>
                   </div>
                   <CardTitle className="mt-7 text-2xl tracking-[-0.04em]">
-                    Verified presence
+                    {t("dashboard.overview.identityCard.title")}
                   </CardTitle>
                   <CardDescription className="text-primary-foreground/65">
-                    Your current session is recognized by the identity service.
+                    {t("dashboard.overview.identityCard.description")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-2 text-sm text-primary-foreground/80">
                     <Check aria-hidden="true" data-icon="inline-start" />
-                    Browser session established
+                    {t("dashboard.overview.identityCard.established")}
                   </div>
                 </CardContent>
               </Card>
@@ -136,19 +146,19 @@ export default async function DashboardPage() {
                   <div className="flex items-center justify-between">
                     <ShieldCheck aria-hidden="true" className="size-5 text-primary" />
                     <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                      posture
+                      {t("dashboard.overview.postureCard.tag")}
                     </span>
                   </div>
                   <CardTitle className="mt-7 text-2xl tracking-[-0.04em]">
-                    Quietly protected
+                    {t("dashboard.overview.postureCard.title")}
                   </CardTitle>
                   <CardDescription>
-                    Session cookies and flow state stay on the server boundary.
+                    {t("dashboard.overview.postureCard.description")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ButtonLink href="/dashboard/settings" size="sm" variant="link">
-                    Review account settings
+                    {t("dashboard.overview.postureCard.reviewSettings")}
                     <ArrowUpRight aria-hidden="true" data-icon="inline-end" />
                   </ButtonLink>
                 </CardContent>
@@ -159,36 +169,40 @@ export default async function DashboardPage() {
               <CardHeader>
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <CardTitle className="text-xl tracking-[-0.03em]">Session details</CardTitle>
+                    <CardTitle className="text-xl tracking-[-0.03em]">{t("dashboard.overview.sessionDetails.title")}</CardTitle>
                     <CardDescription className="mt-1">
-                      The current browser session, without exposing credentials.
+                      {t("dashboard.overview.sessionDetails.description")}
                     </CardDescription>
                   </div>
-                  <Badge variant="secondary">server checked</Badge>
+                  <Badge variant="secondary">{t("dashboard.overview.sessionDetails.serverChecked")}</Badge>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
                     <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                      identity email
+                      {t("dashboard.overview.sessionDetails.email")}
                     </p>
                     <p className="mt-2 truncate text-sm font-medium">{email}</p>
                   </div>
                   <div>
                     <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                      session issued
+                      {t("dashboard.overview.sessionDetails.issued")}
                     </p>
                     <p className="mt-2 flex items-center gap-2 text-sm font-medium">
                       <Clock3 aria-hidden="true" data-icon="inline-start" />
-                      {formatDate(session.issued_at)}
+                      {formatDate(session.issued_at, locale, t("dashboard.overview.sessionDetails.notAvailable"))}
                     </p>
                   </div>
                 </div>
                 <Separator className="my-6" />
                 <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
                   <span className="font-mono">session/{session.id.slice(0, 8)}</span>
-                  <span>Expires {formatDate(session.expires_at)}</span>
+                  <span>
+                    {t("dashboard.overview.sessionDetails.expires", {
+                      date: formatDate(session.expires_at, locale, t("dashboard.overview.sessionDetails.notAvailable")),
+                    })}
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -197,17 +211,16 @@ export default async function DashboardPage() {
           <aside className="lg:pt-20">
             <div className="border-l border-border pl-5">
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
-                Next move
+                {t("dashboard.overview.aside.tag")}
               </p>
               <p className="mt-4 text-lg font-medium leading-6 tracking-[-0.02em]">
-                Keep your identity details useful.
+                {t("dashboard.overview.aside.title")}
               </p>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Add a verified address or update your credentials whenever the
-                shape of your work changes.
+                {t("dashboard.overview.aside.description")}
               </p>
               <ButtonLink className="mt-6" href="/dashboard/settings" size="sm" variant="link">
-                Open settings
+                {t("dashboard.overview.aside.openSettings")}
                 <ArrowUpRight aria-hidden="true" data-icon="inline-end" />
               </ButtonLink>
             </div>
@@ -216,3 +229,4 @@ export default async function DashboardPage() {
     </DashboardShell>
   );
 }
+

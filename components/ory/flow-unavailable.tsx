@@ -1,3 +1,5 @@
+"use client";
+
 import { CircleAlert } from "lucide-react";
 
 import {
@@ -5,16 +7,19 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
+import { useTranslation } from "@/lib/i18n/client";
 
 export function FlowUnavailable() {
+  const { t } = useTranslation();
+
   return (
     <Alert className="border-destructive/25 bg-destructive/5" variant="destructive">
       <CircleAlert aria-hidden="true" />
-      <AlertTitle>This flow is no longer available</AlertTitle>
+      <AlertTitle>{t("ory.unavailable.title")}</AlertTitle>
       <AlertDescription className="mt-1">
-        Start again from the beginning so the identity service can issue a fresh
-        browser flow.
+        {t("ory.unavailable.description")}
       </AlertDescription>
     </Alert>
   );
 }
+

@@ -1,3 +1,5 @@
+"use client";
+
 /* Ory may provide runtime-hosted images such as QR codes. */
 /* eslint-disable @next/next/no-img-element */
 
@@ -37,6 +39,7 @@ import {
 import { OryTriggerButton } from "./ory-trigger-button";
 import { allowedOryOrigins, isSafeProviderUrl } from "@/lib/ory/security";
 import { appBaseUrl, oryCanonicalUrl, orySdkUrl } from "@/ory.config";
+import { useTranslation } from "@/lib/i18n/client";
 
 type OryNodeProps = {
   node: UiNode;
@@ -48,6 +51,7 @@ function nodeId(node: UiNode) {
 }
 
 export function OryNode({ node }: OryNodeProps) {
+  const { t, locale } = useTranslation();
   const attributes = getNodeAttributes(node);
   const id = nodeId(node);
   const allowedOrigins = allowedOryOrigins([appBaseUrl ?? "", orySdkUrl, oryCanonicalUrl]);
@@ -57,12 +61,13 @@ export function OryNode({ node }: OryNodeProps) {
     const name = getString(attributes.name) ?? id;
     const value = attributes.value;
     const stringValue = getString(value);
-    const label = getNodeLabel(node);
+    const label = getNodeLabel(node, locale);
     const messages = getNodeMessages(node);
     const hasErrors = messages.some((message) => message.type === "error");
     const disabled = attributes.disabled === true;
     const required = attributes.required === true;
     const maxLength = getNumber(attributes.maxlength);
+
     const description = getSafeText(getString(attributes.description));
     const errorId = `${id}-error`;
     const descriptionId = `${id}-description`;
@@ -94,7 +99,7 @@ export function OryNode({ node }: OryNodeProps) {
           value={stringValue}
           variant={node.group === "oidc" ? "outline" : "default"}
         >
-          <span>{label ?? stringValue ?? "Continue"}</span>
+          <span>{label ?? stringValue ?? t("ory.nodes.continue")}</span>
           {node.group === "oidc" ? (
             <ExternalLink aria-hidden="true" data-icon="inline-end" />
           ) : (
@@ -122,10 +127,10 @@ export function OryNode({ node }: OryNodeProps) {
             value={stringValue ?? "true"}
           />
           <FieldContent>
-            <FieldLabel htmlFor={id}>{label ?? "Confirm this choice"}</FieldLabel>
+            <FieldLabel htmlFor={id}>{label ?? t("ory.nodes.confirmChoice")}</FieldLabel>
             <FieldError
               id={errorId}
-              errors={getErrorMessages(messages).map((message) => ({
+              errors={getErrorMessages(messages, locale).map((message) => ({
                 message: message.text,
               }))}
             />
@@ -139,7 +144,7 @@ export function OryNode({ node }: OryNodeProps) {
 
       return (
         <Field key={id} data-invalid={hasErrors || undefined}>
-          <FieldLabel htmlFor={id}>{label ?? "Verification code"}</FieldLabel>
+          <FieldLabel htmlFor={id}>{label ?? t("ory.nodes.verificationCode")}</FieldLabel>
           <InputOTP
             autoComplete={getString(attributes.autocomplete)}
             aria-invalid={hasErrors || undefined}
@@ -170,7 +175,7 @@ export function OryNode({ node }: OryNodeProps) {
 
     return (
       <Field key={id} data-invalid={hasErrors || undefined}>
-        <FieldLabel htmlFor={id}>{label ?? "Value"}</FieldLabel>
+        <FieldLabel htmlFor={id}>{label ?? t("ory.nodes.value")}</FieldLabel>
         <Input
           aria-invalid={hasErrors || undefined}
           aria-describedby={describedBy}
@@ -199,7 +204,7 @@ export function OryNode({ node }: OryNodeProps) {
   }
 
   if (node.type === "text") {
-    const text = getNodeText(node);
+    const text = getNodeText(node, locale);
 
     return text ? (
       <p
@@ -237,7 +242,7 @@ export function OryNode({ node }: OryNodeProps) {
         variant="link"
         href={href}
       >
-        {title ?? titleText ?? "Continue"}
+        {title ?? titleText ?? t("ory.nodes.continue")}
       </ButtonLink>
     );
   }
@@ -253,13 +258,14 @@ export function OryNode({ node }: OryNodeProps) {
     const image = (
       <img
         key={id}
-        alt={isQrCode ? "Authenticator setup QR code" : getNodeLabel(node) ?? "Identity service image"}
+        alt={isQrCode ? t("ory.nodes.qrCodeAlt") : getNodeLabel(node, locale) ?? t("ory.nodes.identityImageAlt")}
         className={isQrCode ? "size-full object-contain" : "max-h-48 max-w-full rounded-lg border border-border"}
         height={getNumber(attributes.height)}
         src={src}
         width={getNumber(attributes.width)}
       />
     );
+
 
     return isQrCode ? (
       <div className="aspect-square w-full max-w-48 overflow-hidden rounded-lg border border-border bg-white p-2" key={id}>

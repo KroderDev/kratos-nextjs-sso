@@ -1,10 +1,16 @@
+"use client";
+
 import { Brand } from "@/components/layout/brand";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "@/lib/i18n/client";
 
 export function DashboardLoading() {
+  const { t } = useTranslation();
+
   return (
-    <div className="min-h-screen bg-background text-foreground" aria-label="Loading dashboard" role="status">
+    <div className="min-h-screen bg-background text-foreground" aria-label={t("dashboard.loading")} role="status">
+
       <header className="border-b border-border/70 bg-background/85">
         <div className="mx-auto flex h-18 max-w-7xl items-center justify-between gap-6 px-5 sm:px-8 lg:px-10">
           <Brand />

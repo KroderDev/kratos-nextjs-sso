@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { isAuthLayoutRoute, isDashboardRoute } from "@/lib/routing";
 
 import { DashboardLoading } from "@/components/dashboard/dashboard-loading";
+import { useTranslation } from "@/lib/i18n/client";
 
 import { AuthContentLoading, AuthFrame } from "./auth-shell";
 
@@ -34,7 +35,9 @@ function isNavigableLink(anchor: HTMLAnchorElement) {
 }
 
 export function NavigationFeedback() {
+  const { t } = useTranslation();
   const pathname = usePathname();
+
   const [pendingNavigation, setPendingNavigation] =
     useState<PendingNavigation | null>(null);
   const pending = pendingNavigation !== null;
@@ -168,7 +171,7 @@ export function NavigationFeedback() {
       ) : null}
       <div
         aria-busy={pending}
-        aria-label="Loading next page"
+        aria-label={t("common.navigation.loadingNextPage")}
         className="pointer-events-none fixed inset-x-0 top-0 z-50 h-0.5 bg-primary/15"
         role="status"
       >
@@ -183,3 +186,4 @@ export function NavigationFeedback() {
     </>
   );
 }
+

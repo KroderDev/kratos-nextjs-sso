@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useTranslation } from "@/lib/i18n/client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,28 +16,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const themeOptions = [
-  { value: "light", label: "Light", icon: Sun },
-  { value: "dark", label: "Dark", icon: Moon },
-  { value: "system", label: "System", icon: Monitor },
-] as const;
-
 const subscribe = () => () => {};
 const getClientSnapshot = () => true;
 const getServerSnapshot = () => false;
 
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme();
+  const { t } = useTranslation();
   const mounted = React.useSyncExternalStore(
     subscribe,
     getClientSnapshot,
     getServerSnapshot,
   );
 
+  const themeOptions = [
+    { value: "light", label: t("common.theme.light"), icon: Sun },
+    { value: "dark", label: t("common.theme.dark"), icon: Moon },
+    { value: "system", label: t("common.theme.system"), icon: Monitor },
+  ] as const;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label="Change color theme"
+        aria-label={t("common.theme.ariaLabel")}
         render={
           <Button
             className="size-7 p-0 sm:h-7 sm:w-auto sm:gap-1 sm:px-2.5"
@@ -46,11 +48,11 @@ export function ThemeToggle() {
         }
       >
         <Sun aria-hidden="true" />
-        <span className="hidden sm:inline">Theme</span>
+        <span className="hidden sm:inline">{t("common.theme.label")}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Appearance</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("common.theme.appearance")}</DropdownMenuLabel>
           <DropdownMenuRadioGroup
             value={mounted ? theme ?? "system" : "system"}
             onValueChange={setTheme}
@@ -67,3 +69,4 @@ export function ThemeToggle() {
     </DropdownMenu>
   );
 }
+

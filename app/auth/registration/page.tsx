@@ -6,30 +6,37 @@ import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
 import { rewriteOryFlow } from "@/lib/ory/url";
 import config, { isOryConfigured } from "@/ory.config";
+import { getTranslations } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Create an identity" };
+
+export async function generateMetadata({ searchParams }: OryPageParams) {
+  const { t } = await getTranslations(searchParams);
+  return { title: t("home.hero.createIdentity") };
+}
 
 export default async function RegistrationPage({
   searchParams,
 }: OryPageParams) {
+  const { t } = await getTranslations(searchParams);
+
   if (!isOryConfigured) {
     return (
-        <AuthContent
-        description="Create a workspace identity with the fields your team requires."
-        eyebrow="New identity"
+      <AuthContent
+        description={t("auth.registration.description")}
+        eyebrow={t("auth.registration.eyebrow")}
         footer={
           <span>
-            Already have access?{" "}
+            {t("auth.registration.footer.alreadyAccess")}{" "}
             <Link className="font-medium text-primary hover:underline" href="/auth/login">
-              Sign in
+              {t("auth.registration.footer.signIn")}
             </Link>
           </span>
         }
-        title="Make room for what is next"
+        title={t("auth.registration.title")}
       >
         <OrySetupState />
-        </AuthContent>
+      </AuthContent>
     );
   }
 
@@ -46,19 +53,20 @@ export default async function RegistrationPage({
 
   return (
     <AuthFlowPage
-      description="Create a workspace identity with the fields your team requires."
-      eyebrow="New identity"
+      description={t("auth.registration.description")}
+      eyebrow={t("auth.registration.eyebrow")}
       flow={flow}
       footer={
         <span>
-          Already have access?{" "}
+          {t("auth.registration.footer.alreadyAccess")}{" "}
           <Link className="font-medium text-primary hover:underline" href="/auth/login">
-            Sign in
+            {t("auth.registration.footer.signIn")}
           </Link>
         </span>
       }
       kind="registration"
-      title="Make room for what is next"
+      title={t("auth.registration.title")}
     />
   );
 }
+

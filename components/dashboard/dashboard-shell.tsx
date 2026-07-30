@@ -1,3 +1,5 @@
+"use client";
+
 import type { ReactNode } from "react";
 
 import Link from "next/link";
@@ -6,6 +8,7 @@ import { AccountMenu } from "@/components/dashboard/account-menu";
 import { Brand } from "@/components/layout/brand";
 import { DashboardContentReady } from "@/components/layout/dashboard-content-ready";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useTranslation } from "@/lib/i18n/client";
 
 type DashboardShellProps = {
   activeNav: "overview" | "settings";
@@ -19,13 +22,15 @@ type DashboardShellProps = {
 };
 
 export function DashboardShell({ activeNav, account, children }: DashboardShellProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <DashboardContentReady />
       <header className="border-b border-border/70 bg-background/85 backdrop-blur-md">
         <div className="mx-auto flex h-18 max-w-7xl items-center justify-between gap-6 px-5 sm:px-8 lg:px-10">
           <Brand />
-          <nav className="hidden items-center gap-1 text-sm md:flex" aria-label="Workspace">
+          <nav className="hidden items-center gap-1 text-sm md:flex" aria-label={t("common.navigation.workspace")}>
             <Link
               className={
                 activeNav === "overview"
@@ -34,7 +39,7 @@ export function DashboardShell({ activeNav, account, children }: DashboardShellP
               }
               href="/dashboard"
             >
-              Overview
+              {t("common.navigation.overview")}
             </Link>
             <Link
               className={
@@ -44,7 +49,7 @@ export function DashboardShell({ activeNav, account, children }: DashboardShellP
               }
               href="/dashboard/settings"
             >
-              Settings
+              {t("common.navigation.settings")}
             </Link>
           </nav>
           <div className="flex items-center gap-2">
@@ -58,3 +63,4 @@ export function DashboardShell({ activeNav, account, children }: DashboardShellP
     </div>
   );
 }
+

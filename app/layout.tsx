@@ -3,6 +3,8 @@ import { Geist_Mono, Inter } from "next/font/google";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { NavigationFeedback } from "@/components/layout/navigation-feedback";
+import { I18nProvider } from "@/lib/i18n/client";
+import { getLocale } from "@/lib/i18n/server";
 import { brandName } from "@/lib/branding";
 
 import "./globals.css";
@@ -26,28 +28,33 @@ export const metadata: Metadata = {
   description: "A secure, server-rendered access point for private workspaces.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={cn("h-full antialiased font-sans", geistMono.variable, inter.variable)}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          disableTransitionOnChange
-          enableSystem
-        >
-          <NavigationFeedback />
-          {children}
-        </ThemeProvider>
+        <I18nProvider initialLocale={locale}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            disableTransitionOnChange
+            enableSystem
+          >
+            <NavigationFeedback />
+            {children}
+          </ThemeProvider>
+        </I18nProvider>
       </body>
     </html>
   );
 }
+

@@ -1,3 +1,5 @@
+"use client";
+
 import { CircleAlert, CircleCheck, Info } from "lucide-react";
 import type { UiText } from "@ory/client-fetch";
 
@@ -8,14 +10,16 @@ import {
 } from "@/components/ui/alert";
 
 import { getMessageText } from "@/lib/ory/flow";
+import { useTranslation } from "@/lib/i18n/client";
 
 type FlowMessagesProps = {
   messages?: UiText[];
 };
 
 export function FlowMessages({ messages }: FlowMessagesProps) {
+  const { t, locale } = useTranslation();
   const visibleMessages = (messages ?? []).filter((message) =>
-    getMessageText(message),
+    getMessageText(message, locale),
   );
 
   if (visibleMessages.length === 0) {
@@ -29,6 +33,12 @@ export function FlowMessages({ messages }: FlowMessagesProps) {
         const isSuccess = message.type === "success";
         const Icon = isError ? CircleAlert : isSuccess ? CircleCheck : Info;
 
+        const titleText = isError
+          ? t("ory.messages.actionNeeded")
+          : isSuccess
+            ? t("ory.messages.updated")
+            : t("ory.messages.note");
+
         return (
           <Alert
             key={`${message.id}-${index}`}
@@ -36,11 +46,13 @@ export function FlowMessages({ messages }: FlowMessagesProps) {
             className={isSuccess ? "border-primary/25 bg-primary/5" : undefined}
           >
             <Icon aria-hidden="true" />
-            <AlertTitle>{isError ? "Action needed" : isSuccess ? "Updated" : "Note"}</AlertTitle>
-            <AlertDescription>{getMessageText(message)}</AlertDescription>
+            <AlertTitle>{titleText}</AlertTitle>
+            <AlertDescription>{getMessageText(message, locale)}</AlertDescription>
           </Alert>
         );
       })}
     </div>
   );
 }
+
+
