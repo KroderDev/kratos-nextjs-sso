@@ -20,12 +20,14 @@ export default function Home() {
         <Brand />
         <nav className="flex items-center gap-2 text-sm" aria-label="Primary">
           <ThemeToggle />
-          <Link
-            className="hidden rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+          <ButtonLink
+            className="hidden sm:inline-flex"
             href="/auth/login"
+            size="sm"
+            variant="ghost"
           >
             Sign in
-          </Link>
+          </ButtonLink>
           <ButtonLink href="/auth/registration" size="sm">
             Get started
             <ArrowRight aria-hidden="true" data-icon="inline-end" />

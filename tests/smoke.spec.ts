@@ -80,6 +80,21 @@ test("shadcn font token controls the page font", async ({ page }) => {
   expect(fontState.bodyFont).toContain(primaryFont);
 });
 
+test("header actions share the same shadcn button height", async ({ page }) => {
+  await page.goto("/");
+
+  const actions = [
+    page.getByRole("button", { name: "Change color theme" }),
+    page.getByRole("link", { name: "Sign in", exact: true }),
+    page.getByRole("link", { name: "Get started", exact: true }),
+  ];
+  const heights = await Promise.all(
+    actions.map((action) => action.evaluate((element) => element.getBoundingClientRect().height)),
+  );
+
+  expect(new Set(heights).size).toBe(1);
+});
+
 test("sign-in page shows setup state when unconfigured", async ({ page }) => {
   const response = await page.goto("/auth/login");
   expect(response?.status()).toBe(200);
