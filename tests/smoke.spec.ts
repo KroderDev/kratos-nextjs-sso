@@ -144,7 +144,7 @@ test("auth navigation keeps the frame while flow content loads", async ({ page }
   await expect(page.locator("aside")).toBeVisible();
   await expect(page.getByText("Just a moment")).toHaveCount(0);
   await navigation;
-  await expect(page.getByText("Make room for what is next")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Make room for what is next" })).toBeVisible();
 });
 
 test("theme control is circular on mobile", async ({ page }) => {
@@ -195,6 +195,29 @@ test("dashboard shows setup state when the service is unconfigured", async ({ pa
   expect(response?.status()).toBe(200);
   await expect(page.getByText("Your control room is waiting")).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
+});
+
+test("settings uses the dashboard frame when the service is unconfigured", async ({ page }) => {
+  const response = await page.goto("/dashboard/settings");
+  expect(response?.status()).toBe(200);
+  await expect(page.getByRole("link", { name: "Settings", exact: true })).toBeVisible();
+  await expect(page.getByText("Keep your identity current")).toBeVisible();
+  await expect(page.locator("aside")).toBeVisible();
+});
+
+test("settings navigation skips the auth loading frame", async ({ page }) => {
+  await page.route("**/dashboard/settings**", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await route.continue();
+  });
+  await page.goto("/dashboard");
+
+  const navigation = page.getByRole("link", { name: "Settings", exact: true }).click();
+
+  await expect(page.getByRole("status", { name: "Loading dashboard" })).toBeVisible();
+  await expect(page.getByRole("status", { name: "Loading authentication form" })).toHaveCount(0);
+  await navigation;
+  await expect(page.getByText("Keep your identity current")).toBeVisible();
 });
 
 test("error page loads", async ({ page }) => {

@@ -51,7 +51,7 @@ export function AccountMenu({
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem render={<Link href="/auth/settings" />}>
+          <DropdownMenuItem render={<Link href="/dashboard/settings" />}>
             <Settings2 aria-hidden="true" data-icon="inline-start" />
             Account settings
           </DropdownMenuItem>

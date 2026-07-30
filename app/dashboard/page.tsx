@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getLogoutFlow, getServerSession } from "@ory/nextjs/app";
 import { redirect } from "next/navigation";
 import {
@@ -9,10 +8,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import { AccountMenu } from "@/components/dashboard/account-menu";
-import { Brand } from "@/components/layout/brand";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { OrySetupState } from "@/components/ory/setup-state";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button-link";
 import {
@@ -47,13 +44,8 @@ function formatDate(value: Date | undefined) {
 export default async function DashboardPage() {
   if (!isOryConfigured) {
     return (
-      <main className="min-h-screen bg-background px-5 py-6 sm:px-8 sm:py-8">
-        <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl flex-col">
-          <div className="flex items-center justify-between gap-6">
-            <Brand />
-            <ThemeToggle />
-          </div>
-          <div className="my-auto max-w-xl py-16">
+      <DashboardShell activeNav="overview">
+        <div className="min-h-[calc(100vh-12rem)] max-w-xl py-16">
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
               Protected workspace
             </p>
@@ -66,9 +58,8 @@ export default async function DashboardPage() {
             <div className="mt-8 max-w-lg">
               <OrySetupState />
             </div>
-          </div>
         </div>
-      </main>
+      </DashboardShell>
     );
   }
 
@@ -86,38 +77,16 @@ export default async function DashboardPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border/70 bg-background/85 backdrop-blur-md">
-        <div className="mx-auto flex h-18 max-w-7xl items-center justify-between gap-6 px-5 sm:px-8 lg:px-10">
-          <Brand />
-          <nav className="hidden items-center gap-1 text-sm md:flex" aria-label="Workspace">
-            <Link
-              className="rounded-lg bg-muted px-3 py-2 font-medium text-foreground"
-              href="/dashboard"
-            >
-              Overview
-            </Link>
-            <Link
-              className="rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              href="/auth/settings"
-            >
-              Settings
-            </Link>
-          </nav>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <AccountMenu
-              email={email}
-              initials={getIdentityInitials(identity)}
-              label={name}
-              logoutUrl={logoutFlow.logout_url}
-            />
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14 lg:px-10">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-16">
+    <DashboardShell
+      activeNav="overview"
+      account={{
+        email,
+        initials: getIdentityInitials(identity),
+        label: name,
+        logoutUrl: logoutFlow.logout_url,
+      }}
+    >
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-16">
           <div>
             <div className="flex flex-wrap items-start justify-between gap-6">
               <div>
@@ -178,7 +147,7 @@ export default async function DashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ButtonLink className="px-0" href="/auth/settings" size="sm" variant="link">
+                  <ButtonLink href="/dashboard/settings" size="sm" variant="link">
                     Review account settings
                     <ArrowUpRight aria-hidden="true" data-icon="inline-end" />
                   </ButtonLink>
@@ -237,14 +206,13 @@ export default async function DashboardPage() {
                 Add a verified address or update your credentials whenever the
                 shape of your work changes.
               </p>
-              <ButtonLink className="mt-6 px-0" href="/auth/settings" size="sm" variant="link">
+              <ButtonLink className="mt-6" href="/dashboard/settings" size="sm" variant="link">
                 Open settings
                 <ArrowUpRight aria-hidden="true" data-icon="inline-end" />
               </ButtonLink>
             </div>
           </aside>
-        </div>
-      </main>
-    </div>
+      </div>
+    </DashboardShell>
   );
 }

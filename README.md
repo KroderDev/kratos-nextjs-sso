@@ -112,7 +112,7 @@ ORY_PROJECT_API_TOKEN=ory_pat_...
 | `/auth/registration` | Registration browser flow |
 | `/auth/recovery` | Account recovery browser flow |
 | `/auth/verification` | Address verification browser flow |
-| `/auth/settings` | Protected settings browser flow |
+| `/dashboard/settings` | Protected settings browser flow |
 | `/auth/error` | Safe error destination for failed Ory flows |
 | `/dashboard` | Protected session dashboard |
 

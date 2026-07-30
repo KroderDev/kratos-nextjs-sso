@@ -3,6 +3,10 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { isAuthLayoutRoute, isDashboardRoute } from "@/lib/routing";
+
+import { DashboardLoading } from "@/components/dashboard/dashboard-loading";
+
 import { AuthContentLoading, AuthFrame } from "./auth-shell";
 
 const NAVIGATION_TIMEOUT = 10_000;
@@ -37,13 +41,18 @@ export function NavigationFeedback() {
   const authPending =
     pending &&
     pendingNavigation?.kind === "route" &&
-    pendingNavigation.targetPathname.startsWith("/auth");
+    isAuthLayoutRoute(pendingNavigation.targetPathname);
+  const dashboardPending =
+    pending &&
+    pendingNavigation?.kind === "route" &&
+    isDashboardRoute(pendingNavigation.targetPathname);
 
   useEffect(() => {
     if (
       pendingNavigation?.kind !== "route" ||
       pendingNavigation.targetPathname !== pathname ||
-      pendingNavigation.targetPathname.startsWith("/auth")
+      isAuthLayoutRoute(pendingNavigation.targetPathname) ||
+      isDashboardRoute(pendingNavigation.targetPathname)
     ) {
       return;
     }
@@ -108,11 +117,29 @@ export function NavigationFeedback() {
       });
     }
 
+    function handleDashboardReady(event: Event) {
+      const path = (event as CustomEvent<string>).detail;
+
+      setPendingNavigation((navigation) => {
+        if (
+          navigation?.kind === "route" &&
+          navigation.targetPathname === path &&
+          isDashboardRoute(path)
+        ) {
+          window.clearTimeout(timeout);
+          return null;
+        }
+
+        return navigation;
+      });
+    }
+
     document.addEventListener("click", handleClick, true);
     document.addEventListener("submit", handleSubmit, true);
     window.addEventListener("pageshow", clear);
     window.addEventListener("popstate", clear);
     window.addEventListener("auth-content-ready", handleAuthReady);
+    window.addEventListener("dashboard-content-ready", handleDashboardReady);
 
     return () => {
       document.removeEventListener("click", handleClick, true);
@@ -120,6 +147,7 @@ export function NavigationFeedback() {
       window.removeEventListener("pageshow", clear);
       window.removeEventListener("popstate", clear);
       window.removeEventListener("auth-content-ready", handleAuthReady);
+      window.removeEventListener("dashboard-content-ready", handleDashboardReady);
       window.clearTimeout(timeout);
     };
   }, []);
@@ -131,6 +159,11 @@ export function NavigationFeedback() {
           <AuthFrame>
             <AuthContentLoading />
           </AuthFrame>
+        </div>
+      ) : null}
+      {dashboardPending ? (
+        <div className="fixed inset-0 z-40 overflow-auto bg-background">
+          <DashboardLoading />
         </div>
       ) : null}
       <div

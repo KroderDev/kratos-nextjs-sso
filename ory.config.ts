@@ -32,7 +32,7 @@ const config = {
     login_ui_url: pageUrl("/auth/login"),
     recovery_ui_url: pageUrl("/auth/recovery"),
     registration_ui_url: pageUrl("/auth/registration"),
-    settings_ui_url: pageUrl("/auth/settings"),
+    settings_ui_url: pageUrl("/dashboard/settings"),
     verification_ui_url: pageUrl("/auth/verification"),
   },
 };
