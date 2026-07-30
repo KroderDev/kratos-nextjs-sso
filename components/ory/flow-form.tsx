@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { FlowMessages } from "./flow-messages";
 import { OryNode } from "./ory-node";
 import { OryTriggerRuntime } from "./ory-trigger-runtime";
+import { allowedOryOrigins, isSafeFlowAction } from "@/lib/ory/security";
+import { appBaseUrl, oryCanonicalUrl, orySdkUrl } from "@/ory.config";
 
 type FlowFormProps = {
   embedded?: boolean;
@@ -50,6 +52,11 @@ const flowDetails: Record<
 export function FlowForm({ embedded = false, flow, kind }: FlowFormProps) {
   const detail = flowDetails[kind];
   const method = flow.ui.method.toLowerCase() === "get" ? "get" : "post";
+  const origins = allowedOryOrigins([appBaseUrl ?? "", orySdkUrl, oryCanonicalUrl]);
+
+  if (!isSafeFlowAction(flow.ui.action, origins)) {
+    return null;
+  }
   const needsWebAuthnScript = flow.ui.nodes.some((node) => {
     const attributes = getNodeAttributes(node);
     const triggers = [
