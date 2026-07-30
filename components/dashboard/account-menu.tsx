@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, LogOut, Settings2 } from "lucide-react";
+import { LogOut, Settings2 } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -33,11 +33,12 @@ export function AccountMenu({
       <DropdownMenuTrigger
         aria-label={`Open account menu for ${label}`}
         render={
-          <Button className="gap-2 rounded-lg px-2 hover:bg-muted" size="sm" variant="ghost" />
+          <Button className="size-9 rounded-full p-1 hover:bg-muted" size="icon-lg" variant="ghost" />
         }
       >
-        <span className="max-w-28 truncate">{label}</span>
-        <ChevronDown aria-hidden="true" className="text-muted-foreground" data-icon="inline-end" />
+        <Avatar className="size-full">
+          <AvatarFallback>{initials}</AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuGroup>
