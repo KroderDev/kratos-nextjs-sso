@@ -6,28 +6,35 @@ import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
 import { rewriteOryFlow } from "@/lib/ory/url";
 import config, { isOryConfigured } from "@/ory.config";
+import { getTranslations } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Sign in" };
+
+export async function generateMetadata({ searchParams }: OryPageParams) {
+  const { t } = await getTranslations(searchParams);
+  return { title: t("auth.login.title") };
+}
 
 export default async function LoginPage({ searchParams }: OryPageParams) {
+  const { t } = await getTranslations(searchParams);
+
   if (!isOryConfigured) {
     return (
-        <AuthContent
-        description="Use the identity method configured for this workspace."
-        eyebrow="Secure access"
+      <AuthContent
+        description={t("auth.login.description")}
+        eyebrow={t("auth.login.eyebrow")}
         footer={
           <span>
-            Need an identity?{" "}
+            {t("auth.login.footer.needIdentity")}{" "}
             <Link className="font-medium text-primary hover:underline" href="/auth/registration">
-              Create one
+              {t("auth.login.footer.createOne")}
             </Link>
           </span>
         }
-        title="Welcome back"
+        title={t("auth.login.title")}
       >
         <OrySetupState />
-        </AuthContent>
+      </AuthContent>
     );
   }
 
@@ -43,23 +50,24 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
 
   return (
     <AuthFlowPage
-      description="Use the identity method configured for this workspace."
-      eyebrow="Secure access"
+      description={t("auth.login.description")}
+      eyebrow={t("auth.login.eyebrow")}
       flow={flow}
       footer={
         <span>
-          Need an identity?{" "}
+          {t("auth.login.footer.needIdentity")}{" "}
           <Link className="font-medium text-primary hover:underline" href="/auth/registration">
-            Create one
+            {t("auth.login.footer.createOne")}
           </Link>
           <span className="mx-2 text-border">/</span>
           <Link className="font-medium text-primary hover:underline" href="/auth/recovery">
-            Recover access
+            {t("auth.login.footer.recoverAccess")}
           </Link>
         </span>
       }
       kind="login"
-      title="Welcome back"
+      title={t("auth.login.title")}
     />
   );
 }
+

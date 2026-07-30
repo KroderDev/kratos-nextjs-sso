@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTranslation } from "@/lib/i18n/client";
 
 type AccountMenuProps = {
   email: string;
@@ -28,10 +29,12 @@ export function AccountMenu({
   label,
   logoutUrl,
 }: AccountMenuProps) {
+  const { t } = useTranslation();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label={`Open account menu for ${label}`}
+        aria-label={t("common.navigation.accountMenuAria", { label })}
         render={
           <Button className="size-9 rounded-full p-1 hover:bg-muted" size="icon-lg" variant="ghost" />
         }
@@ -56,14 +59,15 @@ export function AccountMenu({
         <DropdownMenuGroup>
           <DropdownMenuItem render={<Link href="/dashboard/settings" />}>
             <Settings2 aria-hidden="true" data-icon="inline-start" />
-            Account settings
+            {t("common.navigation.settings")}
           </DropdownMenuItem>
           <DropdownMenuItem render={<a href={logoutUrl} />}>
             <LogOut aria-hidden="true" data-icon="inline-start" />
-            Sign out
+            {t("common.navigation.signOut")}
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
+

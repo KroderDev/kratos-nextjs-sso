@@ -109,7 +109,7 @@ test("navigation feedback appears before a route transition completes", async ({
   await expect(feedback).toHaveAttribute("aria-busy", "true");
   await expect(feedback.locator(".navigation-progress")).toBeVisible();
   await navigation;
-  await expect(page.getByText("Welcome back")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
   await page.goBack();
   await expect(page.getByRole("status", { name: "Loading next page" })).toHaveAttribute(
     "aria-busy",
@@ -129,8 +129,9 @@ test("auth navigation shows the two-column loading frame", async ({ page }) => {
   await expect(page.locator("aside")).toBeVisible();
   await expect(page.getByRole("status", { name: "Loading authentication form" })).toBeVisible();
   await navigation;
-  await expect(page.getByText("Welcome back")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
 });
+
 
 test("auth navigation keeps the frame while flow content loads", async ({ page }) => {
   await page.goto("/auth/login");

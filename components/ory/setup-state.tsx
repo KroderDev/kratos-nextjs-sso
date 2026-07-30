@@ -1,3 +1,5 @@
+"use client";
+
 import { CircleAlert } from "lucide-react";
 
 import {
@@ -7,12 +9,15 @@ import {
 } from "@/components/ui/alert";
 import { ButtonLink } from "@/components/ui/button-link";
 import { orySetupMessage } from "@/ory.config";
+import { useTranslation } from "@/lib/i18n/client";
 
 export function OrySetupState() {
+  const { t } = useTranslation();
+
   return (
     <Alert className="border-primary/25 bg-primary/5">
       <CircleAlert aria-hidden="true" />
-      <AlertTitle>Access is temporarily unavailable</AlertTitle>
+      <AlertTitle>{t("ory.setup.title")}</AlertTitle>
       <AlertDescription className="mt-2 flex flex-col gap-4">
         <p>{orySetupMessage}</p>
         <ButtonLink
@@ -21,9 +26,10 @@ export function OrySetupState() {
           variant="outline"
           href="/"
         >
-          Return home
+          {t("ory.setup.returnHome")}
         </ButtonLink>
       </AlertDescription>
     </Alert>
   );
 }
+

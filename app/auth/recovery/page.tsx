@@ -6,28 +6,35 @@ import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
 import { rewriteOryFlow } from "@/lib/ory/url";
 import config, { isOryConfigured } from "@/ory.config";
+import { getTranslations } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Recover access" };
+
+export async function generateMetadata({ searchParams }: OryPageParams) {
+  const { t } = await getTranslations(searchParams);
+  return { title: t("auth.login.footer.recoverAccess") };
+}
 
 export default async function RecoveryPage({ searchParams }: OryPageParams) {
+  const { t } = await getTranslations(searchParams);
+
   if (!isOryConfigured) {
     return (
-        <AuthContent
-        description="We will send the next step to a verified address on your account."
-        eyebrow="Account recovery"
+      <AuthContent
+        description={t("auth.recovery.description")}
+        eyebrow={t("auth.recovery.eyebrow")}
         footer={
           <span>
-            Remembered your details?{" "}
+            {t("auth.recovery.footer.rememberedDetails")}{" "}
             <Link className="font-medium text-primary hover:underline" href="/auth/login">
-              Return to sign in
+              {t("auth.recovery.footer.returnSignIn")}
             </Link>
           </span>
         }
-        title="Let's get you back in"
+        title={t("auth.recovery.title")}
       >
         <OrySetupState />
-        </AuthContent>
+      </AuthContent>
     );
   }
 
@@ -43,19 +50,20 @@ export default async function RecoveryPage({ searchParams }: OryPageParams) {
 
   return (
     <AuthFlowPage
-      description="We will send the next step to a verified address on your account."
-      eyebrow="Account recovery"
+      description={t("auth.recovery.description")}
+      eyebrow={t("auth.recovery.eyebrow")}
       flow={flow}
       footer={
         <span>
-          Remembered your details?{" "}
+          {t("auth.recovery.footer.rememberedDetails")}{" "}
           <Link className="font-medium text-primary hover:underline" href="/auth/login">
-            Return to sign in
+            {t("auth.recovery.footer.returnSignIn")}
           </Link>
         </span>
       }
       kind="recovery"
-      title="Let's get you back in"
+      title={t("auth.recovery.title")}
     />
   );
 }
+
