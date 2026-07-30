@@ -140,3 +140,24 @@ body {
     @apply font-sans;
   }
 }
+
+@keyframes navigation-progress {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.navigation-progress {
+  animation: navigation-progress 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navigation-progress {
+    animation: none;
+    transform: translateX(0);
+  }
+}

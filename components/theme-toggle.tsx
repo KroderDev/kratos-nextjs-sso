@@ -38,10 +38,14 @@ export function ThemeToggle() {
       <DropdownMenuTrigger
         aria-label="Change color theme"
         render={
-          <Button className="rounded-full" size="sm" variant="outline" />
+          <Button
+            className="size-7 p-0 sm:h-7 sm:w-auto sm:gap-1 sm:px-2.5"
+            size="sm"
+            variant="outline"
+          />
         }
       >
-        <Sun aria-hidden="true" data-icon="inline-start" />
+        <Sun aria-hidden="true" />
         <span className="hidden sm:inline">Theme</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">

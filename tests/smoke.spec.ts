@@ -95,6 +95,38 @@ test("header actions share the same shadcn button height", async ({ page }) => {
   expect(new Set(heights).size).toBe(1);
 });
 
+test("navigation feedback appears before a route transition completes", async ({ page }) => {
+  await page.goto("/");
+  await page.route("**/auth/login**", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await route.continue();
+  });
+
+  const navigation = page.getByRole("link", { name: "Sign in", exact: true }).click();
+
+  const feedback = page.getByRole("status", { name: "Loading next page" });
+
+  await expect(feedback).toHaveAttribute("aria-busy", "true");
+  await expect(feedback.locator(".navigation-progress")).toBeVisible();
+  await navigation;
+  await expect(page.getByText("Welcome back")).toBeVisible();
+});
+
+test("theme control is circular on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto("/");
+
+  const themeButton = page.getByRole("button", { name: "Change color theme" });
+  const box = await themeButton.boundingBox();
+  const iconBox = await themeButton.locator("svg").boundingBox();
+
+  expect(box).not.toBeNull();
+  expect(iconBox).not.toBeNull();
+  expect(box?.width).toBe(box?.height);
+  expect(Math.abs((box?.x ?? 0) + (box?.width ?? 0) / 2 - ((iconBox?.x ?? 0) + (iconBox?.width ?? 0) / 2))).toBeLessThan(1);
+  expect(Math.abs((box?.y ?? 0) + (box?.height ?? 0) / 2 - ((iconBox?.y ?? 0) + (iconBox?.height ?? 0) / 2))).toBeLessThan(1);
+});
+
 test("sign-in page shows setup state when unconfigured", async ({ page }) => {
   const response = await page.goto("/auth/login");
   expect(response?.status()).toBe(200);
