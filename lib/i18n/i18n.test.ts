@@ -1,10 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { parseAcceptLanguage, isValidLocale } from "./config";
-import { en } from "./locales/en";
-import { es } from "./locales/es";
+import { dictionaries, en } from "./locales";
 import { formatString, translatePath } from "./utils";
 
-describe("i18n configuration and helpers", () => {
+function getKeys(obj: Record<string, unknown>, prefix = ""): string[] {
+  return Object.keys(obj).reduce((acc: string[], key) => {
+    const pre = prefix ? `${prefix}.` : "";
+    if (typeof obj[key] === "object" && obj[key] !== null) {
+      acc.push(...getKeys(obj[key] as Record<string, unknown>, pre + key));
+    } else {
+      acc.push(pre + key);
+    }
+    return acc;
+  }, []);
+}
+
+describe("i18n configuration and health audit", () => {
   it("parses Accept-Language headers correctly", () => {
     expect(parseAcceptLanguage("es-ES,es;q=0.9,en;q=0.8")).toBe("es");
     expect(parseAcceptLanguage("es-MX,es;q=0.8")).toBe("es");
@@ -13,10 +24,10 @@ describe("i18n configuration and helpers", () => {
     expect(parseAcceptLanguage(null)).toBe("en");
   });
 
-  it("validates locale strings", () => {
+  it("validates locale strings against registered dictionaries", () => {
     expect(isValidLocale("en")).toBe(true);
     expect(isValidLocale("es")).toBe(true);
-    expect(isValidLocale("fr")).toBe(false);
+    expect(isValidLocale("invalid-lang")).toBe(false);
     expect(isValidLocale(null)).toBe(false);
   });
 
@@ -27,26 +38,17 @@ describe("i18n configuration and helpers", () => {
 
   it("resolves nested key paths", () => {
     expect(translatePath(en, "common.navigation.signIn")).toBe("Sign in");
-    expect(translatePath(es, "common.navigation.signIn")).toBe("Iniciar sesión");
+    expect(translatePath(dictionaries.es, "common.navigation.signIn")).toBe("Iniciar sesión");
     expect(translatePath(en, "non.existent.key")).toBeUndefined();
   });
 
-  it("has 100% key parity between English and Spanish locale dictionaries", () => {
-    function getKeys(obj: Record<string, unknown>, prefix = ""): string[] {
-      return Object.keys(obj).reduce((acc: string[], key) => {
-        const pre = prefix ? `${prefix}.` : "";
-        if (typeof obj[key] === "object" && obj[key] !== null) {
-          acc.push(...getKeys(obj[key] as Record<string, unknown>, pre + key));
-        } else {
-          acc.push(pre + key);
-        }
-        return acc;
-      }, []);
-    }
-
+  it("enforces 100% key parity across all registered locale dictionaries", () => {
     const enKeys = getKeys(en as unknown as Record<string, unknown>).sort();
-    const esKeys = getKeys(es as unknown as Record<string, unknown>).sort();
 
-    expect(esKeys).toEqual(enKeys);
+    for (const [locale, dict] of Object.entries(dictionaries)) {
+      if (locale === "en") continue;
+      const localeKeys = getKeys(dict as unknown as Record<string, unknown>).sort();
+      expect(localeKeys, `Locale '${locale}' is missing keys present in 'en'`).toEqual(enKeys);
+    }
   });
 });

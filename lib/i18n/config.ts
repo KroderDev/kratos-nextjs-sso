@@ -1,7 +1,8 @@
-export const LOCALES = ["en", "es"] as const;
-export type Locale = (typeof LOCALES)[number];
+import { LOCALES, DEFAULT_LOCALE, type SupportedLocale } from "./locales";
 
-export const DEFAULT_LOCALE: Locale = "en";
+export { LOCALES, DEFAULT_LOCALE };
+export type Locale = SupportedLocale;
+
 export const LOCALE_COOKIE = "NEXT_LOCALE";
 
 export function isValidLocale(locale: string | undefined | null): locale is Locale {
@@ -25,11 +26,8 @@ export function parseAcceptLanguage(header: string | null | undefined): Locale {
     .sort((a, b) => b.quality - a.quality);
 
   for (const pref of preferences) {
-    if (pref.code === "es") {
-      return "es";
-    }
-    if (pref.code === "en") {
-      return "en";
+    if (isValidLocale(pref.code)) {
+      return pref.code;
     }
   }
 

@@ -2,11 +2,8 @@
 
 import React, { createContext, useContext, useSyncExternalStore, type ReactNode } from "react";
 import { DEFAULT_LOCALE, isValidLocale, type Locale } from "./config";
-import { en } from "./locales/en";
-import { es } from "./locales/es";
+import { dictionaries } from "./locales";
 import { formatString, translatePath } from "./utils";
-
-const dictionaries = { en, es };
 
 type I18nContextType = {
   locale: Locale;
@@ -16,7 +13,7 @@ type I18nContextType = {
 const I18nContext = createContext<I18nContextType>({
   locale: DEFAULT_LOCALE,
   t: (key: string, params?: Record<string, string | number>) => {
-    const raw = translatePath(en, key) ?? key;
+    const raw = translatePath(dictionaries[DEFAULT_LOCALE], key) ?? key;
     return formatString(raw, params);
   },
 });
@@ -50,7 +47,7 @@ export function I18nProvider({
   const dict = dictionaries[locale] ?? dictionaries[DEFAULT_LOCALE];
 
   const t = (key: string, params?: Record<string, string | number>): string => {
-    const raw = translatePath(dict, key) ?? translatePath(en, key) ?? key;
+    const raw = translatePath(dict, key) ?? translatePath(dictionaries[DEFAULT_LOCALE], key) ?? key;
     return formatString(raw, params);
   };
 

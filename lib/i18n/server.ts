@@ -6,11 +6,8 @@ import {
   parseAcceptLanguage,
   type Locale,
 } from "./config";
-import { en } from "./locales/en";
-import { es } from "./locales/es";
+import { dictionaries } from "./locales";
 import { formatString, translatePath } from "./utils";
-
-const dictionaries = { en, es };
 
 export async function getLocale(
   searchParams?: Record<string, string | string[] | undefined> | Promise<Record<string, string | string[] | undefined>>,
