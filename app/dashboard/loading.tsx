@@ -12,8 +12,12 @@ export default function DashboardLoading() {
         </div>
         <div className="mt-16 flex max-w-2xl flex-col gap-5">
           <Skeleton className="h-3 w-36" />
-          <Skeleton className="h-14 w-3/4" />
+          <Skeleton className="h-12 w-3/4 sm:h-14" />
           <Skeleton className="h-5 w-full max-w-lg" />
+          <div className="mt-7 grid gap-5 sm:grid-cols-2">
+            <Skeleton className="h-48" />
+            <Skeleton className="h-48" />
+          </div>
         </div>
       </div>
     </main>
