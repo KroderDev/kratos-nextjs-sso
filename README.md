@@ -1,6 +1,18 @@
 # kratos-nextjs-sso
 
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen?style=flat-square)](https://kratos-nextjs-sso.vercel.app)
+[![CI](https://img.shields.io/github/actions/workflow/status/KroderDev/kratos-nextjs-sso/ci.yml?branch=master&label=CI&style=flat-square)](https://github.com/KroderDev/kratos-nextjs-sso/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-16.2.12-black?style=flat-square&logo=next.js)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0.3-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Node.js](https://img.shields.io/badge/node-24-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
+[![pnpm](https://img.shields.io/badge/pnpm-11.17.0-F69220?style=flat-square&logo=pnpm&logoColor=white)](https://pnpm.io)
+
 Production-ready Next.js App Router identity and SSO frontend for Ory Kratos and Ory Network, built with React 19, Tailwind CSS, and shadcn/ui Base UI components.
+
+## Demo
+
+See the live demo [here](https://kratos-nextjs-sso.vercel.app). It runs against a real Ory Network project and includes the full login, registration, recovery, verification, and settings flows.
 
 ## Requirements
 
