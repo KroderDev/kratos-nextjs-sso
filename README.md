@@ -89,23 +89,6 @@ docker run --rm -p 3000:3000 \
 
 The image runs as a non-root `nextjs` user and includes a health check at `/api/health`.
 
-### Security
-
-The application sends browser security headers including CSP, clickjacking
-protection, MIME-sniffing protection, a restrictive referrer policy, and a
-permissions policy. HSTS is emitted when `NEXT_PUBLIC_APP_URL` uses HTTPS.
-
-Set `NEXT_PUBLIC_APP_URL` to the exact public origin. The Ory proxy rejects
-requests whose effective origin does not match that value, so the ingress must
-overwrite and validate `Host`, `X-Forwarded-Host`, and `X-Forwarded-Proto`.
-Provider-supplied flow actions, links, images, and scripts are restricted to
-safe schemes and configured application/Ory origins. OIDC links may still point
-to an external HTTPS identity provider.
-
-The CSP currently includes `'unsafe-inline'` for Next.js bootstrap scripts.
-Treat the Ory project configuration as trusted code and plan nonce-based CSP
-support before adding other provider-controlled scripts.
-
 Create `.env.local` from `.env.example` and set the Ory values before using a real browser flow:
 
 ```env
