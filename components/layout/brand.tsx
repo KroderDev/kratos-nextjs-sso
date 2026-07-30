@@ -15,6 +15,7 @@ type BrandProps = {
 };
 
 export function Brand({ className, inverted = false }: BrandProps) {
+  const hasLogo = Boolean(brandLogoLight);
   const logo = (
     <>
       <Image
@@ -43,7 +44,7 @@ export function Brand({ className, inverted = false }: BrandProps) {
         className,
       )}
     >
-      {brandMark === "Y" ? (
+      {hasLogo ? (
         logo
       ) : (
         <span

@@ -35,12 +35,12 @@ The default UI uses neutral platform branding so the project can be forked witho
 
 ```env
 NEXT_PUBLIC_BRAND_NAME=Your Platform
-NEXT_PUBLIC_BRAND_MARK=Y
+NEXT_PUBLIC_BRAND_MARK=YP
 NEXT_PUBLIC_BRAND_LOGO_LIGHT=/next.svg
 NEXT_PUBLIC_BRAND_LOGO_DARK=/next-dark.svg
 ```
 
-These public values are embedded during `next build`. Set them before building a Docker image or deploying the application. `NEXT_PUBLIC_BRAND_MARK=Y` uses the configured logo in the visual brand mark; other values continue to render as text marks up to two characters and fall back to the first character of the brand name. Set `NEXT_PUBLIC_BRAND_LOGO_LIGHT` and optionally `NEXT_PUBLIC_BRAND_LOGO_DARK` to paths under `public/`. The bundled dark logo is used when the dark path is omitted; set it to an empty value to explicitly fall back to the light logo. The bundled Next.js symbols are sourced from the [Geist brand guidelines](https://vercel.com/geist/brands).
+These public values are embedded during `next build`. Set them before building a Docker image or deploying the application. `NEXT_PUBLIC_BRAND_MARK` sets the 1-2 character text mark/initials (e.g. displayed in footers or text fallbacks) up to two characters and falls back to initials derived from `NEXT_PUBLIC_BRAND_NAME`. Set `NEXT_PUBLIC_BRAND_LOGO_LIGHT` and optionally `NEXT_PUBLIC_BRAND_LOGO_DARK` to paths under `public/`. Logo images are displayed whenever present and are not replaced by setting `NEXT_PUBLIC_BRAND_MARK`. The bundled dark logo is used when the dark path is omitted; set it to an empty value to explicitly fall back to the light logo. The bundled Next.js symbols are sourced from the [Geist brand guidelines](https://vercel.com/geist/brands).
 
 The interface uses shadcn/ui components with Tailwind CSS semantic tokens. Customize the theme through the existing `components.json` preset and the shadcn CLI, or replace the app icon at `app/favicon.ico` with the platform's production asset.
 
@@ -77,7 +77,7 @@ pnpm test:e2e
 docker build \
   --build-arg "NEXT_PUBLIC_APP_URL=http://localhost:3000" \
   --build-arg "NEXT_PUBLIC_BRAND_NAME=Your Platform" \
-  --build-arg "NEXT_PUBLIC_BRAND_MARK=Y" \
+  --build-arg "NEXT_PUBLIC_BRAND_MARK=YP" \
   --build-arg "NEXT_PUBLIC_ORY_SDK_URL=" \
   -t kratos-nextjs-sso:latest .
 
@@ -90,7 +90,7 @@ With Ory configured:
 docker build \
   --build-arg "NEXT_PUBLIC_APP_URL=https://auth.example.com" \
   --build-arg "NEXT_PUBLIC_BRAND_NAME=Your Platform" \
-  --build-arg "NEXT_PUBLIC_BRAND_MARK=Y" \
+  --build-arg "NEXT_PUBLIC_BRAND_MARK=YP" \
   --build-arg "NEXT_PUBLIC_ORY_SDK_URL=https://your-project.projects.oryapis.com" \
   -t kratos-nextjs-sso:latest .
 
@@ -105,7 +105,7 @@ Create `.env.local` from `.env.example` and set the Ory values before using a re
 
 ```env
 NEXT_PUBLIC_BRAND_NAME=Your Platform
-NEXT_PUBLIC_BRAND_MARK=Y
+NEXT_PUBLIC_BRAND_MARK=YP
 NEXT_PUBLIC_BRAND_LOGO_LIGHT=/next.svg
 NEXT_PUBLIC_BRAND_LOGO_DARK=/next-dark.svg
 NEXT_PUBLIC_APP_URL=http://localhost:3000
