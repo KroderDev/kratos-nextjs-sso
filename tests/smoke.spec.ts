@@ -18,6 +18,68 @@ test("theme control switches between light and dark", async ({ page }) => {
   await expect(page.locator("html")).not.toHaveClass(/dark/);
 });
 
+test("shadcn semantic theme tokens switch between light and dark", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Change color theme" }).click();
+  await page.getByRole("menuitemradio", { name: "Light" }).click();
+
+  const lightTokens = await page.evaluate(() => {
+    const styles = getComputedStyle(document.documentElement);
+
+    return {
+      background: styles.getPropertyValue("--background").trim(),
+      foreground: styles.getPropertyValue("--foreground").trim(),
+      primary: styles.getPropertyValue("--primary").trim(),
+    };
+  });
+
+  expect(lightTokens.background).not.toBe("");
+  expect(lightTokens.foreground).not.toBe("");
+  expect(lightTokens.primary).not.toBe("");
+
+  await page.getByRole("menuitemradio", { name: "Dark" }).click();
+
+  const darkTokens = await page.evaluate(() => {
+    const styles = getComputedStyle(document.documentElement);
+
+    return {
+      background: styles.getPropertyValue("--background").trim(),
+      foreground: styles.getPropertyValue("--foreground").trim(),
+      primary: styles.getPropertyValue("--primary").trim(),
+    };
+  });
+
+  expect(darkTokens.background).not.toBe("");
+  expect(darkTokens.foreground).not.toBe("");
+  expect(darkTokens.primary).not.toBe("");
+  expect(darkTokens.background).not.toBe(lightTokens.background);
+  expect(darkTokens.foreground).not.toBe(lightTokens.foreground);
+  expect(darkTokens.primary).not.toBe(lightTokens.primary);
+});
+
+test("shadcn font token controls the page font", async ({ page }) => {
+  await page.goto("/");
+
+  const fontState = await page.evaluate(() => {
+    const rootStyles = getComputedStyle(document.documentElement);
+    const bodyStyles = getComputedStyle(document.body);
+
+    return {
+      token: rootStyles.getPropertyValue("--font-sans").trim(),
+      bodyFont: bodyStyles.fontFamily,
+    };
+  });
+
+  const primaryFont = fontState.token
+    .split(",", 1)[0]
+    .trim()
+    .replace(/^['"]|['"]$/g, "");
+
+  expect(primaryFont).not.toBe("");
+  expect(fontState.bodyFont).toContain(primaryFont);
+});
+
 test("sign-in page shows setup state when unconfigured", async ({ page }) => {
   const response = await page.goto("/auth/login");
   expect(response?.status()).toBe(200);
