@@ -14,7 +14,7 @@ export function Brand({ className, inverted = false }: BrandProps) {
       href="/"
       className={cn(
         "group inline-flex items-center gap-3 text-sm font-semibold tracking-[0.16em]",
-        inverted ? "text-background" : "text-foreground",
+        inverted ? "text-secondary-foreground" : "text-foreground",
         className,
       )}
     >
@@ -23,7 +23,7 @@ export function Brand({ className, inverted = false }: BrandProps) {
         className={cn(
           "grid size-9 place-items-center rounded-xl border text-sm font-bold tracking-normal",
           inverted
-            ? "border-background/30 bg-background/10"
+            ? "border-secondary-foreground/30 bg-secondary-foreground/10"
             : "border-primary/20 bg-primary text-primary-foreground",
         )}
       >

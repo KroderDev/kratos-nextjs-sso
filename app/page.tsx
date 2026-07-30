@@ -37,7 +37,7 @@ export default function Home() {
         <section className="grid items-end gap-12 pb-20 pt-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.6fr)] lg:gap-20 lg:pt-24">
           <div>
             <Badge className="gap-2 border-primary/20 bg-primary/5 text-primary" variant="outline">
-              <span className="size-1.5 rounded-full bg-signal" />
+              <span className="size-1.5 rounded-full bg-primary" />
               Secure account access
             </Badge>
             <h1 className="mt-7 max-w-4xl text-6xl font-semibold leading-[0.93] tracking-[-0.07em] sm:text-8xl">
@@ -68,7 +68,7 @@ export default function Home() {
               <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
                 identity access
               </span>
-              <span className="size-2 rounded-full bg-signal" />
+              <span className="size-2 rounded-full bg-primary" />
             </div>
             <p className="mt-10 max-w-xs text-3xl font-semibold leading-[1.05] tracking-[-0.05em]">
               One clear entry to private work.
