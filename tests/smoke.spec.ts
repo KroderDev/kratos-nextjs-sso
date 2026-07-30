@@ -110,6 +110,41 @@ test("navigation feedback appears before a route transition completes", async ({
   await expect(feedback.locator(".navigation-progress")).toBeVisible();
   await navigation;
   await expect(page.getByText("Welcome back")).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole("status", { name: "Loading next page" })).toHaveAttribute(
+    "aria-busy",
+    "false",
+  );
+});
+
+test("auth navigation shows the two-column loading frame", async ({ page }) => {
+  await page.goto("/");
+  await page.route("**/auth/login**", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await route.continue();
+  });
+
+  const navigation = page.getByRole("link", { name: "Sign in", exact: true }).click();
+
+  await expect(page.locator("aside")).toBeVisible();
+  await expect(page.getByRole("status", { name: "Loading authentication form" })).toBeVisible();
+  await navigation;
+  await expect(page.getByText("Welcome back")).toBeVisible();
+});
+
+test("auth navigation keeps the frame while flow content loads", async ({ page }) => {
+  await page.goto("/auth/login");
+  await page.route("**/auth/registration**", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await route.continue();
+  });
+
+  const navigation = page.getByRole("link", { name: "Create one", exact: true }).click();
+
+  await expect(page.locator("aside")).toBeVisible();
+  await expect(page.getByText("Just a moment")).toHaveCount(0);
+  await navigation;
+  await expect(page.getByText("Make room for what is next")).toBeVisible();
 });
 
 test("theme control is circular on mobile", async ({ page }) => {
