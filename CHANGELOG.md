@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.3.0](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.2.1...v0.3.0) (2026-07-31)
+
+
+### Features
+
+* **branding:** add dark mode favicon switching and fix auth logo rendering ([c4014b0](https://github.com/KroderDev/kratos-nextjs-sso/commit/c4014b0d0a55af668be00afded08e6080f9e7f74))
+* **branding:** add dark mode favicon switching with buildtime env vars ([8cba2c4](https://github.com/KroderDev/kratos-nextjs-sso/commit/8cba2c41a31f40b205b5865ea1636264a5c4ecca))
+
+
+### Bug Fixes
+
+* **auth:** render theme-responsive brand logo in auth sidebar ([3b4f30b](https://github.com/KroderDev/kratos-nextjs-sso/commit/3b4f30bcd771fbef15976dd70d9c5b3f482dc097))
+* **ci:** move secret guard to step level in release-please workflow ([6f28c44](https://github.com/KroderDev/kratos-nextjs-sso/commit/6f28c44b6a94b40fc2c61f8f4c106de77ca65e9b))
+* **ci:** move secret guard to step level in release-please workflow ([61d1b7a](https://github.com/KroderDev/kratos-nextjs-sso/commit/61d1b7ad7972e2d32b162c70f346152e883f977c))
+* **ci:** skip release-please job when secret is unset ([7e9bdf8](https://github.com/KroderDev/kratos-nextjs-sso/commit/7e9bdf816ae6f0354aa308c4b1d0735d7205039c))
+* **ci:** skip release-please job when secret is unset ([6922e48](https://github.com/KroderDev/kratos-nextjs-sso/commit/6922e48853f4535ef76bd678fc79eb074bd12e1e))
+* **ci:** use dynamic repository owner in release workflow image name ([1a08c23](https://github.com/KroderDev/kratos-nextjs-sso/commit/1a08c235bf3b1e86300e53901be8a9c2d8e4f9df))
+* **ci:** use dynamic repository owner in release workflow image name ([e513785](https://github.com/KroderDev/kratos-nextjs-sso/commit/e5137855a901dd05537241841218d7738331138d))
+* **ci:** use env context for step if condition in release-please workflow ([df9efb1](https://github.com/KroderDev/kratos-nextjs-sso/commit/df9efb1fa509dee024d854842e5b1a31c6285720))
+
 ## [0.2.1](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.2.0...v0.2.1) (2026-07-30)
 
 
