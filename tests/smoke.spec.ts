@@ -173,14 +173,14 @@ test("sign-in page shows setup state when unconfigured", async ({ page }) => {
 test("registration page shows setup state when unconfigured", async ({ page }) => {
   const response = await page.goto("/auth/registration");
   expect(response?.status()).toBe(200);
-  await expect(page.getByText("Make room for what is next")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Make room for what is next" })).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
 });
 
 test("recovery page shows setup state when unconfigured", async ({ page }) => {
   const response = await page.goto("/auth/recovery");
   expect(response?.status()).toBe(200);
-  await expect(page.getByText("Let's get you back in")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Let's get you back in" })).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
 });
 
