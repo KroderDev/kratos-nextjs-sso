@@ -38,3 +38,16 @@ export const brandLogoDark = readBrandValue(
   DEFAULT_BRAND_LOGO_DARK,
 );
 
+function readOptionalBrandValue(value: string | undefined): string {
+  return value?.trim() || "";
+}
+
+export const brandFaviconLight = readOptionalBrandValue(
+  process.env.NEXT_PUBLIC_BRAND_FAVICON_LIGHT,
+);
+
+export const brandFaviconDark = readOptionalBrandValue(
+  process.env.NEXT_PUBLIC_BRAND_FAVICON_DARK,
+);
+
+
