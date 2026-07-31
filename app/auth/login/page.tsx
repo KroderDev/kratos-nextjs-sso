@@ -16,6 +16,11 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
   return { title: t("auth.login.title") };
 }
 
+/**
+ * Renders the localized login page and its authentication state.
+ *
+ * @param searchParams - Request parameters used to load translations and retrieve the login flow.
+ */
 export default async function LoginPage({ searchParams }: OryPageParams) {
   const { t } = await getTranslations(searchParams);
 
