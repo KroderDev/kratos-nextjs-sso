@@ -41,7 +41,7 @@ export function AuthFrame({ children }: AuthFrameProps) {
               <span className="mr-1.5 inline-block size-1.5 rounded-full bg-primary" />
               {t("auth.shell.badge")}
             </Badge>
-            <h2 className="mt-8 max-w-sm text-4xl font-semibold leading-[1.03] tracking-[-0.05em] xl:text-5xl">
+            <h2 className="mt-8 max-w-sm text-4xl font-semibold leading-[1.03] tracking-tighter xl:text-5xl">
               {t("auth.shell.title")}
             </h2>
             <p className="mt-6 max-w-xs text-sm leading-6 text-secondary-foreground/70">

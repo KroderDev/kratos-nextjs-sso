@@ -79,7 +79,7 @@ export default async function Home({ searchParams }: HomeProps) {
                 </span>
                 <span className="size-2 rounded-full bg-primary" />
               </div>
-              <CardTitle className="mt-10 max-w-xs text-3xl leading-[1.05] tracking-[-0.05em]">
+              <CardTitle className="mt-10 max-w-xs text-3xl leading-[1.05] tracking-tighter">
                 {t("home.card.title")}
               </CardTitle>
               <CardDescription className="mt-4 max-w-xs leading-6">

@@ -61,7 +61,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
               {t("dashboard.overview.unconfigured.eyebrow")}
             </p>
-            <h1 className="mt-4 text-4xl font-semibold tracking-[-0.05em]">
+            <h1 className="mt-4 text-4xl font-semibold tracking-tighter">
               {t("dashboard.overview.unconfigured.title")}
             </h1>
             <p className="mt-5 text-muted-foreground">
