@@ -8,7 +8,7 @@ import {
 import { getFlowFactory } from "@ory/nextjs/app";
 
 import { orySdkUrl } from "@/ory.config";
-import { flowRequestHeaders } from "@/lib/ory/request";
+import { flowRequestHeaders, getForwardedOrigin } from "@/lib/ory/request";
 
 type LoginParams = Record<string, string | string[] | undefined>;
 
@@ -20,8 +20,7 @@ type LoginParams = Record<string, string | string[] | undefined>;
 async function publicUrl() {
   const incoming = await headers();
   const host = incoming.get("host");
-  const protocol = incoming.get("x-forwarded-proto") || "http";
-  return `${protocol}://${host}`;
+  return getForwardedOrigin(incoming, `http://${host}`);
 }
 
 /**

@@ -12,6 +12,25 @@ const forwardedHeaders = [
  * @param incoming - The browser request headers to selectively forward
  * @returns Headers configured to request a JSON flow response
  */
+function firstForwardedValue(value: string | null) {
+  return value?.split(",", 1)[0]?.trim() || undefined;
+}
+
+export function getForwardedOrigin(incoming: Headers, fallbackOrigin: string) {
+  const protocol = firstForwardedValue(incoming.get("x-forwarded-proto"));
+  const host = firstForwardedValue(incoming.get("x-forwarded-host"));
+
+  if (!protocol || !host || !["http", "https"].includes(protocol)) {
+    return fallbackOrigin;
+  }
+
+  try {
+    return new URL(`${protocol}://${host}`).origin;
+  } catch {
+    return fallbackOrigin;
+  }
+}
+
 export function flowRequestHeaders(incoming: Headers): Headers {
   // Kratos must return the flow JSON, regardless of the browser's HTML preference.
   const result = new Headers({ accept: "application/json" });

@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { rewriteOryResponseLocation } from "./lib/ory/url";
+import { getForwardedOrigin } from "./lib/ory/request";
 import oryConfig, { appBaseUrl, isOryConfigured } from "./ory.config";
 
 const oryMiddleware = createOryMiddleware({
@@ -14,9 +15,11 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const requestOrigin = getForwardedOrigin(request.headers, request.nextUrl.origin);
+
   if (appBaseUrl) {
     try {
-      if (new URL(appBaseUrl).origin !== request.nextUrl.origin) {
+      if (new URL(appBaseUrl).origin !== requestOrigin) {
         return new NextResponse("Invalid application origin", { status: 400 });
       }
     } catch {
@@ -26,7 +29,7 @@ export async function proxy(request: NextRequest) {
 
   const response = await oryMiddleware(request);
 
-  return rewriteOryResponseLocation(response, request.nextUrl.origin);
+  return rewriteOryResponseLocation(response, requestOrigin);
 }
 
 export const config = {
