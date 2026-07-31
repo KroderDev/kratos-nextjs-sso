@@ -31,7 +31,10 @@ export function getOryFlowErrorMessage(flowError: FlowError | null) {
 
   for (const key of ["message", "reason", "error_description", "description"]) {
     if (typeof payload[key] === "string" && payload[key].trim()) {
-      return getSafeText(payload[key].trim()) ?? null;
+      const safeText = getSafeText(payload[key].trim());
+      if (safeText) {
+        return safeText;
+      }
     }
   }
 

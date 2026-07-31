@@ -35,4 +35,15 @@ describe("Ory flow error helpers", () => {
       getOryFlowErrorMessage({ error: "not-an-object" } as unknown as FlowError),
     ).toBeNull();
   });
+
+  it("falls back to safe lower-priority field when higher-priority field is unsafe", () => {
+    expect(
+      getOryFlowErrorMessage({
+        error: {
+          message: "Kratos returned an error.",
+          reason: "Invalid credentials provided.",
+        },
+      } as FlowError),
+    ).toBe("Invalid credentials provided.");
+  });
 });
