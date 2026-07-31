@@ -53,7 +53,7 @@ test("auth and dashboard pages forbid caching", async ({ request }) => {
   ];
 
   for (const path of sensitivePaths) {
-    const response = await request.get(path);
+    const response = await request.get(path, { maxRedirects: 0 });
     const cacheControl = response.headers()["cache-control"] ?? "";
     expect(
       cacheControl,
@@ -71,6 +71,17 @@ test("CSP form-action directive is present and restricted", async ({ request }) 
     /form-action\s+\*\b/,
   );
   expect(csp, "form-action must not contain '*'").not.toContain("form-action '*'");
+
+  const formActionMatch = csp.match(/form-action\s+([^;]+)/);
+  expect(formActionMatch, "must extract form-action source list").not.toBeNull();
+  const formActionSources = formActionMatch![1].trim();
+
+  expect(formActionSources, "must include 'self'").toContain("'self'");
+  expect(
+    formActionSources,
+    "must not allow generic https: (would permit any HTTPS origin)",
+  ).not.toMatch(/\bhttps:\b(?!\/\/)/);
+  expect(formActionSources, "must not contain wildcard").not.toContain("*");
 });
 
 test("proxy routes return clean responses when the service is unconfigured", async ({
@@ -87,7 +98,7 @@ test("proxy routes return clean responses when the service is unconfigured", asy
   ];
 
   for (const path of proxyPaths) {
-    const response = await request.get(path);
+    const response = await request.get(path, { maxRedirects: 0 });
     const status = response.status();
     const body = await response.text();
 
