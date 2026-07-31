@@ -35,6 +35,8 @@ jobs:
             exit 1
           fi
 
-          IMAGE="ghcr.io/kroderdev/kratos-nextjs-sso:${TAG}"
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE="ghcr.io/${OWNER}/kratos-nextjs-sso:${TAG}"
           docker build -t "$IMAGE" .
           docker push "$IMAGE"
+
