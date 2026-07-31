@@ -202,7 +202,9 @@ test("settings uses the dashboard frame when the service is unconfigured", async
   const response = await page.goto("/dashboard/settings");
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("link", { name: "Settings", exact: true })).toBeVisible();
-  await expect(page.getByText("Keep your identity current")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Keep your identity current." }),
+  ).toBeVisible();
   await expect(page.locator("aside")).toBeVisible();
 });
 

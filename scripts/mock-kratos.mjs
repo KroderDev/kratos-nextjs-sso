@@ -1,0 +1,64 @@
+import { createServer } from "node:http";
+
+const port = Number(process.env.PORT ?? 4010);
+const flowId = "e2e-login-flow";
+const requests = [];
+
+const flow = {
+  id: flowId,
+  type: "browser",
+  issued_at: new Date().toISOString(),
+  request_url: `http://127.0.0.1:${port}/self-service/login/browser`,
+  ui: {
+    action: `http://127.0.0.1:${port}/self-service/login`,
+    method: "POST",
+    nodes: [],
+    messages: [],
+  },
+};
+
+const server = createServer((request, response) => {
+  const url = new URL(request.url ?? "/", `http://127.0.0.1:${port}`);
+  requests.push({
+    cookie: request.headers.cookie ?? null,
+    host: request.headers.host ?? null,
+    path: url.pathname,
+    userAgent: request.headers["user-agent"] ?? null,
+  });
+
+  if (url.pathname === "/__e2e/requests") {
+    response.writeHead(200, { "content-type": "application/json" });
+    response.end(JSON.stringify(requests));
+    return;
+  }
+
+  if (url.pathname === "/self-service/login/browser") {
+    response.writeHead(303, {
+      location: `/auth/login?flow=${flowId}`,
+      "set-cookie": "csrf_token=e2e-flow-cookie; Path=/; HttpOnly",
+    });
+    response.end();
+    return;
+  }
+
+  if (url.pathname === "/self-service/login/flows") {
+    const hasFlowCookie = request.headers.cookie?.includes(
+      "csrf_token=e2e-flow-cookie",
+    );
+
+    if (!hasFlowCookie || url.searchParams.get("id") !== flowId) {
+      response.writeHead(403, { "content-type": "application/json" });
+      response.end(JSON.stringify({ error: { id: "security_csrf_violation" } }));
+      return;
+    }
+
+    response.writeHead(200, { "content-type": "application/json" });
+    response.end(JSON.stringify(flow));
+    return;
+  }
+
+  response.writeHead(404);
+  response.end();
+});
+
+server.listen(port, "127.0.0.1");
