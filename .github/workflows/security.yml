@@ -35,7 +35,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm audit --audit-level critical
+      - run: pnpm audit --prod --audit-level high
 
   container-scan:
     name: Container Scan
@@ -59,4 +59,4 @@ jobs:
         with:
           image-ref: kratos-nextjs-sso:scan
           format: table
-          severity: CRITICAL,HIGH
+          severity: CRITICAL,HIGH,MEDIUM
