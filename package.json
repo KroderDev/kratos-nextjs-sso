@@ -14,7 +14,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:auth": "playwright test --config=playwright.auth.config.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
