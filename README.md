@@ -38,11 +38,14 @@ NEXT_PUBLIC_BRAND_NAME=Your Platform
 NEXT_PUBLIC_BRAND_MARK=YP
 NEXT_PUBLIC_BRAND_LOGO_LIGHT=/next.svg
 NEXT_PUBLIC_BRAND_LOGO_DARK=/next-dark.svg
+NEXT_PUBLIC_BRAND_FAVICON_LIGHT=
+NEXT_PUBLIC_BRAND_FAVICON_DARK=
 ```
 
-These public values are embedded during `next build`. Set them before building a Docker image or deploying the application. `NEXT_PUBLIC_BRAND_MARK` sets the 1-2 character text mark/initials (e.g. displayed in footers or text fallbacks) up to two characters and falls back to initials derived from `NEXT_PUBLIC_BRAND_NAME`. Set `NEXT_PUBLIC_BRAND_LOGO_LIGHT` and optionally `NEXT_PUBLIC_BRAND_LOGO_DARK` to paths under `public/`. Logo images are displayed whenever present and are not replaced by setting `NEXT_PUBLIC_BRAND_MARK`. The bundled dark logo is used when the dark path is omitted; set it to an empty value to explicitly fall back to the light logo. The bundled Next.js symbols are sourced from the [Geist brand guidelines](https://vercel.com/geist/brands).
+These public values are embedded during `next build`. Set them before building a Docker image or deploying the application. `NEXT_PUBLIC_BRAND_MARK` sets the 1-2 character text mark/initials (e.g. displayed in footers or text fallbacks) up to two characters and falls back to initials derived from `NEXT_PUBLIC_BRAND_NAME`. Set `NEXT_PUBLIC_BRAND_LOGO_LIGHT` and optionally `NEXT_PUBLIC_BRAND_LOGO_DARK` to paths under `public/`. Logo images are displayed whenever present and are not replaced by setting `NEXT_PUBLIC_BRAND_MARK`. The bundled dark logo is used when the dark path is omitted; set it to an empty value to explicitly fall back to the light logo. Custom favicon paths can be set via `NEXT_PUBLIC_BRAND_FAVICON_LIGHT` and `NEXT_PUBLIC_BRAND_FAVICON_DARK`. When `NEXT_PUBLIC_BRAND_FAVICON_DARK` is configured, the browser automatically switches between light and dark icons based on the user's OS theme. When both environment variables are omitted, the application falls back to `app/favicon.ico`. The bundled Next.js symbols are sourced from the [Geist brand guidelines](https://vercel.com/geist/brands).
 
-The interface uses shadcn/ui components with Tailwind CSS semantic tokens. Customize the theme through the existing `components.json` preset and the shadcn CLI, or replace the app icon at `app/favicon.ico` with the platform's production asset.
+The interface uses shadcn/ui components with Tailwind CSS semantic tokens. Customize the theme through the existing `components.json` preset and the shadcn CLI, or replace the app icon at `app/favicon.ico` (or configure build-time favicon variables) with the platform's production asset.
+
 
 ### Applying a shadcn Theme
 
