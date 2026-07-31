@@ -32,8 +32,9 @@ export function AuthFrame({ children }: AuthFrameProps) {
       <div className="grid min-h-screen lg:grid-cols-[minmax(22rem,0.78fr)_minmax(34rem,1fr)]">
         <aside className="relative hidden overflow-hidden bg-secondary px-10 py-10 text-secondary-foreground lg:flex lg:flex-col lg:justify-between xl:px-14">
           <div className="relative z-10">
-            <Brand inverted />
+            <Brand />
           </div>
+
 
           <div className="relative z-10 max-w-md">
             <Badge className="border-secondary-foreground/20 bg-secondary-foreground/10 text-secondary-foreground hover:bg-secondary-foreground/15">
