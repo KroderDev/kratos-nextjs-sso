@@ -33,10 +33,12 @@ export const brandLogoLight = readBrandValue(
   DEFAULT_BRAND_LOGO_LIGHT,
 );
 
-export const brandLogoDark = readBrandValue(
-  process.env.NEXT_PUBLIC_BRAND_LOGO_DARK,
-  DEFAULT_BRAND_LOGO_DARK,
-);
+export const brandLogoDark = (() => {
+  const raw = process.env.NEXT_PUBLIC_BRAND_LOGO_DARK?.trim();
+  if (raw) return raw;
+  if (raw === "") return brandLogoLight;
+  return DEFAULT_BRAND_LOGO_DARK;
+})();
 
 function readOptionalBrandValue(value: string | undefined): string {
   return value?.trim() || "";

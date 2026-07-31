@@ -18,6 +18,27 @@ describe("lib/branding", () => {
     expect(branding.brandFaviconDark).toBe("");
   });
 
+  it("falls back to light logo when brandLogoDark is empty", async () => {
+    vi.resetModules();
+    process.env.NEXT_PUBLIC_BRAND_LOGO_LIGHT = "/custom-light.svg";
+    process.env.NEXT_PUBLIC_BRAND_LOGO_DARK = "";
+
+    const branding = await import("./branding");
+
+    expect(branding.brandLogoLight).toBe("/custom-light.svg");
+    expect(branding.brandLogoDark).toBe("/custom-light.svg");
+  });
+
+  it("uses default dark logo when brandLogoDark is unset", async () => {
+    vi.resetModules();
+    process.env.NEXT_PUBLIC_BRAND_LOGO_LIGHT = "/custom-light.svg";
+    delete process.env.NEXT_PUBLIC_BRAND_LOGO_DARK;
+
+    const branding = await import("./branding");
+
+    expect(branding.brandLogoDark).toBe("/next-dark.svg");
+  });
+
   it("reads brandFaviconLight and brandFaviconDark when set", async () => {
     vi.resetModules();
     process.env.NEXT_PUBLIC_BRAND_FAVICON_LIGHT = "/favicon.ico";
