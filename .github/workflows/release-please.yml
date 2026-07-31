@@ -12,8 +12,10 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    if: ${{ secrets.RELEASE_PLEASE_TOKEN != '' }}
 
     steps:
+
       - uses: googleapis/release-please-action@v5
         with:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
