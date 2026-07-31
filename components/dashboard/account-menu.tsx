@@ -61,7 +61,7 @@ export function AccountMenu({
             <Settings2 aria-hidden="true" data-icon="inline-start" />
             {t("common.navigation.settings")}
           </DropdownMenuItem>
-          <DropdownMenuItem render={<a href={logoutUrl} />}>
+          <DropdownMenuItem render={<a href={logoutUrl} rel="noopener noreferrer" />}>
             <LogOut aria-hidden="true" data-icon="inline-start" />
             {t("common.navigation.signOut")}
           </DropdownMenuItem>
