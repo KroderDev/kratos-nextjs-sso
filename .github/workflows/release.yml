@@ -58,6 +58,13 @@ jobs:
 
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           IMAGE="ghcr.io/${OWNER}/kratos-nextjs-sso:${TAG}"
+
+          if [[ ! "$APP_URL" =~ ^https?://[^/]+$ ]]; then
+            echo "ERROR: NEXT_PUBLIC_APP_URL must be a valid origin (e.g. https://example.com)" >&2
+            echo "Set vars.NEXT_PUBLIC_APP_URL in repository settings or pass inputs.next_public_app_url." >&2
+            exit 1
+          fi
+
           docker build \
             --build-arg "NEXT_PUBLIC_APP_URL=${APP_URL}" \
             --build-arg "NEXT_PUBLIC_ORY_SDK_URL=${SDK_URL}" \
