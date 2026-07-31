@@ -9,6 +9,22 @@ on:
         description: Release tag to publish (for example, v0.1.1)
         required: true
         default: v0.1.1
+      next_public_app_url:
+        description: Application origin (NEXT_PUBLIC_APP_URL)
+        required: true
+        default: ""
+      next_public_ory_sdk_url:
+        description: Ory SDK URL (NEXT_PUBLIC_ORY_SDK_URL)
+        required: false
+        default: ""
+      next_public_ory_canonical_url:
+        description: Optional canonical Ory URL (NEXT_PUBLIC_ORY_CANONICAL_URL)
+        required: false
+        default: ""
+      next_public_ory_project_name:
+        description: Ory project name label (NEXT_PUBLIC_ORY_PROJECT_NAME)
+        required: false
+        default: ""
 
 jobs:
   push:
@@ -28,6 +44,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & Push
+        env:
+          APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL || inputs.next_public_app_url || '' }}
+          SDK_URL: ${{ vars.NEXT_PUBLIC_ORY_SDK_URL || inputs.next_public_ory_sdk_url || '' }}
+          CANONICAL_URL: ${{ vars.NEXT_PUBLIC_ORY_CANONICAL_URL || inputs.next_public_ory_canonical_url || '' }}
+          PROJECT_NAME: ${{ vars.NEXT_PUBLIC_ORY_PROJECT_NAME || inputs.next_public_ory_project_name || '' }}
         run: |
           TAG="${{ github.event.release.tag_name || inputs.tag }}"
           if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -37,6 +58,11 @@ jobs:
 
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           IMAGE="ghcr.io/${OWNER}/kratos-nextjs-sso:${TAG}"
-          docker build -t "$IMAGE" .
+          docker build \
+            --build-arg "NEXT_PUBLIC_APP_URL=${APP_URL}" \
+            --build-arg "NEXT_PUBLIC_ORY_SDK_URL=${SDK_URL}" \
+            --build-arg "NEXT_PUBLIC_ORY_CANONICAL_URL=${CANONICAL_URL}" \
+            --build-arg "NEXT_PUBLIC_ORY_PROJECT_NAME=${PROJECT_NAME}" \
+            -t "$IMAGE" .
           docker push "$IMAGE"
 
