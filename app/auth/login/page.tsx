@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { getLoginFlow, type OryPageParams } from "@ory/nextjs/app";
+import type { OryPageParams } from "@ory/nextjs/app";
 
 import { AuthContent } from "@/components/layout/auth-shell";
 import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
 import { rewriteOryFlow } from "@/lib/ory/url";
-import config, { isOryConfigured } from "@/ory.config";
+import { isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
+import { getLoginFlowWithRequestHeaders } from "@/lib/ory/login";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,7 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
 
   let flow = null;
   try {
-    flow = rewriteOryFlow(await getLoginFlow(config, searchParams)) || null;
+    flow = rewriteOryFlow(await getLoginFlowWithRequestHeaders(searchParams)) || null;
   } catch (e) {
     if ((e as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
       throw e;
@@ -70,4 +71,3 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
     />
   );
 }
-
