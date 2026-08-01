@@ -21,6 +21,10 @@ on:
         description: Optional canonical Ory URL (NEXT_PUBLIC_ORY_CANONICAL_URL)
         required: false
         default: ""
+      next_public_ory_oauth_origins:
+        description: OAuth authorization origins (NEXT_PUBLIC_ORY_OAUTH_ORIGINS)
+        required: false
+        default: ""
       next_public_ory_project_name:
         description: Ory project name label (NEXT_PUBLIC_ORY_PROJECT_NAME)
         required: false
@@ -48,6 +52,7 @@ jobs:
           APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL || inputs.next_public_app_url || '' }}
           SDK_URL: ${{ vars.NEXT_PUBLIC_ORY_SDK_URL || inputs.next_public_ory_sdk_url || '' }}
           CANONICAL_URL: ${{ vars.NEXT_PUBLIC_ORY_CANONICAL_URL || inputs.next_public_ory_canonical_url || '' }}
+          OAUTH_ORIGINS: ${{ vars.NEXT_PUBLIC_ORY_OAUTH_ORIGINS || inputs.next_public_ory_oauth_origins || '' }}
           PROJECT_NAME: ${{ vars.NEXT_PUBLIC_ORY_PROJECT_NAME || inputs.next_public_ory_project_name || '' }}
         run: |
           TAG="${{ github.event.release.tag_name || inputs.tag }}"
@@ -69,7 +74,7 @@ jobs:
             --build-arg "NEXT_PUBLIC_APP_URL=${APP_URL}" \
             --build-arg "NEXT_PUBLIC_ORY_SDK_URL=${SDK_URL}" \
             --build-arg "NEXT_PUBLIC_ORY_CANONICAL_URL=${CANONICAL_URL}" \
+            --build-arg "NEXT_PUBLIC_ORY_OAUTH_ORIGINS=${OAUTH_ORIGINS}" \
             --build-arg "NEXT_PUBLIC_ORY_PROJECT_NAME=${PROJECT_NAME}" \
             -t "$IMAGE" .
           docker push "$IMAGE"
-

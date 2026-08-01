@@ -46,7 +46,7 @@ export default async function RecoveryPage({ searchParams }: OryPageParams) {
     flow = rewriteOryFlow(await getRecoveryFlow(config, params)) || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "recovery")) {
-      redirect("/auth/error");
+      redirect("/auth/recovery");
     }
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders

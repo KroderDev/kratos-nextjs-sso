@@ -51,4 +51,18 @@ describe("RegistrationPage", () => {
       "/auth/error?reason=registration_disabled&lang=es",
     );
   });
+
+  it("restarts expired registration flows at the clean registration route", async () => {
+    mockGetRegistrationFlow.mockRejectedValueOnce({
+      digest: "NEXT_REDIRECT;replace;https://auth.test/self-service/registration/browser;307;",
+    });
+
+    await expect(
+      RegistrationPage({
+        searchParams: Promise.resolve({ flow: "expired-flow" }),
+      }),
+    ).rejects.toThrow("redirect:/auth/registration");
+
+    expect(mockRedirect).toHaveBeenCalledWith("/auth/registration");
+  });
 });

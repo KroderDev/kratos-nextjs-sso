@@ -52,7 +52,7 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
     flow = rewriteOryFlow(await getLoginFlowWithRequestHeaders(params)) || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "login")) {
-      redirect("/auth/error");
+      redirect("/auth/login");
     }
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders

@@ -48,10 +48,10 @@ export default async function RegistrationPage({
   try {
     rawFlow = await getRegistrationFlow(config, params);
   } catch (e) {
-    // The SDK restarts missing registration flows indefinitely when registration
-    // is disabled. Show the error UI instead of redirecting back into that loop.
+    // Restart stale registration flows at the clean route. Disabled registration
+    // is handled by the explicit flow error below when the provider returns it.
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "registration")) {
-      redirect("/auth/error");
+      redirect("/auth/registration");
     }
 
     unstable_rethrow(e);

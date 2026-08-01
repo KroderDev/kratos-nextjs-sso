@@ -52,6 +52,7 @@ Copy `.env.example` to `.env.local` and set your public app URL and Ory SDK URL:
 ```env
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_ORY_SDK_URL=https://your-project.projects.oryapis.com
+NEXT_PUBLIC_ORY_OAUTH_ORIGINS=https://accounts.google.com
 NEXT_PUBLIC_ORY_PROJECT_NAME=Your Platform
 ORY_PROJECT_API_TOKEN=ory_pat_...
 ```
@@ -114,6 +115,7 @@ docker build \
   --build-arg "NEXT_PUBLIC_BRAND_NAME=Your Platform" \
   --build-arg "NEXT_PUBLIC_BRAND_MARK=YP" \
   --build-arg "NEXT_PUBLIC_ORY_SDK_URL=https://your-project.projects.oryapis.com" \
+  --build-arg "NEXT_PUBLIC_ORY_OAUTH_ORIGINS=https://accounts.google.com" \
   -t kratos-nextjs-sso:latest .
 
 docker run --rm -p 3000:3000 \

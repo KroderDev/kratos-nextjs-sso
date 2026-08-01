@@ -49,7 +49,7 @@ export default async function VerificationPage({
       rewriteOryFlow(await getVerificationFlow(config, params)) || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "verification")) {
-      redirect("/auth/error");
+      redirect("/auth/verification");
     }
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders

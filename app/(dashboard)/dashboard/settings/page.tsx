@@ -106,7 +106,7 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
     flow = rewriteOryFlow(await getSettingsFlow(config, params)) || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "settings")) {
-      redirect("/auth/error");
+      redirect("/dashboard/settings");
     }
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders
