@@ -25,6 +25,7 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
  */
 export default async function LoginPage({ searchParams }: OryPageParams) {
   const { t } = await getTranslations(searchParams);
+  const params = await searchParams;
 
   if (!isOryConfigured) {
     return (
@@ -48,9 +49,9 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
 
   let flow = null;
   try {
-    flow = rewriteOryFlow(await getLoginFlowWithRequestHeaders(searchParams)) || null;
+    flow = rewriteOryFlow(await getLoginFlowWithRequestHeaders(params)) || null;
   } catch (e) {
-    if (isOryFlowRestartRedirect(e, "login")) {
+    if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "login")) {
       redirect("/auth/error");
     }
     unstable_rethrow(e);

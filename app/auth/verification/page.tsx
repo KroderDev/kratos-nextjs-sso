@@ -21,6 +21,7 @@ export default async function VerificationPage({
   searchParams,
 }: OryPageParams) {
   const { t } = await getTranslations(searchParams);
+  const params = await searchParams;
 
   if (!isOryConfigured) {
     return (
@@ -45,9 +46,9 @@ export default async function VerificationPage({
   let flow = null;
   try {
     flow =
-      rewriteOryFlow(await getVerificationFlow(config, searchParams)) || null;
+      rewriteOryFlow(await getVerificationFlow(config, params)) || null;
   } catch (e) {
-    if (isOryFlowRestartRedirect(e, "verification")) {
+    if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "verification")) {
       redirect("/auth/error");
     }
     unstable_rethrow(e);

@@ -73,6 +73,7 @@ function SettingsAside({ t }: { t: (key: string) => string }) {
 
 export default async function SettingsPage({ searchParams }: OryPageParams) {
   const { t } = await getTranslations(searchParams);
+  const params = await searchParams;
 
   if (!isOryConfigured) {
     return (
@@ -102,9 +103,9 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
   let flow = null;
 
   try {
-    flow = rewriteOryFlow(await getSettingsFlow(config, searchParams)) || null;
+    flow = rewriteOryFlow(await getSettingsFlow(config, params)) || null;
   } catch (e) {
-    if (isOryFlowRestartRedirect(e, "settings")) {
+    if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "settings")) {
       redirect("/auth/error");
     }
     unstable_rethrow(e);

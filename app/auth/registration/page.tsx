@@ -21,6 +21,7 @@ export default async function RegistrationPage({
   searchParams,
 }: OryPageParams) {
   const { t } = await getTranslations(searchParams);
+  const params = await searchParams;
 
   if (!isOryConfigured) {
     return (
@@ -45,11 +46,11 @@ export default async function RegistrationPage({
   let flow = null;
   try {
     flow =
-      rewriteOryFlow(await getRegistrationFlow(config, searchParams)) || null;
+      rewriteOryFlow(await getRegistrationFlow(config, params)) || null;
   } catch (e) {
     // The SDK restarts missing registration flows indefinitely when registration
     // is disabled. Show the error UI instead of redirecting back into that loop.
-    if (isOryFlowRestartRedirect(e, "registration")) {
+    if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "registration")) {
       redirect("/auth/error");
     }
 
