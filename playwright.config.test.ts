@@ -82,12 +82,12 @@ describe("playwright.auth.config.ts", () => {
       const ciServers = asArray(config.webServer);
 
       expect(config.retries).toBe(2);
+      expect(ciServers.length).toBeGreaterThan(0);
       expect(ciServers.every((server) => server.reuseExistingServer === false)).toBe(true);
     } finally {
       vi.unstubAllEnvs();
     }
   });
-
   it("only runs specs under tests/auth", () => {
     expect(authConfig.testDir).toBe("./tests/auth");
   });
