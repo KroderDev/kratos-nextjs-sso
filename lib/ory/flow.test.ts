@@ -222,10 +222,14 @@ describe("Ory flow helpers", () => {
   });
 
   it("treats a node as a provider when grouped as oidc even without name='provider'", () => {
+    const groupedProvider = inputNode({
+      name: "custom_provider",
+      type: "button",
+    });
+    groupedProvider.group = "oidc";
+
     expect(
-      isProviderNode(
-        inputNode({ group: "oidc", name: "custom_provider", type: "button" }),
-      ),
+      isProviderNode(groupedProvider),
     ).toBe(true);
     expect(
       isProviderNode(

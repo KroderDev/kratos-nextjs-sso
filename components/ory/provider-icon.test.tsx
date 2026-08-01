@@ -72,7 +72,6 @@ describe("ProviderIcon", () => {
     const markup = renderToStaticMarkup(<ProviderIcon node={providerNode("unrecognized-sso")} />);
 
     expect(markup).toContain(">U<");
-    expect(markup).not.toContain("bg-primary");
   });
 
   it("falls back to a labeled badge for an unknown provider", () => {

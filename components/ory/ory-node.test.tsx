@@ -82,7 +82,7 @@ describe("OryNode submit/button rendering", () => {
 
     expect(markup).toContain(">Continue with Google<");
     expect(markup).toContain('class="flex-1 text-left"');
-    expect(markup).toContain("formnovalidate");
+    expect(markup).toContain("formNoValidate");
     expect(markup).not.toContain('data-icon="inline-end"');
     expect(markup).not.toContain('aria-label="Continue with Google"');
   });
