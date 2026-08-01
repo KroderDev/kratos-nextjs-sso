@@ -47,6 +47,21 @@ describe("playwright.config.ts", () => {
     }
   });
 
+  it("uses the local port and disables retries outside CI", async () => {
+    vi.resetModules();
+    vi.stubEnv("CI", "");
+
+    try {
+      const { default: localConfig } = await import("./playwright.config");
+      const config = localConfig as LooseConfig;
+      expect(config.use?.baseURL).toBe("http://127.0.0.1:3001");
+      expect(config.retries).toBe(0);
+      expect(asArray(config.webServer)[0]?.reuseExistingServer).toBe(true);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it("ignores the auth test suite, which runs under its own config", () => {
     expect(smokeConfig.testIgnore).toEqual(["auth/**"]);
   });
@@ -84,6 +99,20 @@ describe("playwright.auth.config.ts", () => {
       expect(config.retries).toBe(2);
       expect(ciServers.length).toBeGreaterThan(0);
       expect(ciServers.every((server) => server.reuseExistingServer === false)).toBe(true);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("reuses local auth servers and keeps the local timeout outside CI", async () => {
+    vi.resetModules();
+    vi.stubEnv("CI", "");
+
+    try {
+      const { default: localConfig } = await import("./playwright.auth.config");
+      const config = localConfig as LooseConfig;
+      expect(config.retries).toBe(0);
+      expect(asArray(config.webServer).every((server) => server.reuseExistingServer)).toBe(true);
     } finally {
       vi.unstubAllEnvs();
     }

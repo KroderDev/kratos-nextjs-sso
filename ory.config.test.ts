@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import config, {
   appBaseUrl,
@@ -33,6 +33,55 @@ describe("ory.config", () => {
       expect(orySetupMessage).toContain("not configured");
     } else {
       expect(orySetupMessage).toContain("unavailable");
+    }
+  });
+
+  it("normalizes configured URLs and uses the project name", async () => {
+    vi.resetModules();
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://app.example/");
+    vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "https://tenant.oryapis.com/");
+    vi.stubEnv("NEXT_PUBLIC_ORY_CANONICAL_URL", "https://ory.example/");
+    vi.stubEnv("NEXT_PUBLIC_ORY_PROJECT_NAME", "  Example project  ");
+    vi.stubEnv("ORY_PROJECT_API_TOKEN", "token");
+
+    try {
+      const configured = await import("./ory.config");
+      expect(configured.appBaseUrl).toBe("https://app.example");
+      expect(configured.orySdkUrl).toBe("https://tenant.oryapis.com");
+      expect(configured.oryCanonicalUrl).toBe("https://ory.example");
+      expect(configured.isOryConfigured).toBe(true);
+      expect(configured.default.project.name).toBe("Example project");
+      expect(configured.orySetupMessage).toContain("unavailable");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("does not treat an Ory network URL as configured without a project token", async () => {
+    vi.resetModules();
+    vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "https://tenant.oryapis.com");
+    vi.stubEnv("ORY_PROJECT_API_TOKEN", "");
+
+    try {
+      const configured = await import("./ory.config");
+      expect(configured.isOryConfigured).toBe(false);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("falls back to the legacy SDK environment variable", async () => {
+    vi.resetModules();
+    vi.unstubAllEnvs();
+    delete process.env.NEXT_PUBLIC_ORY_SDK_URL;
+    vi.stubEnv("ORY_SDK_URL", "http://localhost:4010/");
+
+    try {
+      const configured = await import("./ory.config");
+      expect(configured.orySdkUrl).toBe("http://localhost:4010");
+      expect(configured.isOryConfigured).toBe(true);
+    } finally {
+      vi.unstubAllEnvs();
     }
   });
 });
