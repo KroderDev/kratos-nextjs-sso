@@ -20,6 +20,11 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
+    "@iconify-icons/logos": "^1.2.36",
+    "@iconify-icons/simple-icons": "^1.2.74",
+    "@iconify/react": "^6.0.2",
+    "@iconify/types": "^2.0.0",
+    "@icons-pack/react-simple-icons": "^13.13.0",
     "@ory/client-fetch": "1.22.66",
     "@ory/nextjs": "1.0.0-rc.1",
     "class-variance-authority": "^0.7.1",
