@@ -8,9 +8,11 @@ import {
   getNodeMessages,
   getNodeText,
   getNumber,
+  getProviderName,
   getSafeText,
   isChecked,
   isCodeInput,
+  isProviderNode,
   translateOryText,
 } from "./flow";
 
@@ -46,6 +48,91 @@ describe("Ory flow helpers", () => {
     ).toBe(true);
     expect(isCodeInput(inputNode({ name: "code", type: "text" }))).toBe(false);
     expect(isCodeInput(inputNode({ name: "email", type: "email" }))).toBe(false);
+  });
+
+  it("identifies provider submit nodes without treating regular submits as providers", () => {
+    expect(
+      isProviderNode(
+        inputNode({
+          group: "oidc",
+          name: "provider",
+          type: "submit",
+          value: "google-provider",
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      isProviderNode(inputNode({ name: "method", type: "submit" })),
+    ).toBe(false);
+    expect(
+      isProviderNode(inputNode({ name: "provider", type: "email" })),
+    ).toBe(false);
+  });
+
+  it("normalizes provider names for accessible actions", () => {
+    expect(
+      getProviderName(
+        inputNode({
+          name: "provider",
+          type: "submit",
+          value: "google-provider",
+          label: { id: 1, text: "Sign in with Google", type: "info" },
+        }),
+      ),
+    ).toBe("Google");
+    expect(
+      getProviderName(inputNode({ name: "provider", value: "facebook" })),
+    ).toBe("Meta");
+    expect(
+      getProviderName(
+        inputNode({
+          name: "provider",
+          type: "submit",
+          label: { id: 1, text: "Continue with Acme", type: "info" },
+        }),
+      ),
+    ).toBe("Acme");
+
+    const providers = [
+      ["linkedin", "LinkedIn"],
+      ["slack", "Slack"],
+      ["spotify", "Spotify"],
+      ["x", "X"],
+      ["amazon", "Amazon"],
+      ["netid", "NetID"],
+      ["auth0", "Auth0"],
+      ["gitlab", "GitLab"],
+      ["salesforce", "Salesforce"],
+      ["kick", "Kick"],
+      ["tiktok", "TikTok"],
+      ["paypal", "PayPal"],
+      ["line", "LINE"],
+      ["kakao", "Kakao"],
+      ["wechat", "WeChat"],
+      ["authentik", "Authentik"],
+      ["keycloak", "Keycloak"],
+      ["clerk", "Clerk"],
+      ["ory-oauth2", "Ory OAuth2"],
+      ["yahoo", "Yahoo!"],
+    ] as const;
+
+    for (const [value, expected] of providers) {
+      expect(getProviderName(inputNode({ name: "provider", value }))).toBe(expected);
+    }
+  });
+
+  it("uses the node meta label when the provider attribute has no label", () => {
+    const node = inputNode({
+      name: "provider",
+      type: "submit",
+      value: "custom-sso",
+      label: undefined,
+    });
+    node.meta = {
+      label: { id: 1, text: "Sign in with Acme SSO", type: "info" },
+    };
+
+    expect(getProviderName(node)).toBe("Acme SSO");
   });
 
   it("keeps node messages available for field-level errors", () => {
@@ -124,5 +211,53 @@ describe("Ory flow helpers", () => {
     expect(getSafeText("http://localhost/self-service/login")).toBeUndefined();
     expect(getSafeText("")).toBeUndefined();
     expect(getSafeText(undefined)).toBeUndefined();
+  });
+
+  it("translates 'e-mail' to 'Email' for the English locale only", () => {
+    expect(translateOryText("e-mail", "en")).toBe("Email");
+    expect(translateOryText("E-Mail", "en")).toBe("Email");
+    expect(translateOryText("  e-mail  ", "en")).toBe("Email");
+    expect(translateOryText("e-mail")).toBe("e-mail");
+    expect(translateOryText("email", "en")).toBe("email");
+  });
+
+  it("treats a node as a provider when grouped as oidc even without name='provider'", () => {
+    const groupedProvider = inputNode({
+      name: "custom_provider",
+      type: "button",
+    });
+    groupedProvider.group = "oidc";
+
+    expect(
+      isProviderNode(groupedProvider),
+    ).toBe(true);
+    expect(
+      isProviderNode(
+        inputNode({ group: "oidc", name: "provider", type: "text" }),
+      ),
+    ).toBe(false);
+    expect(
+      isProviderNode({
+        type: "text",
+        group: "oidc",
+        attributes: { node_type: "text", name: "provider", type: "submit" },
+      } as unknown as UiNode),
+    ).toBe(false);
+  });
+
+  it("falls back to a cleaned label or 'Provider' when no known provider matches", () => {
+    expect(
+      getProviderName(
+        inputNode({
+          name: "provider",
+          type: "submit",
+          value: "unrecognized-sso",
+          label: { id: 1, text: "Sign in with Custom SSO", type: "info" },
+        }),
+      ),
+    ).toBe("Custom SSO");
+    expect(
+      getProviderName(inputNode({ name: "provider", value: "unrecognized-sso", label: undefined })),
+    ).toBe("Provider");
   });
 });

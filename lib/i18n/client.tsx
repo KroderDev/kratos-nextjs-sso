@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useSyncExternalStore, type ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useMemo,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { DEFAULT_LOCALE, isValidLocale, type Locale } from "./config";
 import { dictionaries } from "./locales";
 import { formatString, translatePath } from "./utils";
@@ -46,12 +52,19 @@ export function I18nProvider({
 
   const dict = dictionaries[locale] ?? dictionaries[DEFAULT_LOCALE];
 
-  const t = (key: string, params?: Record<string, string | number>): string => {
-    const raw = translatePath(dict, key) ?? translatePath(dictionaries[DEFAULT_LOCALE], key) ?? key;
-    return formatString(raw, params);
-  };
+  const t = useMemo(
+    () => (key: string, params?: Record<string, string | number>): string => {
+      const raw =
+        translatePath(dict, key) ??
+        translatePath(dictionaries[DEFAULT_LOCALE], key) ??
+        key;
+      return formatString(raw, params);
+    },
+    [dict],
+  );
+  const value = useMemo(() => ({ locale, t }), [locale, t]);
 
-  return <I18nContext.Provider value={{ locale, t }}>{children}</I18nContext.Provider>;
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
 export function useTranslation() {

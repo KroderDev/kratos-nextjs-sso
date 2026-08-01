@@ -46,6 +46,13 @@ const oryTranslationsEs: Record<string, string> = {
   "you successfully saved your settings.": "Has guardado tu configuración correctamente.",
 };
 
+/**
+ * Translates supported Ory text for Spanish or English locales.
+ *
+ * @param text - The text to translate
+ * @param locale - The target locale
+ * @returns The translated text, the original text when no translation applies, or `undefined` for empty input
+ */
 export function translateOryText(text: string | undefined, locale?: string): string | undefined {
   if (!text) return undefined;
   if (locale === "es") {
@@ -53,6 +60,9 @@ export function translateOryText(text: string | undefined, locale?: string): str
     if (lower in oryTranslationsEs) {
       return oryTranslationsEs[lower];
     }
+  }
+  if (locale === "en" && text.trim().toLowerCase() === "e-mail") {
+    return "Email";
   }
   return text;
 }
@@ -96,6 +106,13 @@ export function getNodeMessages(node: UiNode) {
   return node.messages ?? [];
 }
 
+/**
+ * Gets a localized, sanitized label for a UI node.
+ *
+ * @param node - The UI node whose label should be retrieved
+ * @param locale - The locale used to translate supported text
+ * @returns The node label, or `undefined` when no usable label is available
+ */
 export function getNodeLabel(node: UiNode, locale?: string) {
   const attributes = getNodeAttributes(node);
   const attributeLabel = asRecord(attributes.label);
@@ -110,6 +127,72 @@ export function getNodeLabel(node: UiNode, locale?: string) {
   return translateOryText(raw, locale);
 }
 
+/**
+ * Identifies the identity provider represented by a UI node.
+ *
+ * @param node - The UI node containing the provider label or value
+ * @returns The normalized provider name, a cleaned label, or `"Provider"` when no provider name is available
+ */
+export function getProviderName(node: UiNode) {
+  const attributes = getNodeAttributes(node);
+  const attributeLabel = asRecord(attributes.label);
+  const metaLabel = asRecord(node.meta?.label);
+  const label = getString(attributeLabel.text) ?? getString(metaLabel.text);
+  const value = getString(attributes.value);
+  const source = `${label ?? ""} ${value ?? ""}`.toLowerCase();
+  const providers = [
+    [/\bapple\b/, "Apple"],
+    [/\b(?:facebook|meta)\b/, "Meta"],
+    [/\bgithub\b/, "GitHub"],
+    [/\bgoogle\b/, "Google"],
+    [/\bmicrosoft\b/, "Microsoft"],
+    [/\bdiscord\b/, "Discord"],
+    [/\blinkedin\b/, "LinkedIn"],
+    [/\bslack\b/, "Slack"],
+    [/\bspotify\b/, "Spotify"],
+    [/\b(?:twitter|x)\b/, "X"],
+    [/\bamazon\b/, "Amazon"],
+    [/\bnet[- ]?id\b/, "NetID"],
+    [/\bauth0\b/, "Auth0"],
+    [/\bauthentik\b/, "Authentik"],
+    [/\bgitlab\b/, "GitLab"],
+    [/\bkeycloak\b/, "Keycloak"],
+    [/\bclerk\b/, "Clerk"],
+    [/\bpaypal\b/, "PayPal"],
+    [/\bline\b/, "LINE"],
+    [/\bkakao(?:talk)?\b/, "Kakao"],
+    [/\bwechat\b/, "WeChat"],
+    [/\bkick\b/, "Kick"],
+    [/\bory(?:[- ]?oauth2)?\b/, "Ory OAuth2"],
+    [/\bokta\b/, "Okta"],
+    [/\bsalesforce\b/, "Salesforce"],
+    [/\bzoom\b/, "Zoom"],
+    [/\btwitch\b/, "Twitch"],
+    [/\btiktok\b/, "TikTok"],
+    [/\breddit\b/, "Reddit"],
+    [/\bdropbox\b/, "Dropbox"],
+    [/\byahoo\b/, "Yahoo!"],
+    [/\bbitbucket\b/, "Bitbucket"],
+  ] as const;
+
+  for (const [pattern, name] of providers) {
+    if (pattern.test(source)) {
+      return name;
+    }
+  }
+
+  return (label ?? "Provider")
+    .replace(/^(sign in|continue)\s+with\s+/i, "")
+    .trim() || "Provider";
+}
+
+/**
+ * Retrieves and translates the sanitized text associated with a UI node.
+ *
+ * @param node - The UI node whose text to retrieve
+ * @param locale - The locale used for translation
+ * @returns The translated text, or `undefined` when the node has no usable text
+ */
 export function getNodeText(node: UiNode, locale?: string) {
   const text = asRecord(getNodeAttributes(node).text);
   const raw = getSafeText(getString(text.text));
@@ -141,6 +224,11 @@ export function getSafeText(value: string | undefined) {
   return text;
 }
 
+/**
+ * Determines whether a UI node is a verification code input.
+ *
+ * @returns `true` if the node is a text input named `code` with a maximum length from 4 through 8, `false` otherwise.
+ */
 export function isCodeInput(node: UiNode) {
   const attributes = getNodeAttributes(node);
   const name = getString(attributes.name);
@@ -157,6 +245,30 @@ export function isCodeInput(node: UiNode) {
   );
 }
 
+/**
+ * Determines whether a UI node represents an identity provider action.
+ *
+ * @param node - The UI node to inspect
+ * @returns `true` if the node is a submit or button input named `provider` or grouped as `oidc`, `false` otherwise.
+ */
+export function isProviderNode(node: UiNode) {
+  const attributes = getNodeAttributes(node);
+  const type = getString(attributes.type);
+  const name = getString(attributes.name);
+
+  return (
+    node.type === "input" &&
+    (type === "submit" || type === "button") &&
+    (name === "provider" || node.group === "oidc")
+  );
+}
+
+/**
+ * Determines whether a value represents an enabled or checked state.
+ *
+ * @param value - The value to evaluate
+ * @returns `true` for `true`, `"true"`, `"on"`, or `"1"`; `false` otherwise
+ */
 export function isChecked(value: unknown) {
   return value === true || value === "true" || value === "on" || value === "1";
 }

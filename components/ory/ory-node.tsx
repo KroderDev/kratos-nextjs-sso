@@ -5,7 +5,9 @@
 
 import type { UiNode } from "@ory/client-fetch";
 import Script from "next/script";
-import { ArrowUpRight, ExternalLink } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+
+import type { OryFlowKind } from "@/lib/ory/types";
 
 import { ButtonLink } from "@/components/ui/button-link";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -30,13 +32,16 @@ import {
   getNodeMessages,
   getNodeText,
   getNumber,
+  getProviderName,
   getString,
   getSafeText,
+  isProviderNode,
   isChecked,
   isCodeInput,
 } from "@/lib/ory/flow";
 
 import { OryTriggerButton } from "./ory-trigger-button";
+import { ProviderIcon } from "./provider-icon";
 import { allowedOryOrigins, isSafeProviderUrl } from "@/lib/ory/security";
 import { appBaseUrl, oryCanonicalUrl, orySdkUrl } from "@/ory.config";
 import { useTranslation } from "@/lib/i18n/client";
@@ -55,6 +60,8 @@ const VALID_REFERRER_POLICIES = new Set([
 ]);
 
 type OryNodeProps = {
+  compactProvider?: boolean;
+  kind?: OryFlowKind;
   node: UiNode;
 };
 
@@ -63,7 +70,7 @@ function nodeId(node: UiNode) {
   return getString(attributes.id) ?? getString(attributes.name) ?? "ory-node";
 }
 
-export function OryNode({ node }: OryNodeProps) {
+export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
   const { t, locale } = useTranslation();
   const attributes = getNodeAttributes(node);
   const id = nodeId(node);
@@ -100,23 +107,42 @@ export function OryNode({ node }: OryNodeProps) {
     }
 
     if (inputType === "submit" || inputType === "button") {
+      const isProvider = isProviderNode(node);
+      const providerName = isProvider ? getProviderName(node) : undefined;
+      const providerAction = providerName
+        ? t("ory.nodes.continueWith", { provider: providerName })
+        : undefined;
+      const isLoginAction = kind === "login" && name === "method";
+
       return (
         <OryTriggerButton
           key={id}
-          className="min-h-11 w-full justify-between px-4"
+          aria-label={compactProvider ? providerAction : undefined}
+          className={`min-h-11 w-full px-4 ${
+            compactProvider
+              ? "justify-center p-0"
+              : isProvider
+                ? "justify-start gap-3"
+                : "justify-between"
+          }`}
           disabled={disabled}
+          formNoValidate={isProvider || undefined}
           name={name}
+          title={compactProvider ? providerAction : undefined}
           trigger={getString(attributes.onclickTrigger)}
           type={inputType === "button" ? "button" : "submit"}
           value={stringValue}
-          variant={node.group === "oidc" ? "outline" : "default"}
+          variant={isProvider ? "outline" : "default"}
         >
-          <span>{label ?? stringValue ?? t("ory.nodes.continue")}</span>
-          {node.group === "oidc" ? (
-            <ExternalLink aria-hidden="true" data-icon="inline-end" />
+          {isProvider ? <ProviderIcon node={node} /> : null}
+          {compactProvider ? (
+            <span className="sr-only">{providerAction}</span>
           ) : (
-            <ArrowUpRight aria-hidden="true" data-icon="inline-end" />
+            <span className={isProvider ? "flex-1 text-left" : undefined}>
+              {isLoginAction ? t("ory.nodes.login") : providerAction ?? label ?? stringValue ?? t("ory.nodes.continue")}
+            </span>
           )}
+          {!isProvider ? <ArrowUpRight aria-hidden="true" data-icon="inline-end" /> : null}
         </OryTriggerButton>
       );
     }
