@@ -2,7 +2,7 @@
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen?style=flat-square)](https://kratos-nextjs-sso.vercel.app)
 [![CI](https://img.shields.io/github/actions/workflow/status/KroderDev/kratos-nextjs-sso/ci.yml?branch=master&label=CI&style=flat-square)](https://github.com/KroderDev/kratos-nextjs-sso/actions/workflows/ci.yml)
-[![Coverage](https://codecov.io/gh/KroderDev/kratos-nextjs-sso/branch/master/graph/badge.svg)](https://codecov.io/gh/KroderDev/kratos-nextjs-sso)
+[![codecov](https://codecov.io/github/KroderDev/kratos-nextjs-sso/graph/badge.svg?token=G5MF0O5IFS)](https://codecov.io/github/KroderDev/kratos-nextjs-sso)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.12-black?style=flat-square&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0.3-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
@@ -172,7 +172,7 @@ The automated suite covers Ory flow helpers, security boundaries, localization k
 
 ## Keep Exploring
 
-- [Ory browser flows](https://www.ory.com/docs/security-model)
+- [Ory cookie-based security model](https://www.ory.com/docs/security-model)
 - [Ory Next.js example](https://github.com/ory/kratos-nextjs-react-example)
 - [Ory Elements App Router example](https://github.com/ory/elements/tree/main/examples/nextjs-app-router)
 - [Next.js proxy convention](https://nextjs.org/docs/app/api-reference/file-conventions/proxy)
