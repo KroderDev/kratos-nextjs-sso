@@ -29,7 +29,7 @@ describe("FaviconProvider", () => {
     mockLink = { rel: "", href: "" };
     mockCE = vi.fn().mockReturnValue(mockLink);
     mockAppend = vi.fn();
-    mockQS = vi.fn().mockReturnValue({ forEach: vi.fn((fn: (el: { remove: () => void }) => void) => fn({ remove: mockRemove })) });
+    mockQS = vi.fn().mockReturnValue({ forEach: vi.fn((fn: (el: { remove: () => void }) => void) => fn({ remove: mockRemove as unknown as () => void })) });
 
     globalThis.document = {
       querySelectorAll: mockQS,
