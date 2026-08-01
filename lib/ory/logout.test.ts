@@ -44,4 +44,28 @@ describe("getSafeLogoutFlow", () => {
     expect(result.logout_url).toBe("#");
     expect(result.logout_token).toBe("");
   });
+
+  it("rewrites a provider logout URL to the application origin", async () => {
+    vi.resetModules();
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://app.example");
+    vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "https://ory.example");
+
+    try {
+      const { getSafeLogoutFlow: getConfiguredLogoutFlow } = await import("./logout");
+      const { getLogoutFlow: getConfiguredProviderLogoutFlow } = await import("@ory/nextjs/app");
+
+      vi.mocked(getConfiguredProviderLogoutFlow).mockResolvedValue({
+        logout_url: "https://ory.example/self-service/logout?token=123",
+        logout_token: "123",
+      });
+
+      const result = await getConfiguredLogoutFlow("https://app.example");
+
+      expect(result.logout_url).toBe(
+        "https://app.example/self-service/logout?token=123",
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
 });

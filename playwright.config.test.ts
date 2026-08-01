@@ -41,7 +41,7 @@ describe("playwright.config.ts", () => {
 
     expect(config.use?.baseURL).toBe("http://127.0.0.1:3000");
     expect(config.testDir).toBe("./tests");
-    expect(config.testIgnore).toEqual(["auth/**"]);
+    expect(config.testIgnore).toEqual(["auth/**", "real-auth/**"]);
     expect(config.retries).toBe(2);
     expect(server?.reuseExistingServer).toBe(false);
   });
@@ -75,6 +75,29 @@ describe("playwright.config.ts", () => {
       "http://127.0.0.1:4010",
     );
     expect(servers.every((server) => server.reuseExistingServer === false)).toBe(true);
+  });
+
+  it("uses an externally managed Kratos server in real auth mode", async () => {
+    const config = await loadConfig({
+      CI: "true",
+      PLAYWRIGHT_AUTH: "1",
+      PLAYWRIGHT_KRATOS_MODE: "real",
+    });
+    const servers = asArray(config.webServer);
+    const appServer = servers.find((server) =>
+      server.command?.includes(".next/standalone/server.js"),
+    );
+
+    expect(config.testDir).toBe("./tests/real-auth");
+    expect(config.testIgnore).toEqual([]);
+    expect(servers).toHaveLength(1);
+    expect(servers.some((server) => server.command?.includes("mock-kratos"))).toBe(false);
+    expect(appServer?.port).toBe(3002);
+    expect(appServer?.env?.NEXT_PUBLIC_ORY_SDK_URL).toBe(
+      "http://127.0.0.1:4010",
+    );
+    expect(appServer?.env?.HOSTNAME).toBe("127.0.0.1");
+    expect(appServer?.reuseExistingServer).toBe(false);
   });
 
   it("keeps the smoke mode isolated from configured auth servers", async () => {
