@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { unstable_rethrow } from "next/navigation";
 import { getRecoveryFlow, type OryPageParams } from "@ory/nextjs/app";
 
 import { AuthContent } from "@/components/layout/auth-shell";
@@ -42,9 +43,7 @@ export default async function RecoveryPage({ searchParams }: OryPageParams) {
   try {
     flow = rewriteOryFlow(await getRecoveryFlow(config, searchParams)) || null;
   } catch (e) {
-    if ((e as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
-      throw e;
-    }
+    unstable_rethrow(e);
     // flow stays null → FlowUnavailable renders
   }
 
