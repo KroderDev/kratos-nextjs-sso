@@ -8,6 +8,7 @@ services:
       SERVE_ADMIN_HOST: 127.0.0.1
       SERVE_PUBLIC_HOST: 127.0.0.1
       SERVE_PUBLIC_PORT: ${PLAYWRIGHT_KRATOS_PORT:-4010}
+      SERVE_PUBLIC_BASE_URL: http://127.0.0.1:${PLAYWRIGHT_KRATOS_PORT:-4010}/
     volumes:
       - kratos-sqlite:/var/lib/sqlite
       - ./kratos.yml:/etc/config/kratos/kratos.yml:ro
