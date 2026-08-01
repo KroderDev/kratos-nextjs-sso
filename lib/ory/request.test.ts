@@ -42,4 +42,82 @@ describe("forwarded request origin", () => {
       ),
     ).toBe("http://localhost:3000");
   });
+
+  it("falls back when only the protocol header is present", () => {
+    expect(
+      getForwardedOrigin(
+        new Headers({ "x-forwarded-proto": "https" }),
+        "http://localhost:3000",
+      ),
+    ).toBe("http://localhost:3000");
+  });
+
+  it("falls back when only the host header is present", () => {
+    expect(
+      getForwardedOrigin(
+        new Headers({ "x-forwarded-host": "auth.example.com" }),
+        "http://localhost:3000",
+      ),
+    ).toBe("http://localhost:3000");
+  });
+
+  it("is case-sensitive about the forwarded protocol", () => {
+    expect(
+      getForwardedOrigin(
+        new Headers({
+          "x-forwarded-host": "auth.example.com",
+          "x-forwarded-proto": "HTTPS",
+        }),
+        "http://localhost:3000",
+      ),
+    ).toBe("http://localhost:3000");
+  });
+
+  it("falls back when the forwarded host cannot form a valid URL", () => {
+    expect(
+      getForwardedOrigin(
+        new Headers({
+          "x-forwarded-host": "not a valid host!",
+          "x-forwarded-proto": "https",
+        }),
+        "http://localhost:3000",
+      ),
+    ).toBe("http://localhost:3000");
+  });
+
+  it("trims whitespace around comma-separated header values", () => {
+    expect(
+      getForwardedOrigin(
+        new Headers({
+          "x-forwarded-host": "  auth.example.com  , proxy.internal",
+          "x-forwarded-proto": "  https  , http",
+        }),
+        "http://localhost:3000",
+      ),
+    ).toBe("https://auth.example.com");
+  });
+
+  it("treats an empty forwarded header value as absent", () => {
+    expect(
+      getForwardedOrigin(
+        new Headers({
+          "x-forwarded-host": "",
+          "x-forwarded-proto": "https",
+        }),
+        "http://localhost:3000",
+      ),
+    ).toBe("http://localhost:3000");
+  });
+
+  it("accepts http as a valid forwarded protocol", () => {
+    expect(
+      getForwardedOrigin(
+        new Headers({
+          "x-forwarded-host": "internal.example.com:8080",
+          "x-forwarded-proto": "http",
+        }),
+        "https://localhost:3000",
+      ),
+    ).toBe("http://internal.example.com:8080");
+  });
 });
