@@ -5,8 +5,8 @@ const { mockGetFlowError } = vi.hoisted(() => ({
   mockGetFlowError: vi.fn(),
 }));
 
-vi.mock("`@ory/client-fetch`", async () => {
-  const actual = await vi.importActual<typeof import("`@ory/client-fetch`")>("`@ory/client-fetch`");
+vi.mock("@ory/client-fetch", async () => {
+  const actual = await vi.importActual<typeof import("@ory/client-fetch")>("@ory/client-fetch");
   return {
     ...actual,
     FrontendApi: class {
