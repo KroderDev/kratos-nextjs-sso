@@ -10,6 +10,12 @@ const oryMiddleware = createOryMiddleware({
   project: oryConfig.project,
 });
 
+/**
+ * Processes requests through Ory middleware when configured and validates the application origin.
+ *
+ * @param request - The incoming Next.js request
+ * @returns The middleware response, or a `400` response when the configured application origin is invalid or does not match the request origin.
+ */
 export async function proxy(request: NextRequest) {
   if (!isOryConfigured) {
     return NextResponse.next();

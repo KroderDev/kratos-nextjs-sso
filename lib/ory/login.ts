@@ -13,9 +13,9 @@ import { flowRequestHeaders, getForwardedOrigin } from "@/lib/ory/request";
 type LoginParams = Record<string, string | string[] | undefined>;
 
 /**
- * Constructs the public URL from the incoming request headers.
+ * Builds the public URL for the incoming request.
  *
- * @returns The public URL using the forwarded protocol or `http` and the request host.
+ * @returns The forwarded origin when available; otherwise, an HTTP URL using the request host.
  */
 async function publicUrl() {
   const incoming = await headers();
