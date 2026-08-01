@@ -36,7 +36,7 @@ connect-src 'self' <ORY_SDK_ORIGIN>
 form-action 'self' <ORY_SDK_ORIGIN>
 script-src 'self' <ORY_SDK_ORIGIN> 'unsafe-inline'
 img-src 'self' data: https:
-style-src 'self'
+style-src 'self' 'unsafe-inline'
 base-uri 'self'
 object-src 'none'
 frame-ancestors 'none'
@@ -49,21 +49,19 @@ frame-ancestors 'none'
 | `form-action` | Restrict `<form action>` destinations to the app and the Ory API origin. Prevents form-action hijacking even if a malicious flow action bypasses the server-side check. |
 | `script-src 'unsafe-inline'` | Next.js emits inline `<script>` tags for bootstrap and route preloading. Nonce-based CSP requires framework-level support that is not yet available. The policy scopes script sources to `'self'` and the Ory origin. |
 | `img-src https:` | QR codes and OIDC provider logos are hosted on external HTTPS origins. Restricting to specific origins would require an allowlist of every configured OIDC provider. |
-| `style-src 'self'` | Production CSS is bundled and served from the application origin. No inline styles are needed outside development. |
+| `style-src 'self' 'unsafe-inline'` | Next.js and React components emit dynamic inline styles and style attributes at runtime. The policy scopes style origins to `'self'`. |
 | `base-uri 'self'` | Prevents `<base>` tag injection from hijacking relative URL resolution. |
 | `object-src 'none'` | Blocks `<object>`, `<embed>`, and `<applet>`. Not used by the application. |
 | `frame-ancestors 'none'` | Blocks embedding in iframes. Redundant with `X-Frame-Options: DENY` but supported by modern browsers. |
 
 #### Development CSP Relaxations
 
-In `NODE_ENV=development`, two additional allowances are added:
+In `NODE_ENV=development`, an additional allowance is added:
 
 - `script-src` gains `'unsafe-eval'` — required by React's Fast Refresh and
   development-mode transforms.
-- `style-src` gains `'unsafe-inline'` — required by the Next.js development
-  indicator, which injects `<style>` elements at runtime.
 
-These relaxations are **never present in production** (enforced by the
+This relaxation is **never present in production** (enforced by the
 `NODE_ENV` check at build time, not by a runtime environment variable).
 
 ### Additional Headers

@@ -7,6 +7,7 @@ test("sets browser security headers", async ({ request }) => {
   const contentSecurityPolicy = headers["content-security-policy"];
 
   expect(contentSecurityPolicy).toContain("frame-ancestors 'none'");
+  expect(contentSecurityPolicy).toContain("style-src 'self' 'unsafe-inline'");
   expect(contentSecurityPolicy).not.toContain("unsafe-eval");
   expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
   expect(headers["x-content-type-options"]).toBe("nosniff");

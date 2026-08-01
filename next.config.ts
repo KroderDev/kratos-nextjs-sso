@@ -25,8 +25,6 @@ const nextConfig: NextConfig = {
     const formSources = ["'self'", sdkOrigin].filter(Boolean).join(" ");
     const developmentScriptSource =
       process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "";
-    const developmentStyleSource =
-      process.env.NODE_ENV === "development" ? " 'unsafe-inline'" : "";
     const securityHeaders = [
       { key: "Content-Security-Policy", value: [
         "default-src 'self'",
@@ -36,7 +34,7 @@ const nextConfig: NextConfig = {
         // this origin and the configured Ory origin until nonce support is added.
         `script-src ${scriptSources} 'unsafe-inline'${developmentScriptSource}`,
         "img-src 'self' data: https:",
-        `style-src 'self'${developmentStyleSource}`,
+        "style-src 'self' 'unsafe-inline'",
         "base-uri 'self'",
         "object-src 'none'",
         "frame-ancestors 'none'",
