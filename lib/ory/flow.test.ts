@@ -198,4 +198,48 @@ describe("Ory flow helpers", () => {
     expect(getSafeText("")).toBeUndefined();
     expect(getSafeText(undefined)).toBeUndefined();
   });
+
+  it("translates 'e-mail' to 'Email' for the English locale only", () => {
+    expect(translateOryText("e-mail", "en")).toBe("Email");
+    expect(translateOryText("E-Mail", "en")).toBe("Email");
+    expect(translateOryText("  e-mail  ", "en")).toBe("Email");
+    expect(translateOryText("e-mail")).toBe("e-mail");
+    expect(translateOryText("email", "en")).toBe("email");
+  });
+
+  it("treats a node as a provider when grouped as oidc even without name='provider'", () => {
+    expect(
+      isProviderNode(
+        inputNode({ group: "oidc", name: "custom_provider", type: "button" }),
+      ),
+    ).toBe(true);
+    expect(
+      isProviderNode(
+        inputNode({ group: "oidc", name: "provider", type: "text" }),
+      ),
+    ).toBe(false);
+    expect(
+      isProviderNode({
+        type: "text",
+        group: "oidc",
+        attributes: { node_type: "text", name: "provider", type: "submit" },
+      } as unknown as UiNode),
+    ).toBe(false);
+  });
+
+  it("falls back to a cleaned label or 'Provider' when no known provider matches", () => {
+    expect(
+      getProviderName(
+        inputNode({
+          name: "provider",
+          type: "submit",
+          value: "unrecognized-sso",
+          label: { id: 1, text: "Sign in with Custom SSO", type: "info" },
+        }),
+      ),
+    ).toBe("Custom SSO");
+    expect(
+      getProviderName(inputNode({ name: "provider", value: "unrecognized-sso", label: undefined })),
+    ).toBe("Provider");
+  });
 });

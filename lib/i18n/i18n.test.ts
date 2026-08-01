@@ -54,4 +54,35 @@ describe("i18n configuration and health audit", () => {
       expect(localeKeys, `Locale '${locale}' is missing keys present in 'en'`).toEqual(enKeys);
     }
   });
+
+  it("provides the new social login and provider action translation keys in every locale", () => {
+    expect(en.ory.nodes.login).toBe("Login");
+    expect(en.ory.nodes.continueWith).toBe("Continue with {provider}");
+    expect(en.ory.nodes.socialLogin).toBe("Sign in with a social account");
+    expect(en.ory.nodes.emailDivider).toBe("Or");
+    expect(en.ory.nodes.emailDividerCompact).toBe("Or continue with");
+
+    expect(dictionaries.es.ory.nodes.login).toBe("Iniciar sesión");
+    expect(dictionaries.es.ory.nodes.continueWith).toBe("Continuar con {provider}");
+    expect(dictionaries.es.ory.nodes.socialLogin).toBe("Iniciar sesión con una cuenta social");
+    expect(dictionaries.es.ory.nodes.emailDivider).toBe("O");
+    expect(dictionaries.es.ory.nodes.emailDividerCompact).toBe("O continúa con");
+  });
+
+  it("interpolates the {provider} placeholder consistently across locales", () => {
+    expect(formatString(en.ory.nodes.continueWith, { provider: "Google" })).toBe(
+      "Continue with Google",
+    );
+    expect(formatString(dictionaries.es.ory.nodes.continueWith, { provider: "Google" })).toBe(
+      "Continuar con Google",
+    );
+  });
+
+  it("reflects the updated auth copy referenced by the smoke tests", () => {
+    expect(en.auth.login.footer.createOne).toBe("Create an account");
+    expect(en.auth.registration.title).toBe("Create your account");
+    expect(en.auth.recovery.title).toBe("Recover your account");
+    expect(en.auth.verification.title).toBe("Verify your email address");
+    expect(en.auth.error.title).toBe("Unable to complete request");
+  });
 });
