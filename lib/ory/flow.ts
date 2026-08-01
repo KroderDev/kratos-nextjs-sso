@@ -135,10 +135,9 @@ export function getNodeLabel(node: UiNode, locale?: string) {
  */
 export function getProviderName(node: UiNode) {
   const attributes = getNodeAttributes(node);
-  const label =
-    typeof attributes.label === "object" && attributes.label !== null
-      ? getString((attributes.label as UnknownRecord).text)
-      : undefined;
+  const attributeLabel = asRecord(attributes.label);
+  const metaLabel = asRecord(node.meta?.label);
+  const label = getString(attributeLabel.text) ?? getString(metaLabel.text);
   const value = getString(attributes.value);
   const source = `${label ?? ""} ${value ?? ""}`.toLowerCase();
   const providers = [

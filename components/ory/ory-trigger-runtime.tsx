@@ -46,18 +46,22 @@ export function invokeOryTrigger(trigger: string | undefined) {
   }, 100);
 }
 
+export function getOryTriggerKey(triggers: string[]) {
+  return triggers.join("|");
+}
+
 type OryTriggerRuntimeProps = {
   triggers: string[];
 };
 
 export function OryTriggerRuntime({ triggers }: OryTriggerRuntimeProps) {
-  const triggerKey = triggers.join("|");
+  const triggerKey = getOryTriggerKey(triggers);
 
   useEffect(() => {
-    for (const trigger of triggers) {
+    for (const trigger of triggerKey.split("|").filter(Boolean)) {
       invokeOryTrigger(trigger);
     }
-  }, [triggerKey, triggers]);
+  }, [triggerKey]);
 
   return null;
 }

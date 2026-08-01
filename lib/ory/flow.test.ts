@@ -121,6 +121,20 @@ describe("Ory flow helpers", () => {
     }
   });
 
+  it("uses the node meta label when the provider attribute has no label", () => {
+    const node = inputNode({
+      name: "provider",
+      type: "submit",
+      value: "custom-sso",
+      label: undefined,
+    });
+    node.meta = {
+      label: { id: 1, text: "Sign in with Acme SSO", type: "info" },
+    };
+
+    expect(getProviderName(node)).toBe("Acme SSO");
+  });
+
   it("keeps node messages available for field-level errors", () => {
     const node = inputNode();
     node.messages = [

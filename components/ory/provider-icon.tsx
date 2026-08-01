@@ -1,17 +1,15 @@
 import type { ComponentType } from "react";
 import { Icon } from "@iconify/react";
 import type { IconifyIcon } from "@iconify/types";
-import {
-  SiAuthentik,
-  SiClerk,
-  SiKakao,
-  SiKeycloak,
-  SiKick,
-  SiLine,
-  SiOry,
-  SiPaypal,
-  SiWechat,
-} from "@icons-pack/react-simple-icons";
+import SiAuthentik from "@icons-pack/react-simple-icons/icons/SiAuthentik.mjs";
+import SiClerk from "@icons-pack/react-simple-icons/icons/SiClerk.mjs";
+import SiKakao from "@icons-pack/react-simple-icons/icons/SiKakao.mjs";
+import SiKeycloak from "@icons-pack/react-simple-icons/icons/SiKeycloak.mjs";
+import SiKick from "@icons-pack/react-simple-icons/icons/SiKick.mjs";
+import SiLine from "@icons-pack/react-simple-icons/icons/SiLine.mjs";
+import SiOry from "@icons-pack/react-simple-icons/icons/SiOry.mjs";
+import SiPaypal from "@icons-pack/react-simple-icons/icons/SiPaypal.mjs";
+import SiWechat from "@icons-pack/react-simple-icons/icons/SiWechat.mjs";
 import metaIcon from "@iconify-icons/simple-icons/meta";
 import xIcon from "@iconify-icons/simple-icons/x";
 import appleIcon from "@iconify-icons/logos/apple";
@@ -99,12 +97,12 @@ export function ProviderIcon({ node }: { node: UiNode }) {
 
   if (icon) {
     return (
-      <Icon
-        aria-hidden="true"
-        className={iconClassName}
-        color={getProviderIconColor(name)}
-        icon={icon}
-      />
+      <span aria-hidden="true" className={iconClassName}>
+        <Icon
+          color={getProviderIconColor(name)}
+          icon={icon}
+        />
+      </span>
     );
   }
 
@@ -113,7 +111,6 @@ export function ProviderIcon({ node }: { node: UiNode }) {
       <SimpleIcon
         aria-hidden={true}
         className={iconClassName}
-        color="default"
         size={20}
         title={name}
       />

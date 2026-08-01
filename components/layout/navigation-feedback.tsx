@@ -16,6 +16,19 @@ type PendingNavigation =
   | { kind: "route"; targetPathname: string }
   | { kind: "document" };
 
+export function shouldClearPendingNavigation(
+  kind: PendingNavigation["kind"] | undefined,
+  targetPathname: string | undefined,
+  pathname: string,
+) {
+  return (
+    kind === "route" &&
+    targetPathname === pathname &&
+    !isAuthLayoutRoute(targetPathname) &&
+    !isDashboardRoute(targetPathname)
+  );
+}
+
 function isNavigableLink(anchor: HTMLAnchorElement) {
   if (
     anchor.target === "_blank" ||
@@ -49,21 +62,21 @@ export function NavigationFeedback() {
     pending &&
     pendingNavigation?.kind === "route" &&
     isDashboardRoute(pendingNavigation.targetPathname);
+  const pendingKind = pendingNavigation?.kind;
+  const pendingTargetPathname =
+    pendingNavigation?.kind === "route"
+      ? pendingNavigation.targetPathname
+      : undefined;
 
   useEffect(() => {
-    if (
-      pendingNavigation?.kind !== "route" ||
-      pendingNavigation.targetPathname !== pathname ||
-      isAuthLayoutRoute(pendingNavigation.targetPathname) ||
-      isDashboardRoute(pendingNavigation.targetPathname)
-    ) {
+    if (!shouldClearPendingNavigation(pendingKind, pendingTargetPathname, pathname)) {
       return;
     }
 
     const cleanup = window.setTimeout(() => setPendingNavigation(null), 0);
 
     return () => window.clearTimeout(cleanup);
-  }, [pathname, pendingNavigation]);
+  }, [pathname, pendingKind, pendingTargetPathname]);
 
   useEffect(() => {
     let timeout: number | undefined;
@@ -186,4 +199,3 @@ export function NavigationFeedback() {
     </>
   );
 }
-

@@ -72,6 +72,22 @@ describe("ProviderIcon", () => {
     const markup = renderToStaticMarkup(<ProviderIcon node={providerNode("unrecognized-sso")} />);
 
     expect(markup).toContain(">U<");
+    expect(markup).not.toContain("bg-primary");
+  });
+
+  it("falls back to a labeled badge for an unknown provider", () => {
+    const node = providerNode("custom-sso");
+    node.attributes = {
+      ...node.attributes,
+      label: undefined,
+    } as typeof node.attributes;
+    node.meta = {
+      label: { id: 1, text: "Sign in with Acme SSO", type: "info" },
+    };
+
+    const markup = renderToStaticMarkup(<ProviderIcon node={node} />);
+
+    expect(markup).toContain(">A<");
     expect(markup).toContain("aria-hidden=\"true\"");
   });
 });
