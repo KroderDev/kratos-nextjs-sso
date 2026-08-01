@@ -32,6 +32,13 @@ const server = createServer((request, response) => {
     return;
   }
 
+  if (url.pathname === "/__e2e/reset") {
+    requests.length = 0;
+    response.writeHead(204);
+    response.end();
+    return;
+  }
+
   if (url.pathname === "/self-service/login/browser") {
     response.writeHead(303, {
       location: `/auth/login?flow=${flowId}`,

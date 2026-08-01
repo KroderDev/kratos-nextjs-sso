@@ -53,7 +53,10 @@ vi.mock("@ory/nextjs/app", () => ({
   ),
 }));
 
-vi.mock("@/ory.config", () => ({ orySdkUrl: "https://ory.example.com" }));
+vi.mock("@/ory.config", () => ({
+  appBaseUrl: undefined,
+  orySdkUrl: "https://ory.example.com",
+}));
 vi.mock("@/lib/ory/request", async () => import("./request"));
 
 import { flowRequestHeaders } from "./request";

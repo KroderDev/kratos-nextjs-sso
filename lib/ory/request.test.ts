@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getForwardedOrigin } from "./request";
+import { getForwardedOrigin, validateForwardedOrigin } from "./request";
 
 describe("forwarded request origin", () => {
   it("uses the public HTTPS origin supplied by the ingress", () => {
@@ -119,5 +119,81 @@ describe("forwarded request origin", () => {
         "https://localhost:3000",
       ),
     ).toBe("http://internal.example.com:8080");
+  });
+});
+
+describe("forwarded origin validation", () => {
+  it("accepts a forwarded origin that matches the configured app base URL", () => {
+    expect(
+      validateForwardedOrigin(
+        "https://auth.example.com",
+        "https://auth.example.com",
+      ),
+    ).toBe(true);
+  });
+
+  it("accepts a forwarded origin that matches the app base URL origin (ignoring path)", () => {
+    expect(
+      validateForwardedOrigin(
+        "https://auth.example.com",
+        "https://auth.example.com/some/path",
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects a forwarded origin that does not match the configured app base URL", () => {
+    expect(
+      validateForwardedOrigin(
+        "https://attacker.example",
+        "https://auth.example.com",
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects a forwarded origin with a different protocol", () => {
+    expect(
+      validateForwardedOrigin(
+        "http://auth.example.com",
+        "https://auth.example.com",
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects a forwarded origin with a different port", () => {
+    expect(
+      validateForwardedOrigin(
+        "https://auth.example.com:8080",
+        "https://auth.example.com",
+      ),
+    ).toBe(false);
+  });
+
+  it("accepts any forwarded origin when no app base URL is configured", () => {
+    expect(
+      validateForwardedOrigin("https://anything.example", undefined),
+    ).toBe(true);
+  });
+
+  it("rejects validation when the app base URL is malformed", () => {
+    expect(
+      validateForwardedOrigin(
+        "https://auth.example.com",
+        "not a valid url",
+      ),
+    ).toBe(false);
+  });
+
+  it("validates against spoofed X-Forwarded-Host header when compared to app base URL", () => {
+    const spoofedOrigin = getForwardedOrigin(
+      new Headers({
+        "x-forwarded-host": "attacker.example",
+        "x-forwarded-proto": "https",
+      }),
+      "http://localhost:3000",
+    );
+
+    expect(
+      validateForwardedOrigin(spoofedOrigin, "https://auth.example.com"),
+    ).toBe(false);
   });
 });

@@ -4,6 +4,7 @@ test("loads a browser login flow with the browser cookie", async ({
   page,
   request,
 }) => {
+  await request.post("http://127.0.0.1:4010/__e2e/reset");
   await page.goto("/self-service/login/browser");
 
   await expect(page).toHaveURL(/\/auth\/login\?flow=e2e-login-flow$/);

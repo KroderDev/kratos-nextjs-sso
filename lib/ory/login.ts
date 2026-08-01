@@ -7,8 +7,12 @@ import {
 } from "@ory/client-fetch";
 import { getFlowFactory } from "@ory/nextjs/app";
 
-import { orySdkUrl } from "@/ory.config";
-import { flowRequestHeaders, getForwardedOrigin } from "@/lib/ory/request";
+import { appBaseUrl, orySdkUrl } from "@/ory.config";
+import {
+  flowRequestHeaders,
+  getForwardedOrigin,
+  validateForwardedOrigin,
+} from "@/lib/ory/request";
 
 type LoginParams = Record<string, string | string[] | undefined>;
 
@@ -16,11 +20,20 @@ type LoginParams = Record<string, string | string[] | undefined>;
  * Builds the public URL for the incoming request.
  *
  * @returns The forwarded origin when available; otherwise, an HTTP URL using the request host.
+ * @throws {Error} When the forwarded origin does not match the configured application base URL
  */
 async function publicUrl() {
   const incoming = await headers();
   const host = incoming.get("host");
-  return getForwardedOrigin(incoming, `http://${host}`);
+  const origin = getForwardedOrigin(incoming, `http://${host}`);
+
+  if (!validateForwardedOrigin(origin, appBaseUrl)) {
+    throw new Error(
+      `Forwarded origin ${origin} does not match configured app base URL ${appBaseUrl}`,
+    );
+  }
+
+  return origin;
 }
 
 /**
