@@ -5,12 +5,19 @@ import { allowedOryOrigins, isSafeFlowAction, isSafeProviderUrl } from "./securi
 const origins = allowedOryOrigins([
   "https://app.example.com",
   "https://project.oryapis.com",
+  "", // empty string edge case
+  "not-a-valid-url", // invalid URL edge case
 ]);
 
 describe("provider URL security", () => {
   it("allows relative URLs and configured origins", () => {
     expect(isSafeProviderUrl("/self-service/login", origins)).toBe(true);
     expect(isSafeProviderUrl("https://project.oryapis.com/self-service/login", origins)).toBe(true);
+  });
+
+  it("handles null, empty, or undefined input gracefully", () => {
+    expect(isSafeProviderUrl(undefined, origins)).toBe(false);
+    expect(isSafeProviderUrl("", origins)).toBe(false);
   });
 
   it("rejects dangerous schemes and protocol-relative URLs", () => {
