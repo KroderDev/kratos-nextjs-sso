@@ -1,24 +1,53 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import * as React from "react";
+import { describe, expect, it, vi } from "vitest";
 import type { UiNode } from "@ory/client-fetch";
+
+vi.mock("@/lib/ory/security", () => ({
+  allowedOryOrigins: () => ["https://example.com"],
+  isSafeProviderUrl: (href: string | undefined) => {
+    if (!href) return false;
+    return href.startsWith("/") || href.startsWith("https://example.com");
+  },
+  isSafeFlowAction: (action: string | undefined) => {
+    if (!action) return false;
+    return action.startsWith("/") || action.startsWith("https://");
+  },
+}));
+vi.mock("next/script", () => ({
+  __esModule: true,
+  default: ({ src, strategy, ...props }: Record<string, unknown>) =>
+    React.createElement("script", { src, "data-strategy": strategy, ...props }),
+}));
 
 import { OryNode } from "./ory-node";
 
-function submitNode(overrides: Record<string, unknown> = {}): UiNode {
+function baseNode(
+  type: string,
+  group: string,
+  overrides: Record<string, unknown> = {},
+): UiNode {
   return {
-    type: "input",
-    group: "password",
+    type,
+    group,
     messages: [],
     meta: {},
-    attributes: {
-      node_type: "input",
-      name: "method",
-      type: "submit",
-      value: "password",
-      label: { id: 1, text: "Sign in", type: "info" },
-      ...overrides,
-    },
+    attributes: { node_type: type, ...overrides },
   } as unknown as UiNode;
+}
+
+function inputNode(overrides: Record<string, unknown> = {}): UiNode {
+  return baseNode("input", "password", {
+    name: "method",
+    type: "submit",
+    value: "password",
+    label: { id: 1, text: "Sign in", type: "info" },
+    ...overrides,
+  });
+}
+
+function submitNode(overrides: Record<string, unknown> = {}): UiNode {
+  return inputNode(overrides);
 }
 
 function providerNode(overrides: Record<string, unknown> = {}): UiNode {
@@ -109,5 +138,236 @@ describe("OryNode submit/button rendering", () => {
     );
 
     expect(markup).toContain(">Continue with Provider<");
+  });
+});
+
+describe("OryNode hidden input", () => {
+  it("renders a hidden input field with name and value", () => {
+    const node = inputNode({ type: "hidden", name: "csrf_token", value: "abc123" });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain('type="hidden"');
+    expect(markup).toContain('name="csrf_token"');
+    expect(markup).toContain('value="abc123"');
+  });
+
+  it("defaults value to empty string when undefined", () => {
+    const node = inputNode({ type: "hidden", name: "csrf_token", value: undefined });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain('value=""');
+  });
+});
+
+describe("OryNode checkbox input", () => {
+  it("renders a checkbox with label inside a horizontal field", () => {
+    const node = inputNode({
+      type: "checkbox",
+      name: "traits.terms",
+      value: "true",
+      label: { id: 1, text: "Accept terms", type: "info" },
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain('data-slot="checkbox"');
+    expect(markup).toContain("Accept terms");
+  });
+
+  it("marks the field as invalid when messages contain errors", () => {
+    const node = inputNode({
+      type: "checkbox",
+      name: "traits.terms",
+      label: { id: 1, text: "Accept terms", type: "info" },
+    });
+    node.messages = [{ id: 1, text: "Required", type: "error" }];
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain('data-invalid="true"');
+  });
+});
+
+describe("OryNode code input", () => {
+  it("renders an OTP code input", () => {
+    const node = inputNode({
+      type: "text",
+      name: "code",
+      maxlength: 6,
+      label: { id: 1, text: "Verification code", type: "info" },
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain('data-slot="input-otp"');
+    expect(markup).toContain("Verification code");
+  });
+});
+
+describe("OryNode default text input", () => {
+  it("renders a text input with label inside a field", () => {
+    const node = inputNode({
+      type: "email",
+      name: "traits.email",
+      label: { id: 1, text: "Email address", type: "info" },
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain('data-slot="field"');
+    expect(markup).toContain("Email address");
+    expect(markup).toContain('type="email"');
+  });
+
+  it("renders description text when provided", () => {
+    const node = inputNode({
+      type: "text",
+      name: "traits.email",
+      label: { id: 1, text: "Email", type: "info" },
+      description: "We will never share your email",
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain("We will never share your email");
+  });
+
+  it("marks field as invalid when messages contain errors", () => {
+    const node = inputNode({
+      type: "text",
+      name: "traits.email",
+      label: { id: 1, text: "Email", type: "info" },
+    });
+    node.messages = [{ id: 1, text: "Invalid email", type: "error" }];
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain('data-invalid="true"');
+    expect(markup).toContain("Invalid email");
+  });
+});
+
+describe("OryNode text", () => {
+  it("renders text content in a paragraph", () => {
+    const node = baseNode("text", "default", {
+      text: { id: 1, text: "Important information", type: "info" },
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain("Important information");
+  });
+
+  it("applies destructive class when messages contain errors", () => {
+    const node = baseNode("text", "default", {
+      text: { id: 1, text: "Error message", type: "error" },
+    });
+    node.messages = [{ id: 1, text: "", type: "error" }];
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain("text-destructive");
+  });
+
+  it("returns null when text is empty", () => {
+    const node = baseNode("text", "default", { text: { id: 1, text: "", type: "info" } });
+    expect(renderToStaticMarkup(<OryNode node={node} />)).toBe("");
+  });
+});
+
+describe("OryNode anchor", () => {
+  it("renders a link button with the title text", () => {
+    const node = baseNode("a", "default", {
+      title: { id: 1, text: "Sign up", type: "info" },
+      href: "/self-service/registration/browser",
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain("Sign up");
+    expect(markup).toContain('href="/self-service/registration/browser"');
+  });
+
+  it("returns null for an unsafe href", () => {
+    const node = baseNode("a", "default", {
+      title: { id: 1, text: "Malicious", type: "info" },
+      href: "http://evil.example.com",
+    });
+    expect(renderToStaticMarkup(<OryNode node={node} />)).toBe("");
+  });
+
+  it("falls back to localized continue text when title is missing", () => {
+    const node = baseNode("a", "default", {
+      href: "/self-service/registration/browser",
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain(">Continue<");
+  });
+});
+
+describe("OryNode image", () => {
+  it("renders an img element for a non-QR image", () => {
+    const node = baseNode("img", "default", {
+      src: "https://example.com/logo.png",
+      width: 200,
+      height: 100,
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain('<img');
+    expect(markup).toContain('src="https://example.com/logo.png"');
+  });
+
+  it("wraps QR code image in a container div", () => {
+    const node = baseNode("img", "totp", {
+      src: "https://example.com/qr.png",
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain("aspect-square");
+    expect(markup).toContain("QR code");
+  });
+
+  it("returns null for an unsafe image src", () => {
+    const node = baseNode("img", "default", {
+      src: "http://evil.example.com/img.png",
+    });
+    expect(renderToStaticMarkup(<OryNode node={node} />)).toBe("");
+  });
+});
+
+describe("OryNode div", () => {
+  it("renders a div with custom class and data attributes", () => {
+    const node = baseNode("div", "default", {
+      _class: "custom-class",
+      id: "my-div",
+      data: { customAttr: "value1", other: "value2" },
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain('class="custom-class"');
+    expect(markup).toContain('id="my-div"');
+    expect(markup).toContain('data-customAttr="value1"');
+    expect(markup).toContain('data-other="value2"');
+  });
+});
+
+describe("OryNode script", () => {
+  it("renders a script tag for a safe script src", () => {
+    const node = baseNode("script", "default", {
+      src: "https://example.com/webauthn.js",
+      async: true,
+      type: "text/javascript",
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain('src="https://example.com/webauthn.js"');
+    expect(markup).toContain('data-strategy="afterInteractive"');
+  });
+
+  it("returns null for an unsafe script src", () => {
+    const node = baseNode("script", "default", {
+      src: "http://evil.example.com/script.js",
+    });
+    expect(renderToStaticMarkup(<OryNode node={node} />)).toBe("");
+  });
+});
+
+describe("OryNode unknown type", () => {
+  it("returns null for an unrecognized node type", () => {
+    const node = baseNode("unknown", "default", {});
+    expect(renderToStaticMarkup(<OryNode node={node} />)).toBe("");
   });
 });

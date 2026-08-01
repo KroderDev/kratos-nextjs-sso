@@ -154,4 +154,12 @@ describe("FlowForm", () => {
     expect(markup).toContain('data-slot="card"');
     expect(markup).toContain('data-slot="card-content"');
   });
+
+  it("enables the WebAuthn script path when a node has an ory onload trigger", () => {
+    const node = inputNode({ onloadTrigger: "oryWebAuthnRegistration" });
+    const flow = buildFlow([node]);
+    const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
+
+    expect(markup).toContain('data-slot="card-content"');
+  });
 });
