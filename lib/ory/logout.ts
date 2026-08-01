@@ -3,6 +3,12 @@ import type { LogoutFlow } from "@ory/client-fetch";
 
 import { appBaseUrl, orySdkUrl } from "@/ory.config";
 
+/**
+ * Rewrites a provider logout URL to use the application's protocol and host.
+ *
+ * @param value - The logout URL to rewrite
+ * @returns The rewritten URL, or the original value when it does not match the provider origin or cannot be parsed
+ */
 function rewriteLogoutUrl(value: string) {
   if (!appBaseUrl || !orySdkUrl) {
     return value;
@@ -25,6 +31,12 @@ function rewriteLogoutUrl(value: string) {
   }
 }
 
+/**
+ * Applies the application's protocol and host to the flow's logout URL when applicable.
+ *
+ * @param flow - The logout flow to update
+ * @returns The logout flow with its `logout_url` processed for the application
+ */
 function withApplicationLogoutUrl(flow: LogoutFlow): LogoutFlow {
   return {
     ...flow,
@@ -32,6 +44,12 @@ function withApplicationLogoutUrl(flow: LogoutFlow): LogoutFlow {
   };
 }
 
+/**
+ * Retrieves a logout flow, optionally using a return URL.
+ *
+ * @param returnTo - The URL to redirect to after logout
+ * @returns The logout flow, or a fallback flow with `logout_url` set to `"#"` when retrieval fails
+ */
 export async function getSafeLogoutFlow(returnTo?: string): Promise<LogoutFlow> {
   if (returnTo) {
     try {
