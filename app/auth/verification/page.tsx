@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { unstable_rethrow } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { getVerificationFlow, type OryPageParams } from "@ory/nextjs/app";
 
 import { AuthContent } from "@/components/layout/auth-shell";
@@ -8,6 +8,7 @@ import { OrySetupState } from "@/components/ory/setup-state";
 import { rewriteOryFlow } from "@/lib/ory/url";
 import config, { isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
+import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
 
 export const dynamic = "force-dynamic";
 
@@ -46,8 +47,11 @@ export default async function VerificationPage({
     flow =
       rewriteOryFlow(await getVerificationFlow(config, searchParams)) || null;
   } catch (e) {
+    if (isOryFlowRestartRedirect(e, "verification")) {
+      redirect("/auth/error");
+    }
     unstable_rethrow(e);
-    // flow stays null → FlowUnavailable renders
+    // flow stays null -> FlowUnavailable renders
   }
 
   return (
@@ -68,4 +72,3 @@ export default async function VerificationPage({
     />
   );
 }
-

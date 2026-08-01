@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getServerSession, getSettingsFlow, type OryPageParams } from "@ory/nextjs/app";
 import { getSafeLogoutFlow } from "@/lib/ory/logout";
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { FlowForm } from "@/components/ory/flow-form";
@@ -16,6 +16,7 @@ import {
   getIdentityName,
 } from "@/lib/ory/identity";
 import { rewriteOryFlow } from "@/lib/ory/url";
+import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
 import config, { appBaseUrl, isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 
@@ -103,9 +104,10 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
   try {
     flow = rewriteOryFlow(await getSettingsFlow(config, searchParams)) || null;
   } catch (e) {
-    if ((e as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
-      throw e;
+    if (isOryFlowRestartRedirect(e, "settings")) {
+      redirect("/auth/error");
     }
+    unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders
   }
 
@@ -136,4 +138,3 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
     </DashboardShell>
   );
 }
-

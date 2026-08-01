@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { unstable_rethrow } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import type { OryPageParams } from "@ory/nextjs/app";
 
 import { AuthContent } from "@/components/layout/auth-shell";
@@ -9,6 +9,7 @@ import { rewriteOryFlow } from "@/lib/ory/url";
 import { isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 import { getLoginFlowWithRequestHeaders } from "@/lib/ory/login";
+import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
 
 export const dynamic = "force-dynamic";
 
@@ -49,8 +50,11 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
   try {
     flow = rewriteOryFlow(await getLoginFlowWithRequestHeaders(searchParams)) || null;
   } catch (e) {
+    if (isOryFlowRestartRedirect(e, "login")) {
+      redirect("/auth/error");
+    }
     unstable_rethrow(e);
-    // flow stays null → FlowUnavailable renders
+    // flow stays null -> FlowUnavailable renders
   }
 
   return (
