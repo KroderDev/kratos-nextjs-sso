@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import packageJson from "./package.json";
 
@@ -7,9 +7,11 @@ import packageJson from "./package.json";
 type WebServer = {
   command?: string;
   port?: number;
+  reuseExistingServer?: boolean;
   env?: Record<string, string>;
 };
 type LooseConfig = {
+  retries?: number;
   testDir?: string;
   testIgnore?: string[];
   webServer?: WebServer | WebServer[];
@@ -28,6 +30,23 @@ function asArray(server: WebServer | WebServer[] | undefined): WebServer[] {
 }
 
 describe("playwright.config.ts", () => {
+  it("uses the CI server settings when CI is enabled", async () => {
+    vi.resetModules();
+    vi.stubEnv("CI", "true");
+
+    try {
+      const { default: ciConfig } = await import("./playwright.config");
+      const config = ciConfig as LooseConfig;
+      const server = asArray(config.webServer)[0];
+
+      expect(config.use?.baseURL).toBe("http://127.0.0.1:3000");
+      expect(config.retries).toBe(2);
+      expect(server?.reuseExistingServer).toBe(false);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it("ignores the auth test suite, which runs under its own config", () => {
     expect(smokeConfig.testIgnore).toEqual(["auth/**"]);
   });
@@ -52,6 +71,22 @@ describe("playwright.auth.config.ts", () => {
   const appServer = servers.find((server) =>
     server.command?.includes(".next/standalone/server.js"),
   );
+
+  it("uses the CI server settings when CI is enabled", async () => {
+    vi.resetModules();
+    vi.stubEnv("CI", "true");
+
+    try {
+      const { default: ciConfig } = await import("./playwright.auth.config");
+      const config = ciConfig as LooseConfig;
+      const ciServers = asArray(config.webServer);
+
+      expect(config.retries).toBe(2);
+      expect(ciServers.every((server) => server.reuseExistingServer === false)).toBe(true);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
 
   it("only runs specs under tests/auth", () => {
     expect(authConfig.testDir).toBe("./tests/auth");
