@@ -126,7 +126,7 @@ test("auth navigation shows the two-column loading frame", async ({ page }) => {
 
   const navigation = page.getByRole("link", { name: "Sign in", exact: true }).click();
 
-  await expect(page.locator("aside")).toBeVisible();
+  await expect(page.getByRole("complementary").first()).toBeVisible();
   await expect(page.getByRole("status", { name: "Loading authentication form" })).toBeVisible();
   await navigation;
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
@@ -142,7 +142,7 @@ test("auth navigation keeps the frame while flow content loads", async ({ page }
 
   const navigation = page.getByRole("link", { name: "Create one", exact: true }).click();
 
-  await expect(page.locator("aside")).toBeVisible();
+  await expect(page.getByRole("complementary").first()).toBeVisible();
   await expect(page.getByText("Just a moment")).toHaveCount(0);
   await navigation;
   await expect(page.getByRole("heading", { name: "Make room for what is next" })).toBeVisible();
@@ -202,8 +202,10 @@ test("settings uses the dashboard frame when the service is unconfigured", async
   const response = await page.goto("/dashboard/settings");
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("link", { name: "Settings", exact: true })).toBeVisible();
-  await expect(page.getByText("Keep your identity current")).toBeVisible();
-  await expect(page.locator("aside")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Keep your identity current.", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("complementary").first()).toBeVisible();
 });
 
 test("settings navigation skips the auth loading frame", async ({ page }) => {

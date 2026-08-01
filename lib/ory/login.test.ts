@@ -5,6 +5,7 @@ const state = vi.hoisted(() => ({
   request: undefined as
     | { id: string; cookie?: string; headers: Headers }
     | undefined,
+  publicUrl: undefined as string | undefined,
 }));
 
 vi.mock("next/headers", () => ({
@@ -34,7 +35,11 @@ vi.mock("@ory/nextjs/app", () => ({
     async (
       params: Record<string, string | string[] | undefined>,
       fetchFlow: () => Promise<{ value: () => Promise<unknown> }>,
+      _flowType: string,
+      publicUrl: string,
     ) => {
+      state.publicUrl = publicUrl;
+
       if (!params.flow) {
         return null;
       }
@@ -48,7 +53,10 @@ vi.mock("@ory/nextjs/app", () => ({
   ),
 }));
 
-vi.mock("@/ory.config", () => ({ orySdkUrl: "https://ory.example.com" }));
+vi.mock("@/ory.config", () => ({
+  appBaseUrl: undefined,
+  orySdkUrl: "https://ory.example.com",
+}));
 vi.mock("@/lib/ory/request", async () => import("./request"));
 
 import { flowRequestHeaders } from "./request";
@@ -101,6 +109,7 @@ describe("getLoginFlowWithRequestHeaders", () => {
       "x-forwarded-proto": "https",
     });
     state.request = undefined;
+    state.publicUrl = undefined;
   });
 
   it("loads a flow with the browser cookie and request headers", async () => {
@@ -114,6 +123,29 @@ describe("getLoginFlowWithRequestHeaders", () => {
     );
     expect(state.request?.headers.get("user-agent")).toBe("Mozilla/5.0");
     expect(state.request?.headers.get("accept")).toBe("application/json");
+  });
+
+  it("uses the forwarded ingress origin (not just the proto header) for the public URL", async () => {
+    state.incoming = new Headers({
+      host: "nextjs:3000",
+      "x-forwarded-host": "auth.mida.com.ec",
+      "x-forwarded-proto": "https",
+    });
+
+    await getLoginFlowWithRequestHeaders({ flow: "flow-id" });
+
+    expect(state.publicUrl).toBe("https://auth.mida.com.ec");
+  });
+
+  it("falls back to the plain http host origin when forwarding headers are incomplete", async () => {
+    state.incoming = new Headers({
+      host: "auth.example.com",
+      "x-forwarded-proto": "https",
+    });
+
+    await getLoginFlowWithRequestHeaders({ flow: "flow-id" });
+
+    expect(state.publicUrl).toBe("http://auth.example.com");
   });
 
   it("does not fetch or loop when the flow parameter is missing", async () => {
