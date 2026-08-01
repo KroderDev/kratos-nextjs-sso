@@ -43,9 +43,13 @@ function createExchange(url: string, headers: Record<string, string> = {}) {
   };
 }
 
-async function loadHandler() {
+async function loadHandler(environment: Record<string, string> = {}) {
   vi.resetModules();
   handlers.length = 0;
+  vi.unstubAllEnvs();
+  for (const [name, value] of Object.entries(environment)) {
+    vi.stubEnv(name, value);
+  }
   await import("./mock-kratos.mjs");
 
   const handler = handlers.at(-1);
@@ -57,6 +61,38 @@ async function loadHandler() {
 }
 
 describe("mock-kratos e2e test server", () => {
+  it("clears the request log and returns no content", async () => {
+    const handler = await loadHandler();
+    const request = createExchange("/self-service/login/browser");
+    handler(request.request, request.response);
+
+    const reset = createExchange("/__e2e/reset");
+    handler(reset.request, reset.response);
+
+    expect(reset.getStatus()).toBe(204);
+
+    const introspection = createExchange("/__e2e/requests");
+    handler(introspection.request, introspection.response);
+    expect(introspection.getJson()).toEqual([
+      { cookie: null, host: null, path: "/__e2e/requests", userAgent: null },
+    ]);
+  });
+
+  it("returns the Kratos disabled-flow error when registration is disabled", async () => {
+    const handler = await loadHandler({ MOCK_KRATOS_REGISTRATION: "disabled" });
+    const exchange = createExchange("/self-service/registration/browser");
+
+    handler(exchange.request, exchange.response);
+
+    expect(exchange.getStatus()).toBe(400);
+    expect(exchange.getHeaders()).toMatchObject({
+      "content-type": "application/json",
+    });
+    expect(exchange.getJson()).toEqual({
+      error: { id: "self_service_flow_disabled" },
+    });
+  });
+
   it("redirects a browser login flow request with the CSRF flow cookie", async () => {
     const handler = await loadHandler();
     const exchange = createExchange("/self-service/login/browser");

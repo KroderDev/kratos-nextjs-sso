@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 
 const port = Number(process.env.PORT ?? 4010);
 const flowId = "e2e-login-flow";
+const registrationDisabled = process.env.MOCK_KRATOS_REGISTRATION === "disabled";
 const requests = [];
 
 const flow = {
@@ -36,6 +37,17 @@ const server = createServer((request, response) => {
     requests.length = 0;
     response.writeHead(204);
     response.end();
+    return;
+  }
+
+  if (
+    url.pathname === "/self-service/registration/browser" &&
+    registrationDisabled
+  ) {
+    response.writeHead(400, { "content-type": "application/json" });
+    response.end(
+      JSON.stringify({ error: { id: "self_service_flow_disabled" } }),
+    );
     return;
   }
 
