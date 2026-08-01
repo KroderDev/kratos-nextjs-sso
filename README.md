@@ -2,92 +2,111 @@
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen?style=flat-square)](https://kratos-nextjs-sso.vercel.app)
 [![CI](https://img.shields.io/github/actions/workflow/status/KroderDev/kratos-nextjs-sso/ci.yml?branch=master&label=CI&style=flat-square)](https://github.com/KroderDev/kratos-nextjs-sso/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/github/KroderDev/kratos-nextjs-sso/graph/badge.svg?token=G5MF0O5IFS)](https://codecov.io/github/KroderDev/kratos-nextjs-sso)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.12-black?style=flat-square&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0.3-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Node.js](https://img.shields.io/badge/node-24-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
 [![pnpm](https://img.shields.io/badge/pnpm-11.17.0-F69220?style=flat-square&logo=pnpm&logoColor=white)](https://pnpm.io)
 
-Production-ready Next.js App Router identity and SSO frontend for Ory Kratos and Ory Network, built with React 19, Tailwind CSS, and shadcn/ui Base UI components.
+## Fork it. Make it yours. Ship production-ready SSO.
 
-## Demo
+This is a **polished Next.js App Router frontend** for [Ory Kratos](https://www.ory.com/kratos), ready to become the identity surface for your product.
 
-See the live demo [here](https://kratos-nextjs-sso.vercel.app). It runs against a real Ory Network project and includes the full login, registration, recovery, verification, and settings flows.
+**Fork it, replace the neutral branding, connect your Ory project, and deploy** a complete sign-in experience without building auth screens from scratch.
 
-## Requirements
+[Open the live demo](https://kratos-nextjs-sso.vercel.app) to see the full experience.
+
+## What You Get
+
+- **Complete auth flows:** login, registration, recovery, verification, and account settings.
+- **Protected dashboard routes** with server-side session checks.
+- **Accessible native form controls** rendered from Ory UI nodes.
+- **Theme-aware branding:** logos, favicons, dark mode, and shadcn/ui theming.
+- **Automatic English and Spanish support** with a typed locale system.
+- **WebAuthn/passkey support** through a safe trigger allowlist.
+- **Security hardening:** provider URL validation, security headers, origin checks, and server-only API tokens.
+- **Production packaging:** standalone Docker output, non-root runtime, and a `/api/health` endpoint.
+- **Automated coverage** with unit, security, and Playwright smoke tests.
+
+## Fork And Run
+
+### Requirements
 
 - Node.js 24 or newer
 - pnpm 11.17 or newer
 - An Ory Network project or another compatible public identity API
 
-## Local Setup
+### 1. **Fork and install**
 
 ```bash
+git clone https://github.com/YOUR_USERNAME/kratos-nextjs-sso.git
+cd kratos-nextjs-sso
 pnpm install
+```
+
+### 2. **Configure your identity project**
+
+Copy `.env.example` to `.env.local` and set your public app URL and Ory SDK URL:
+
+```env
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_ORY_SDK_URL=https://your-project.projects.oryapis.com
+NEXT_PUBLIC_ORY_PROJECT_NAME=Your Platform
+ORY_PROJECT_API_TOKEN=ory_pat_...
+```
+
+`ORY_PROJECT_API_TOKEN` is **server-only**. Never expose it through a `NEXT_PUBLIC_*` variable, Docker build argument, client component, or browser bundle.
+
+### 3. **Start customizing**
+
+```bash
 pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Branding
+## Make It Yours
 
-The default UI uses neutral platform branding so the project can be forked without carrying an application identity:
+**Your brand, your theme, your identity experience.**
+
+### Brand your identity surface
+
+Set these values in `.env.local` or in your deployment build configuration:
 
 ```env
 NEXT_PUBLIC_BRAND_NAME=Your Platform
 NEXT_PUBLIC_BRAND_MARK=YP
-NEXT_PUBLIC_BRAND_LOGO_LIGHT=/next.svg
-NEXT_PUBLIC_BRAND_LOGO_DARK=/next-dark.svg
-NEXT_PUBLIC_BRAND_FAVICON_LIGHT=
-NEXT_PUBLIC_BRAND_FAVICON_DARK=
+NEXT_PUBLIC_BRAND_LOGO_LIGHT=/your-logo.svg
+NEXT_PUBLIC_BRAND_LOGO_DARK=/your-logo-dark.svg
+NEXT_PUBLIC_BRAND_FAVICON_LIGHT=/your-favicon.ico
+NEXT_PUBLIC_BRAND_FAVICON_DARK=/your-favicon-dark.ico
 ```
 
-These public values are embedded during `next build`. Set them before building a Docker image or deploying the application. `NEXT_PUBLIC_BRAND_MARK` sets the 1-2 character text mark/initials (e.g. displayed in footers or text fallbacks) up to two characters and falls back to initials derived from `NEXT_PUBLIC_BRAND_NAME`. Set `NEXT_PUBLIC_BRAND_LOGO_LIGHT` and optionally `NEXT_PUBLIC_BRAND_LOGO_DARK` to paths under `public/`. Logo images are displayed whenever present and are not replaced by setting `NEXT_PUBLIC_BRAND_MARK`. The bundled dark logo is used when the dark path is omitted; set it to an empty value to explicitly fall back to the light logo. Custom favicon paths can be set via `NEXT_PUBLIC_BRAND_FAVICON_LIGHT` and `NEXT_PUBLIC_BRAND_FAVICON_DARK`. When `NEXT_PUBLIC_BRAND_FAVICON_DARK` is configured, the browser automatically switches between light and dark icons based on the user's OS theme. When both environment variables are omitted, the application falls back to `app/favicon.ico`. The bundled Next.js symbols are sourced from the [Geist brand guidelines](https://vercel.com/geist/brands).
+Put custom assets under `public/`. `NEXT_PUBLIC_*` values are **embedded at build time**, so set them before `next build` or before building a Docker image. If favicon paths are omitted, the app uses `app/favicon.ico`.
 
-The interface uses shadcn/ui components with Tailwind CSS semantic tokens. Customize the theme through the existing `components.json` preset and the shadcn CLI, or replace the app icon at `app/favicon.ico` (or configure build-time favicon variables) with the platform's production asset.
+### Shape the interface
 
+- Change colors and typography through the semantic tokens in `app/globals.css`.
+- Apply a shadcn preset with `pnpm dlx shadcn@latest apply --preset PRESET_ID --only theme`.
+- Apply only a font preset with `pnpm dlx shadcn@latest apply --preset PRESET_ID --only font`.
+- Add another locale in `lib/i18n/locales/`; the typed dictionary and tests enforce complete key coverage.
 
-### Applying a shadcn Theme
+See [`docs/i18n.md`](docs/i18n.md) for localization details.
 
-Use the [shadcn theme builder](https://ui.shadcn.com/create) to create or select a preset. The builder provides a preset ID that can be applied from the project root:
+## Deploy To Production
 
-```bash
-pnpm dlx shadcn@latest apply --preset b0 --only theme
-```
+Deploy the app wherever you run Next.js reliably: **Vercel, Coolify, Netlify, Render, Railway, AWS, a container platform, or your own Node.js host**. The repository includes standalone Docker output for platforms that deploy from a `Dockerfile`, but Docker is not required.
 
-Replace `b0` with the preset ID from the builder. The command updates the theme tokens in `app/globals.css`; it may also update `components.json` when the preset includes configuration changes. Commit or stash existing work before applying a preset so the generated changes can be reviewed and reverted safely.
+### **Managed Next.js Platforms**
 
-Apply only the font portion when the color theme should remain unchanged:
+Import your fork into a managed Next.js platform such as Vercel, Coolify, Netlify, Render, Railway, or AWS. Use the platform's native Next.js build or its Dockerfile deployment, then configure the public `NEXT_PUBLIC_*` values as build environment variables. Set `ORY_PROJECT_API_TOKEN` as a server-side runtime secret only when your Ory setup requires the application proxy. Do not expose it to the browser or include it in build arguments.
 
-```bash
-pnpm dlx shadcn@latest apply --preset b0 --only font
-```
+Set the public domain as `NEXT_PUBLIC_APP_URL`, enable HTTPS, configure Ory return URLs and allowed origins, and point health checks at `/api/health`.
 
-The font preset can update `app/layout.tsx` and `app/globals.css`. The application body uses the shared `--font-sans` token, so imported shadcn fonts are applied across the UI without changing individual components.
+### **Docker**
 
-After applying a preset, inspect the diff and run the validation suite:
-
-```bash
-pnpm typecheck
-pnpm lint
-pnpm test
-pnpm test:e2e
-```
-
-### Docker
-
-```bash
-docker build \
-  --build-arg "NEXT_PUBLIC_APP_URL=http://localhost:3000" \
-  --build-arg "NEXT_PUBLIC_BRAND_NAME=Your Platform" \
-  --build-arg "NEXT_PUBLIC_BRAND_MARK=YP" \
-  --build-arg "NEXT_PUBLIC_ORY_SDK_URL=" \
-  -t kratos-nextjs-sso:latest .
-
-docker run --rm -p 3000:3000 kratos-nextjs-sso:latest
-```
-
-With Ory configured:
+The application builds as a Next.js standalone server and runs in Docker as the non-root `nextjs` user.
 
 ```bash
 docker build \
@@ -102,68 +121,64 @@ docker run --rm -p 3000:3000 \
   kratos-nextjs-sso:latest
 ```
 
-The image runs as a non-root `nextjs` user and includes a health check at `/api/health`.
+Before going live, confirm:
 
-Create `.env.local` from `.env.example` and set the Ory values before using a real browser flow:
+- **Set `NEXT_PUBLIC_APP_URL`** to the exact HTTPS origin users will visit.
+- **Set public branding and Ory values** before the image build.
+- **Provide `ORY_PROJECT_API_TOKEN` only at runtime** when proxying requires it.
+- **Put the app behind an ingress or reverse proxy** that terminates TLS and correctly sets `Host`, `X-Forwarded-Host`, and `X-Forwarded-Proto`.
+- **Configure Ory return URLs and allowed origins** for the deployed application URL.
+- **Point health checks at `/api/health`.**
+- **Run the complete validation suite against staging** before release.
 
-```env
-NEXT_PUBLIC_BRAND_NAME=Your Platform
-NEXT_PUBLIC_BRAND_MARK=YP
-NEXT_PUBLIC_BRAND_LOGO_LIGHT=/next.svg
-NEXT_PUBLIC_BRAND_LOGO_DARK=/next-dark.svg
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_ORY_SDK_URL=https://your-project.projects.oryapis.com
-NEXT_PUBLIC_ORY_CANONICAL_URL=
-NEXT_PUBLIC_ORY_PROJECT_NAME=Your Platform
-ORY_PROJECT_API_TOKEN=ory_pat_...
-```
-
-`NEXT_PUBLIC_ORY_SDK_URL` points at the public identity API used by the browser flows. `NEXT_PUBLIC_ORY_PROJECT_NAME` is provider configuration and is not shown to end users. `ORY_PROJECT_API_TOKEN` is server-only and is used by `proxy.ts` when the provider API is proxied through the application.
-
-`NEXT_PUBLIC_*` values are build-time configuration. Keep `ORY_PROJECT_API_TOKEN` out of build arguments, source control, and browser-exposed environment variables.
+Read [`docs/security.md`](docs/security.md) for the threat model, proxy requirements, browser security headers, provider URL validation, credential protection, and production checklist.
 
 ## Routes
 
 | Route | Purpose |
 | --- | --- |
-| `/` | Public access landing page |
+| `/` | Public landing page |
 | `/auth/login` | Login browser flow |
 | `/auth/registration` | Registration browser flow |
 | `/auth/recovery` | Account recovery browser flow |
 | `/auth/verification` | Address verification browser flow |
 | `/dashboard/settings` | Protected settings browser flow |
-| `/auth/error` | Safe error destination for failed Ory flows |
+| `/auth/error` | Safe error destination for failed flows |
 | `/dashboard` | Protected session dashboard |
 
-## Architecture
+## How It Works
 
-- `ory.config.ts` derives Ory UI URLs from `NEXT_PUBLIC_APP_URL` and keeps the SDK URL configuration in one place.
-- `proxy.ts` uses `createOryMiddleware` to proxy Ory self-service endpoints, rewrite redirect URLs, and forward cookies safely.
-- `@ory/nextjs/app` creates and loads browser flows on the server. The app does not expose Ory API tokens to the browser.
-- `components/ory/ory-node.tsx` renders Ory UI nodes as native form controls while preserving Ory's action, method, hidden fields, and CSRF token.
-- `components/ory/ory-trigger-runtime.tsx` loads Ory's browser WebAuthn script only when needed and exposes an allowlist of supported trigger names; arbitrary inline Ory `onclick` JavaScript is never evaluated.
-- `/dashboard` calls `getServerSession()` and redirects unauthenticated requests to login.
-- Shadcn components live in `components/ui` and use the project's Base UI preset with semantic CSS tokens in `app/globals.css`.
+- `ory.config.ts` keeps Ory URLs and provider configuration in one place.
+- `proxy.ts` proxies Ory self-service endpoints, rewrites redirect URLs, and forwards cookies safely.
+- `@ory/nextjs/app` creates and loads browser flows and sessions on the server.
+- `components/ory/ory-node.tsx` preserves Ory actions, methods, hidden fields, and CSRF tokens while rendering native controls.
+- `components/ory/ory-trigger-runtime.tsx` loads WebAuthn only when needed and never evaluates arbitrary provider-supplied inline JavaScript.
+- `/dashboard` checks the server session and redirects unauthenticated users to login.
 
-## Validation
+## Validate Your Fork
+
+**Ship with confidence:**
 
 ```bash
 pnpm typecheck
 pnpm lint
 pnpm test
+pnpm test:coverage
 pnpm build
 pnpm test:e2e
 ```
 
-The tests cover the pure Ory node helpers. Real sign-in, registration, recovery, verification, and settings behavior requires a configured Ory project and credentials.
+The automated suite covers Ory flow helpers, security boundaries, localization key parity, health behavior, and the unconfigured smoke experience. Real sign-in, registration, recovery, verification, and settings behavior requires a configured Ory project.
+
+## Keep Exploring
+
+- [Ory cookie-based security model](https://www.ory.com/docs/security-model)
+- [Ory Next.js example](https://github.com/ory/kratos-nextjs-react-example)
+- [Ory Elements App Router example](https://github.com/ory/elements/tree/main/examples/nextjs-app-router)
+- [Next.js proxy convention](https://nextjs.org/docs/app/api-reference/file-conventions/proxy)
+
+Fork the project, make the identity experience fit your product, and open a pull request when you improve the foundation for the next team.
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
-## References
-
-- [Ory browser flows](https://www.ory.com/docs/security-model)
-- [Ory Next.js example](https://github.com/ory/kratos-nextjs-react-example)
-- [Ory Elements App Router example](https://github.com/ory/elements/tree/main/examples/nextjs-app-router)
-- [Next.js proxy convention](https://nextjs.org/docs/app/api-reference/file-conventions/proxy)
