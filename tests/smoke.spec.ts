@@ -140,12 +140,12 @@ test("auth navigation keeps the frame while flow content loads", async ({ page }
     await route.continue();
   });
 
-  const navigation = page.getByRole("link", { name: "Create one", exact: true }).click();
+  const navigation = page.getByRole("link", { name: "Create an account", exact: true }).click();
 
   await expect(page.getByRole("complementary").first()).toBeVisible();
   await expect(page.getByText("Just a moment")).toHaveCount(0);
   await navigation;
-  await expect(page.getByRole("heading", { name: "Make room for what is next" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
 });
 
 test("theme control is circular on mobile", async ({ page }) => {
@@ -173,21 +173,21 @@ test("sign-in page shows setup state when unconfigured", async ({ page }) => {
 test("registration page shows setup state when unconfigured", async ({ page }) => {
   const response = await page.goto("/auth/registration");
   expect(response?.status()).toBe(200);
-  await expect(page.getByRole("heading", { name: "Make room for what is next" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
 });
 
 test("recovery page shows setup state when unconfigured", async ({ page }) => {
   const response = await page.goto("/auth/recovery");
   expect(response?.status()).toBe(200);
-  await expect(page.getByRole("heading", { name: "Let's get you back in" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Recover your account" })).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
 });
 
 test("verification page shows setup state when unconfigured", async ({ page }) => {
   const response = await page.goto("/auth/verification");
   expect(response?.status()).toBe(200);
-  await expect(page.getByText("One last clear signal")).toBeVisible();
+  await expect(page.getByText("Verify your email address")).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
 });
 
@@ -226,7 +226,7 @@ test("settings navigation skips the auth loading frame", async ({ page }) => {
 test("error page loads", async ({ page }) => {
   const response = await page.goto("/auth/error");
   expect(response?.status()).toBe(200);
-  await expect(page.getByText("That path closed early")).toBeVisible();
+  await expect(page.getByText("Unable to complete request")).toBeVisible();
 });
 
 test("health endpoint returns healthy", async ({ request }) => {
