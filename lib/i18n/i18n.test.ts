@@ -31,14 +31,17 @@ describe("i18n configuration and health audit", () => {
     expect(isValidLocale(null)).toBe(false);
   });
 
-  it("interpolates parameters in translation templates", () => {
+  it("interpolates parameters in translation templates and handles missing parameters", () => {
     expect(formatString("Hello {name}!", { name: "Antigravity" })).toBe("Hello Antigravity!");
     expect(formatString("Expires {date}", { date: "Jan 1, 2026" })).toBe("Expires Jan 1, 2026");
+    expect(formatString("Hello {name} ({role})", { name: "Alice" })).toBe("Hello Alice ({role})");
+    expect(formatString("No parameters")).toBe("No parameters");
   });
 
-  it("resolves nested key paths", () => {
+  it("resolves nested key paths and returns undefined for sub-trees or non-existent keys", () => {
     expect(translatePath(en, "common.navigation.signIn")).toBe("Sign in");
     expect(translatePath(dictionaries.es, "common.navigation.signIn")).toBe("Iniciar sesión");
+    expect(translatePath(en, "common.navigation")).toBeUndefined();
     expect(translatePath(en, "non.existent.key")).toBeUndefined();
   });
 

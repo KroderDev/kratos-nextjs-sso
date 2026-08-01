@@ -41,6 +41,19 @@ import { allowedOryOrigins, isSafeProviderUrl } from "@/lib/ory/security";
 import { appBaseUrl, oryCanonicalUrl, orySdkUrl } from "@/ory.config";
 import { useTranslation } from "@/lib/i18n/client";
 
+const allowedOrigins = allowedOryOrigins([appBaseUrl ?? "", orySdkUrl, oryCanonicalUrl]);
+
+const VALID_REFERRER_POLICIES = new Set([
+  "no-referrer",
+  "no-referrer-when-downgrade",
+  "origin",
+  "origin-when-cross-origin",
+  "same-origin",
+  "strict-origin",
+  "strict-origin-when-cross-origin",
+  "unsafe-url",
+]);
+
 type OryNodeProps = {
   node: UiNode;
 };
@@ -54,7 +67,6 @@ export function OryNode({ node }: OryNodeProps) {
   const { t, locale } = useTranslation();
   const attributes = getNodeAttributes(node);
   const id = nodeId(node);
-  const allowedOrigins = allowedOryOrigins([appBaseUrl ?? "", orySdkUrl, oryCanonicalUrl]);
 
   if (node.type === "input") {
     const inputType = getString(attributes.type) ?? "text";
@@ -314,18 +326,10 @@ export function OryNode({ node }: OryNodeProps) {
       crossOrigin === "anonymous" || crossOrigin === "use-credentials"
         ? crossOrigin
         : undefined;
-    const safeReferrerPolicy = [
-      "no-referrer",
-      "no-referrer-when-downgrade",
-      "origin",
-      "origin-when-cross-origin",
-      "same-origin",
-      "strict-origin",
-      "strict-origin-when-cross-origin",
-      "unsafe-url",
-    ].includes(referrerPolicy ?? "")
-      ? referrerPolicy
-      : undefined;
+    const safeReferrerPolicy =
+      referrerPolicy && VALID_REFERRER_POLICIES.has(referrerPolicy)
+        ? referrerPolicy
+        : undefined;
 
     return (
       <Script
