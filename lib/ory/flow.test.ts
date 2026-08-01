@@ -8,9 +8,11 @@ import {
   getNodeMessages,
   getNodeText,
   getNumber,
+  getProviderName,
   getSafeText,
   isChecked,
   isCodeInput,
+  isProviderNode,
   translateOryText,
 } from "./flow";
 
@@ -46,6 +48,77 @@ describe("Ory flow helpers", () => {
     ).toBe(true);
     expect(isCodeInput(inputNode({ name: "code", type: "text" }))).toBe(false);
     expect(isCodeInput(inputNode({ name: "email", type: "email" }))).toBe(false);
+  });
+
+  it("identifies provider submit nodes without treating regular submits as providers", () => {
+    expect(
+      isProviderNode(
+        inputNode({
+          group: "oidc",
+          name: "provider",
+          type: "submit",
+          value: "google-provider",
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      isProviderNode(inputNode({ name: "method", type: "submit" })),
+    ).toBe(false);
+    expect(
+      isProviderNode(inputNode({ name: "provider", type: "email" })),
+    ).toBe(false);
+  });
+
+  it("normalizes provider names for accessible actions", () => {
+    expect(
+      getProviderName(
+        inputNode({
+          name: "provider",
+          type: "submit",
+          value: "google-provider",
+          label: { id: 1, text: "Sign in with Google", type: "info" },
+        }),
+      ),
+    ).toBe("Google");
+    expect(
+      getProviderName(inputNode({ name: "provider", value: "facebook" })),
+    ).toBe("Meta");
+    expect(
+      getProviderName(
+        inputNode({
+          name: "provider",
+          type: "submit",
+          label: { id: 1, text: "Continue with Acme", type: "info" },
+        }),
+      ),
+    ).toBe("Acme");
+
+    const providers = [
+      ["linkedin", "LinkedIn"],
+      ["slack", "Slack"],
+      ["spotify", "Spotify"],
+      ["x", "X"],
+      ["amazon", "Amazon"],
+      ["netid", "NetID"],
+      ["auth0", "Auth0"],
+      ["gitlab", "GitLab"],
+      ["salesforce", "Salesforce"],
+      ["kick", "Kick"],
+      ["tiktok", "TikTok"],
+      ["paypal", "PayPal"],
+      ["line", "LINE"],
+      ["kakao", "Kakao"],
+      ["wechat", "WeChat"],
+      ["authentik", "Authentik"],
+      ["keycloak", "Keycloak"],
+      ["clerk", "Clerk"],
+      ["ory-oauth2", "Ory OAuth2"],
+      ["yahoo", "Yahoo!"],
+    ] as const;
+
+    for (const [value, expected] of providers) {
+      expect(getProviderName(inputNode({ name: "provider", value }))).toBe(expected);
+    }
   });
 
   it("keeps node messages available for field-level errors", () => {
