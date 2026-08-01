@@ -13,4 +13,10 @@ describe("navigation feedback", () => {
     expect(shouldClearPendingNavigation("route", "/auth/login", "/auth/login")).toBe(false);
     expect(shouldClearPendingNavigation("route", "/dashboard", "/dashboard")).toBe(false);
   });
+
+  it("does not clear a route when the pending kind or target is missing", () => {
+    expect(shouldClearPendingNavigation(undefined, undefined, "/settings")).toBe(false);
+    expect(shouldClearPendingNavigation("route", undefined, "/settings")).toBe(false);
+    expect(shouldClearPendingNavigation("route", "/settings", undefined as never)).toBe(false);
+  });
 });
