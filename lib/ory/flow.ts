@@ -54,6 +54,9 @@ export function translateOryText(text: string | undefined, locale?: string): str
       return oryTranslationsEs[lower];
     }
   }
+  if (locale === "en" && text.trim().toLowerCase() === "e-mail") {
+    return "Email";
+  }
   return text;
 }
 
@@ -110,6 +113,60 @@ export function getNodeLabel(node: UiNode, locale?: string) {
   return translateOryText(raw, locale);
 }
 
+export function getProviderName(node: UiNode) {
+  const attributes = getNodeAttributes(node);
+  const label =
+    typeof attributes.label === "object" && attributes.label !== null
+      ? getString((attributes.label as UnknownRecord).text)
+      : undefined;
+  const value = getString(attributes.value);
+  const source = `${label ?? ""} ${value ?? ""}`.toLowerCase();
+  const providers = [
+    [/\bapple\b/, "Apple"],
+    [/\b(?:facebook|meta)\b/, "Meta"],
+    [/\bgithub\b/, "GitHub"],
+    [/\bgoogle\b/, "Google"],
+    [/\bmicrosoft\b/, "Microsoft"],
+    [/\bdiscord\b/, "Discord"],
+    [/\blinkedin\b/, "LinkedIn"],
+    [/\bslack\b/, "Slack"],
+    [/\bspotify\b/, "Spotify"],
+    [/\b(?:twitter|x)\b/, "X"],
+    [/\bamazon\b/, "Amazon"],
+    [/\bnet[- ]?id\b/, "NetID"],
+    [/\bauth0\b/, "Auth0"],
+    [/\bauthentik\b/, "Authentik"],
+    [/\bgitlab\b/, "GitLab"],
+    [/\bkeycloak\b/, "Keycloak"],
+    [/\bclerk\b/, "Clerk"],
+    [/\bpaypal\b/, "PayPal"],
+    [/\bline\b/, "LINE"],
+    [/\bkakao(?:talk)?\b/, "Kakao"],
+    [/\bwechat\b/, "WeChat"],
+    [/\bkick\b/, "Kick"],
+    [/\bory(?:[- ]?oauth2)?\b/, "Ory OAuth2"],
+    [/\bokta\b/, "Okta"],
+    [/\bsalesforce\b/, "Salesforce"],
+    [/\bzoom\b/, "Zoom"],
+    [/\btwitch\b/, "Twitch"],
+    [/\btiktok\b/, "TikTok"],
+    [/\breddit\b/, "Reddit"],
+    [/\bdropbox\b/, "Dropbox"],
+    [/\byahoo\b/, "Yahoo!"],
+    [/\bbitbucket\b/, "Bitbucket"],
+  ] as const;
+
+  for (const [pattern, name] of providers) {
+    if (pattern.test(source)) {
+      return name;
+    }
+  }
+
+  return (label ?? "Provider")
+    .replace(/^(sign in|continue)\s+with\s+/i, "")
+    .trim() || "Provider";
+}
+
 export function getNodeText(node: UiNode, locale?: string) {
   const text = asRecord(getNodeAttributes(node).text);
   const raw = getSafeText(getString(text.text));
@@ -154,6 +211,18 @@ export function isCodeInput(node: UiNode) {
     maxLength !== undefined &&
     maxLength >= 4 &&
     maxLength <= 8
+  );
+}
+
+export function isProviderNode(node: UiNode) {
+  const attributes = getNodeAttributes(node);
+  const type = getString(attributes.type);
+  const name = getString(attributes.name);
+
+  return (
+    node.type === "input" &&
+    (type === "submit" || type === "button") &&
+    (name === "provider" || node.group === "oidc")
   );
 }
 
