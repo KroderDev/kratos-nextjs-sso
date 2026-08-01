@@ -18,7 +18,11 @@ vi.mock("@ory/client-fetch", async () => {
 vi.mock("@/ory.config", () => ({ orySdkUrl: "https://ory.example.com" }));
 vi.mock("@/lib/ory/flow", async () => import("./flow"));
 
-import { getOryFlowError, getOryFlowErrorMessage } from "./error";
+import {
+  getKnownOryErrorMessage,
+  getOryFlowError,
+  getOryFlowErrorMessage,
+} from "./error";
 
 describe("Ory flow error helpers", () => {
   beforeEach(() => {
@@ -36,6 +40,16 @@ describe("Ory flow error helpers", () => {
         error: { reason: "Use another credential." },
       } as FlowError),
     ).toBe("Use another credential.");
+  });
+
+  it("maps only known UI error reasons to localized messages", () => {
+    const translate = (key: string) => `translated:${key}`;
+
+    expect(getKnownOryErrorMessage("registration_disabled", translate)).toBe(
+      "translated:auth.error.registrationDisabled",
+    );
+    expect(getKnownOryErrorMessage("unknown_reason", translate)).toBeNull();
+    expect(getKnownOryErrorMessage(undefined, translate)).toBeNull();
   });
 
   it("rejects provider references and malformed payloads", () => {

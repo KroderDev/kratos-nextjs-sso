@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect, unstable_rethrow } from "next/navigation";
+import { isSelfServiceFlowDisabled } from "@ory/client-fetch";
 import { getRegistrationFlow, type OryPageParams } from "@ory/nextjs/app";
 
 import { AuthContent } from "@/components/layout/auth-shell";
@@ -43,10 +44,9 @@ export default async function RegistrationPage({
     );
   }
 
-  let flow = null;
+  let rawFlow = null;
   try {
-    flow =
-      rewriteOryFlow(await getRegistrationFlow(config, params)) || null;
+    rawFlow = await getRegistrationFlow(config, params);
   } catch (e) {
     // The SDK restarts missing registration flows indefinitely when registration
     // is disabled. Show the error UI instead of redirecting back into that loop.
@@ -57,6 +57,16 @@ export default async function RegistrationPage({
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders
   }
+
+  if (isSelfServiceFlowDisabled(rawFlow)) {
+    const errorParams = new URLSearchParams({ reason: "registration_disabled" });
+    if (typeof params.lang === "string") {
+      errorParams.set("lang", params.lang);
+    }
+    redirect(`/auth/error?${errorParams.toString()}`);
+  }
+
+  const flow = rewriteOryFlow(rawFlow) || null;
 
   return (
     <AuthFlowPage

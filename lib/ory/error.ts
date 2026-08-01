@@ -3,6 +3,17 @@ import { Configuration, FrontendApi, type FlowError } from "@ory/client-fetch";
 import { getSafeText } from "@/lib/ory/flow";
 import { orySdkUrl } from "@/ory.config";
 
+export function getKnownOryErrorMessage(
+  reason: string | undefined,
+  translate: (key: string) => string,
+) {
+  if (reason === "registration_disabled") {
+    return translate("auth.error.registrationDisabled");
+  }
+
+  return null;
+}
+
 export async function getOryFlowError(id: string): Promise<FlowError | null> {
   if (!orySdkUrl || !id) {
     return null;

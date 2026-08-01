@@ -27,7 +27,10 @@ describe("AuthFlowPage", () => {
   };
 
   it("renders the flow form when a flow is available", () => {
-    const flow = { id: "flow-id", ui: {} } as OryFlow;
+    const flow = {
+      id: "flow-id",
+      ui: { action: "/self-service/login", method: "POST", nodes: [] },
+    } as unknown as OryFlow;
     const markup = renderToStaticMarkup(
       <AuthFlowPage {...props} flow={flow} footer={<span>Footer</span>} />,
     );
@@ -36,6 +39,14 @@ describe("AuthFlowPage", () => {
     expect(markup).toContain("flow form: login");
     expect(markup).toContain("Footer");
     expect(markup).not.toContain("flow unavailable");
+  });
+
+  it("renders the unavailable state when the provider returns a malformed flow", () => {
+    const flow = { error: { id: "self_service_flow_disabled" } } as unknown as OryFlow;
+    const markup = renderToStaticMarkup(<AuthFlowPage {...props} flow={flow} />);
+
+    expect(markup).toContain("flow unavailable");
+    expect(markup).not.toContain("flow form");
   });
 
   it("renders the unavailable state when no flow exists", () => {

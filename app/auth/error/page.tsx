@@ -5,7 +5,11 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
-import { getOryFlowError, getOryFlowErrorMessage } from "@/lib/ory/error";
+import {
+  getKnownOryErrorMessage,
+  getOryFlowError,
+  getOryFlowErrorMessage,
+} from "@/lib/ory/error";
 import { isOryConfigured } from "@/ory.config";
 import { CircleAlert } from "lucide-react";
 import { getTranslations } from "@/lib/i18n/server";
@@ -27,7 +31,9 @@ export default async function AuthErrorPage({ searchParams }: ErrorPageProps) {
   const errorId = typeof params.id === "string" ? params.id : undefined;
   const flowError =
     isOryConfigured && errorId ? await getOryFlowError(errorId) : null;
-  const errorMessage = getOryFlowErrorMessage(flowError);
+  const reason = typeof params.reason === "string" ? params.reason : undefined;
+  const errorMessage =
+    getOryFlowErrorMessage(flowError) ?? getKnownOryErrorMessage(reason, t);
 
   return (
     <AuthContent
@@ -50,4 +56,3 @@ export default async function AuthErrorPage({ searchParams }: ErrorPageProps) {
     </AuthContent>
   );
 }
-

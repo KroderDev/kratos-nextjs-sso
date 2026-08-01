@@ -114,6 +114,7 @@ export const es: TranslationKeys = {
       description: "No pudimos completar tu solicitud. Inicia un nuevo proceso de inicio de sesión e inténtalo de nuevo.",
       alertTitle: "Error de autenticación",
       fallbackMessage: "No se realizaron cambios en tus credenciales. Vuelve a iniciar sesión e inténtalo de nuevo.",
+      registrationDisabled: "El registro está deshabilitado actualmente. Si ya tienes una cuenta, vuelve a iniciar sesión.",
       backToSignIn: "Volver al inicio de sesión",
     },
   },

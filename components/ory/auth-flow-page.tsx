@@ -16,6 +16,24 @@ type AuthFlowPageProps = {
   footer?: ReactNode;
 };
 
+function hasRenderableFlowUi(flow: OryFlow | null | undefined): flow is OryFlow {
+  if (!flow || typeof flow !== "object") {
+    return false;
+  }
+
+  const ui = (flow as unknown as Record<string, unknown>).ui;
+  if (!ui || typeof ui !== "object") {
+    return false;
+  }
+
+  const uiRecord = ui as Record<string, unknown>;
+  return (
+    typeof uiRecord.action === "string" &&
+    typeof uiRecord.method === "string" &&
+    Array.isArray(uiRecord.nodes)
+  );
+}
+
 export function AuthFlowPage({
   flow,
   kind,
@@ -31,7 +49,7 @@ export function AuthFlowPage({
       footer={footer}
       title={title}
     >
-      {flow ? <FlowForm flow={flow} kind={kind} /> : <FlowUnavailable />}
+      {hasRenderableFlowUi(flow) ? <FlowForm flow={flow} kind={kind} /> : <FlowUnavailable />}
     </AuthContent>
   );
 }

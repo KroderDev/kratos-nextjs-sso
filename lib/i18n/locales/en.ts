@@ -112,6 +112,7 @@ export const en = {
       description: "We couldn't complete your request. Start a new sign-in flow and try again.",
       alertTitle: "Authentication error",
       fallbackMessage: "No changes were made to your credentials. Return to sign in and try again.",
+      registrationDisabled: "Registration is currently disabled. If you already have an account, return to sign in.",
       backToSignIn: "Back to sign in",
     },
   },
