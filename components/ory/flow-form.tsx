@@ -20,6 +20,14 @@ type FlowFormProps = {
   kind: OryFlowKind;
 };
 
+/**
+ * Renders an Ory authentication flow form with optional embedded styling.
+ *
+ * @param embedded - Whether to render the form without the surrounding card
+ * @param flow - The Ory authentication flow to render
+ * @param kind - The type of authentication flow
+ * @returns The rendered form, or `null` when the flow action is unsafe
+ */
 export function FlowForm({ embedded = false, flow, kind }: FlowFormProps) {
   const { t } = useTranslation();
   const method = flow.ui.method.toLowerCase() === "get" ? "get" : "post";

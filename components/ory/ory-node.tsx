@@ -59,6 +59,12 @@ const VALID_REFERRER_POLICIES = new Set([
   "unsafe-url",
 ]);
 
+/**
+ * Renders the provider icon associated with an Ory UI node.
+ *
+ * @param node - The Ory UI node that identifies the provider
+ * @returns The provider icon for the node
+ */
 function ProviderIcon({ node }: { node: UiNode }) {
   return <LibraryProviderIcon node={node} />;
 
@@ -209,11 +215,24 @@ type OryNodeProps = {
   node: UiNode;
 };
 
+/**
+ * Determines a stable identifier for an Ory UI node.
+ *
+ * @param node - The Ory UI node whose identifier is derived
+ * @returns The node's `id`, its `name`, or `"ory-node"` when neither is available
+ */
 function nodeId(node: UiNode) {
   const attributes = getNodeAttributes(node);
   return getString(attributes.id) ?? getString(attributes.name) ?? "ory-node";
 }
 
+/**
+ * Renders an Ory UI node with localized content and accessible form controls.
+ *
+ * @param compactProvider - Whether provider buttons should display compact icon-only content
+ * @param kind - The flow kind used to customize flow-specific labels
+ * @param node - The Ory UI node to render
+ */
 export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
   const { t, locale } = useTranslation();
   const attributes = getNodeAttributes(node);

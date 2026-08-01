@@ -84,6 +84,12 @@ const simpleProviderIcons: Record<string, SimpleProviderIcon> = {
   WeChat: SiWechat,
 };
 
+/**
+ * Displays the icon associated with an Ory provider node.
+ *
+ * @param node - Ory UI node identifying the provider
+ * @returns The provider icon, or a badge containing the provider's initial when no icon is available
+ */
 export function ProviderIcon({ node }: { node: UiNode }) {
   const name = getProviderName(node);
   const icon = providerIcons[name];
@@ -124,6 +130,12 @@ export function ProviderIcon({ node }: { node: UiNode }) {
   );
 }
 
+/**
+ * Builds the standard CSS classes for a provider icon.
+ *
+ * @param name - The provider name used to determine dark-mode styling
+ * @returns A space-separated string of CSS classes
+ */
 export function getProviderIconClassName(name: string) {
   return [
     "size-5 text-foreground",
@@ -133,10 +145,22 @@ export function getProviderIconClassName(name: string) {
     .join(" ");
 }
 
+/**
+ * Gets the brand color for a provider icon.
+ *
+ * @param name - The provider name
+ * @returns Meta's brand color, or `undefined` when no custom color is defined
+ */
 export function getProviderIconColor(name: string) {
   return name === "Meta" ? "#0866FF" : undefined;
 }
 
+/**
+ * Determines whether an icon is available for a provider.
+ *
+ * @param name - The provider name
+ * @returns `true` if an icon is registered for the provider, `false` otherwise.
+ */
 export function hasProviderIcon(name: string) {
   return Boolean(providerIcons[name] || simpleProviderIcons[name]);
 }
