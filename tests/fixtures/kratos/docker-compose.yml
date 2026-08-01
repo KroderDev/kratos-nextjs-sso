@@ -1,0 +1,17 @@
+services:
+  kratos:
+    image: oryd/kratos:v26.2.0
+    command: serve -c /etc/config/kratos/kratos.yml --dev
+    network_mode: host
+    environment:
+      DSN: sqlite:///var/lib/sqlite/db.sqlite?_fk=true&_journal=WAL&mode=rwc
+      SERVE_ADMIN_HOST: 127.0.0.1
+      SERVE_PUBLIC_HOST: 127.0.0.1
+      SERVE_PUBLIC_PORT: ${PLAYWRIGHT_KRATOS_PORT:-4010}
+    volumes:
+      - kratos-sqlite:/var/lib/sqlite
+      - ./kratos.yml:/etc/config/kratos/kratos.yml:ro
+      - ./identity.schema.json:/etc/config/kratos/identity.schema.json:ro
+
+volumes:
+  kratos-sqlite:

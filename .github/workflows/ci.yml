@@ -161,7 +161,12 @@ jobs:
   e2e-auth:
     name: E2E Auth Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    env:
+      PLAYWRIGHT_KRATOS_MODE: real
+      PLAYWRIGHT_KRATOS_PORT: 4010
+      KRATOS_COMPOSE_PROJECT: kratos-e2e-${{ github.run_id }}-${{ github.run_attempt }}
+      KRATOS_COMPOSE_FILE: tests/fixtures/kratos/docker-compose.yml
 
     steps:
       - uses: actions/checkout@v7
@@ -187,4 +192,39 @@ jobs:
 
       - run: pnpm exec playwright install --with-deps chromium
 
+      - name: Start real Kratos
+        run: |
+          docker compose \
+            -p "$KRATOS_COMPOSE_PROJECT" \
+            -f "$KRATOS_COMPOSE_FILE" \
+            pull
+          docker compose \
+            -p "$KRATOS_COMPOSE_PROJECT" \
+            -f "$KRATOS_COMPOSE_FILE" \
+            run --rm kratos \
+            -c /etc/config/kratos/kratos.yml migrate sql -e --yes
+          docker compose \
+            -p "$KRATOS_COMPOSE_PROJECT" \
+            -f "$KRATOS_COMPOSE_FILE" \
+            up -d kratos
+          curl --fail --silent --show-error \
+            --retry 60 --retry-delay 1 --retry-connrefused \
+            "http://127.0.0.1:${PLAYWRIGHT_KRATOS_PORT}/health/ready"
+
       - run: pnpm test:e2e:auth
+
+      - name: Show Kratos logs on failure
+        if: failure()
+        run: |
+          docker compose \
+            -p "$KRATOS_COMPOSE_PROJECT" \
+            -f "$KRATOS_COMPOSE_FILE" \
+            logs --no-color kratos || true
+
+      - name: Stop real Kratos
+        if: always()
+        run: |
+          docker compose \
+            -p "$KRATOS_COMPOSE_PROJECT" \
+            -f "$KRATOS_COMPOSE_FILE" \
+            down --volumes --remove-orphans

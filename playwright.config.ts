@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const isAuthMode = process.env.PLAYWRIGHT_AUTH === "1";
+const isRealKratosMode =
+  isAuthMode && process.env.PLAYWRIGHT_KRATOS_MODE === "real";
 const PORT = Number(
   process.env.PLAYWRIGHT_APP_PORT ?? (isAuthMode ? 3002 : process.env.CI ? 3000 : 3001),
 );
@@ -11,6 +13,7 @@ const appServer = {
   reuseExistingServer: !process.env.CI,
   timeout: 120_000,
   env: {
+    HOSTNAME: "127.0.0.1",
     PORT: PORT.toString(),
     NEXT_PUBLIC_BRAND_NAME: "CI",
     NEXT_PUBLIC_BRAND_MARK: "C",
@@ -25,8 +28,12 @@ const appServer = {
 };
 
 export default defineConfig({
-  testDir: isAuthMode ? "./tests/auth" : "./tests",
-  testIgnore: isAuthMode ? [] : ["auth/**"],
+  testDir: isAuthMode
+    ? isRealKratosMode
+      ? "./tests/real-auth"
+      : "./tests/auth"
+    : "./tests",
+  testIgnore: isAuthMode ? [] : ["auth/**", "real-auth/**"],
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
@@ -56,13 +63,17 @@ export default defineConfig({
 
   webServer: isAuthMode
     ? [
-        {
-          command: "node scripts/mock-kratos.mjs",
-          port: KRATOS_PORT,
-          reuseExistingServer: !process.env.CI,
-          timeout: 30_000,
-          env: { PORT: KRATOS_PORT.toString() },
-        },
+        ...(isRealKratosMode
+          ? []
+          : [
+              {
+                command: "node scripts/mock-kratos.mjs",
+                port: KRATOS_PORT,
+                reuseExistingServer: !process.env.CI,
+                timeout: 30_000,
+                env: { PORT: KRATOS_PORT.toString() },
+              },
+            ]),
         appServer,
       ]
     : [appServer],

@@ -1,0 +1,43 @@
+{
+  "$id": "https://schemas.ory.sh/ci/identity.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CI Identity",
+  "type": "object",
+  "required": ["traits"],
+  "properties": {
+    "traits": {
+      "type": "object",
+      "required": ["email"],
+      "additionalProperties": false,
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "title": "E-Mail",
+          "minLength": 3,
+          "ory.sh/kratos": {
+            "credentials": {
+              "password": {
+                "identifier": true
+              }
+            }
+          }
+        },
+        "name": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "first": {
+              "title": "First Name",
+              "type": "string"
+            },
+            "last": {
+              "title": "Last Name",
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
