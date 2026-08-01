@@ -2,14 +2,14 @@ import { describe, expect, it, vi } from "vitest";
 
 import packageJson from "./package.json";
 
-// Cast to a loose shape: these are Playwright config objects, and this test
-// only cares about a handful of fields relevant to the auth-config split.
+// Cast to a loose shape: this test only cares about the mode-specific settings.
 type WebServer = {
   command?: string;
   port?: number;
   reuseExistingServer?: boolean;
   env?: Record<string, string>;
 };
+
 type LooseConfig = {
   retries?: number;
   testDir?: string;
@@ -18,141 +18,96 @@ type LooseConfig = {
   use?: { baseURL?: string; extraHTTPHeaders?: Record<string, string> };
 };
 
-import authConfigDefault from "./playwright.auth.config";
-import smokeConfigDefault from "./playwright.config";
-
-const authConfig = authConfigDefault as LooseConfig;
-const smokeConfig = smokeConfigDefault as LooseConfig;
-
 function asArray(server: WebServer | WebServer[] | undefined): WebServer[] {
   if (!server) return [];
   return Array.isArray(server) ? server : [server];
 }
 
+async function loadConfig(environment: Record<string, string>) {
+  vi.resetModules();
+  vi.unstubAllEnvs();
+
+  for (const [name, value] of Object.entries(environment)) {
+    vi.stubEnv(name, value);
+  }
+
+  return (await import("./playwright.config")).default as LooseConfig;
+}
+
 describe("playwright.config.ts", () => {
-  it("uses the CI server settings when CI is enabled", async () => {
-    vi.resetModules();
-    vi.stubEnv("CI", "true");
+  it("uses the CI server settings for the smoke suite", async () => {
+    const config = await loadConfig({ CI: "true", PLAYWRIGHT_AUTH: "" });
+    const server = asArray(config.webServer)[0];
 
-    try {
-      const { default: ciConfig } = await import("./playwright.config");
-      const config = ciConfig as LooseConfig;
-      const server = asArray(config.webServer)[0];
-
-      expect(config.use?.baseURL).toBe("http://127.0.0.1:3000");
-      expect(config.retries).toBe(2);
-      expect(server?.reuseExistingServer).toBe(false);
-    } finally {
-      vi.unstubAllEnvs();
-    }
+    expect(config.use?.baseURL).toBe("http://127.0.0.1:3000");
+    expect(config.testDir).toBe("./tests");
+    expect(config.testIgnore).toEqual(["auth/**"]);
+    expect(config.retries).toBe(2);
+    expect(server?.reuseExistingServer).toBe(false);
   });
 
-  it("uses the local port and disables retries outside CI", async () => {
-    vi.resetModules();
-    vi.stubEnv("CI", "");
+  it("uses the local smoke settings outside CI", async () => {
+    const config = await loadConfig({ CI: "", PLAYWRIGHT_AUTH: "" });
 
-    try {
-      const { default: localConfig } = await import("./playwright.config");
-      const config = localConfig as LooseConfig;
-      expect(config.use?.baseURL).toBe("http://127.0.0.1:3001");
-      expect(config.retries).toBe(0);
-      expect(asArray(config.webServer)[0]?.reuseExistingServer).toBe(true);
-    } finally {
-      vi.unstubAllEnvs();
-    }
+    expect(config.use?.baseURL).toBe("http://127.0.0.1:3001");
+    expect(config.retries).toBe(0);
+    expect(asArray(config.webServer)[0]?.reuseExistingServer).toBe(true);
   });
 
-  it("ignores the auth test suite, which runs under its own config", () => {
-    expect(smokeConfig.testIgnore).toEqual(["auth/**"]);
-  });
-
-  it("runs a single app web server on a port distinct from the auth app server", () => {
-    const servers = asArray(smokeConfig.webServer);
-    expect(servers).toHaveLength(1);
-
-    const smokeAppPort = Number(servers[0]?.env?.PORT);
-    const authServers = asArray(authConfig.webServer);
-    const authAppServer = authServers.find((server) => server.env?.NEXT_PUBLIC_APP_URL);
-    const authAppPort = Number(authAppServer?.env?.PORT);
-
-    expect(smokeAppPort).toBeGreaterThan(0);
-    expect(smokeAppPort).not.toBe(authAppPort);
-  });
-});
-
-describe("playwright.auth.config.ts", () => {
-  const servers = asArray(authConfig.webServer);
-  const kratosServer = servers.find((server) => server.command?.includes("mock-kratos"));
-  const appServer = servers.find((server) =>
-    server.command?.includes(".next/standalone/server.js"),
-  );
-
-  it("uses the CI server settings when CI is enabled", async () => {
-    vi.resetModules();
-    vi.stubEnv("CI", "true");
-
-    try {
-      const { default: ciConfig } = await import("./playwright.auth.config");
-      const config = ciConfig as LooseConfig;
-      const ciServers = asArray(config.webServer);
-
-      expect(config.retries).toBe(2);
-      expect(ciServers.length).toBeGreaterThan(0);
-      expect(ciServers.every((server) => server.reuseExistingServer === false)).toBe(true);
-    } finally {
-      vi.unstubAllEnvs();
-    }
-  });
-
-  it("reuses local auth servers and keeps the local timeout outside CI", async () => {
-    vi.resetModules();
-    vi.stubEnv("CI", "");
-
-    try {
-      const { default: localConfig } = await import("./playwright.auth.config");
-      const config = localConfig as LooseConfig;
-      expect(config.retries).toBe(0);
-      expect(asArray(config.webServer).every((server) => server.reuseExistingServer)).toBe(true);
-    } finally {
-      vi.unstubAllEnvs();
-    }
-  });
-  it("only runs specs under tests/auth", () => {
-    expect(authConfig.testDir).toBe("./tests/auth");
-  });
-
-  it("starts both the mock Kratos server and the app server on distinct ports", () => {
-    expect(kratosServer).toBeDefined();
-    expect(appServer).toBeDefined();
-    expect(kratosServer?.port).toBeGreaterThan(0);
-    expect(appServer?.port).toBeGreaterThan(0);
-    expect(kratosServer?.port).not.toBe(appServer?.port);
-  });
-
-  it("points the app server's Ory SDK URL at the mock Kratos server port", () => {
-    expect(appServer?.env?.NEXT_PUBLIC_ORY_SDK_URL).toBe(
-      `http://127.0.0.1:${kratosServer?.port}`,
+  it("uses the configured auth settings in auth mode", async () => {
+    const config = await loadConfig({ CI: "true", PLAYWRIGHT_AUTH: "1" });
+    const servers = asArray(config.webServer);
+    const kratosServer = servers.find((server) => server.command?.includes("mock-kratos"));
+    const appServer = servers.find((server) =>
+      server.command?.includes(".next/standalone/server.js"),
     );
-  });
 
-  it("configures the app base URL and baseURL to match the app server's own port", () => {
-    const expectedUrl = `http://127.0.0.1:${appServer?.port}`;
-    expect(appServer?.env?.NEXT_PUBLIC_APP_URL).toBe(expectedUrl);
-    expect(authConfig.use?.baseURL).toBe(expectedUrl);
-  });
-
-  it("sends forwarded headers that match the app server's own host over plain http", () => {
-    expect(authConfig.use?.extraHTTPHeaders).toEqual({
-      "x-forwarded-host": `127.0.0.1:${appServer?.port}`,
+    expect(config.testDir).toBe("./tests/auth");
+    expect(config.testIgnore).toEqual([]);
+    expect(config.use?.baseURL).toBe("http://127.0.0.1:3002");
+    expect(config.use?.extraHTTPHeaders).toEqual({
+      "x-forwarded-host": "127.0.0.1:3002",
       "x-forwarded-proto": "http",
     });
+    expect(kratosServer?.port).toBe(4010);
+    expect(appServer?.port).toBe(3002);
+    expect(appServer?.env?.NEXT_PUBLIC_ORY_SDK_URL).toBe(
+      "http://127.0.0.1:4010",
+    );
+    expect(servers.every((server) => server.reuseExistingServer === false)).toBe(true);
+  });
+
+  it("keeps the smoke mode isolated from configured auth servers", async () => {
+    const config = await loadConfig({ CI: "", PLAYWRIGHT_AUTH: "" });
+    const servers = asArray(config.webServer);
+
+    expect(servers).toHaveLength(1);
+    expect(servers.some((server) => server.command?.includes("mock-kratos"))).toBe(false);
+    expect(servers[0]?.env?.NEXT_PUBLIC_ORY_SDK_URL).toBe("");
+  });
+
+  it("allows local test ports to be overridden", async () => {
+    const config = await loadConfig({
+      CI: "",
+      PLAYWRIGHT_AUTH: "1",
+      PLAYWRIGHT_APP_PORT: "3102",
+      PLAYWRIGHT_KRATOS_PORT: "4110",
+    });
+    const servers = asArray(config.webServer);
+    const appServer = servers.find((server) =>
+      server.command?.includes(".next/standalone/server.js"),
+    );
+
+    expect(config.use?.baseURL).toBe("http://127.0.0.1:3102");
+    expect(appServer?.port).toBe(3102);
+    expect(servers[0]?.port).toBe(4110);
   });
 });
 
 describe("package.json", () => {
-  it("wires the auth e2e script to the dedicated auth playwright config", () => {
+  it("wires the auth e2e script to the shared Playwright config", () => {
     expect(packageJson.scripts["test:e2e:auth"]).toBe(
-      "playwright test --config=playwright.auth.config.ts",
+      "node scripts/run-playwright-auth.mjs",
     );
   });
 });

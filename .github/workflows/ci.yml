@@ -157,3 +157,34 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
 
       - run: pnpm test:e2e --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+
+  e2e-auth:
+    name: E2E Auth Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: actions/cache@v6
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-e2e-auth-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-e2e-auth-${{ hashFiles('pnpm-lock.yaml') }}-
+            ${{ runner.os }}-nextjs-e2e-auth-
+
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - run: pnpm test:e2e:auth

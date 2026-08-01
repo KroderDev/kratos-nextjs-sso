@@ -16,7 +16,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:auth": "playwright test --config=playwright.auth.config.ts"
+    "test:e2e:auth": "node scripts/run-playwright-auth.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
