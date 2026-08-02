@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { Check, Copy, Download, ShieldCheck } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -14,6 +15,7 @@ type RecoveryCodesProps = {
   id: string;
   label?: string;
   pending: boolean;
+  confirmationAction?: ReactNode;
 };
 
 function formatUsedAt(entry: Extract<LookupSecretEntry, { kind: "used" }>, locale: string) {
@@ -31,7 +33,14 @@ function formatUsedAt(entry: Extract<LookupSecretEntry, { kind: "used" }>, local
   }).format(new Date(timestamp));
 }
 
-export function RecoveryCodes({ entries, fallbackText, id, label, pending }: RecoveryCodesProps) {
+export function RecoveryCodes({
+  confirmationAction,
+  entries,
+  fallbackText,
+  id,
+  label,
+  pending,
+}: RecoveryCodesProps) {
   const { locale, t } = useTranslation();
   const [copied, setCopied] = useState<string | null>(null);
   const [copyFailed, setCopyFailed] = useState(false);
@@ -42,6 +51,7 @@ export function RecoveryCodes({ entries, fallbackText, id, label, pending }: Rec
   const usedCodes = entries.filter(
     (entry): entry is Extract<LookupSecretEntry, { kind: "used" }> => entry.kind === "used",
   );
+  const title = t("dashboard.settings.recoveryCodes.title");
 
   async function copyText(value: string, key: string) {
     setCopyFailed(false);
@@ -78,18 +88,32 @@ export function RecoveryCodes({ entries, fallbackText, id, label, pending }: Rec
   return (
     <section
       aria-labelledby={`${id}-title`}
-      className="flex flex-col gap-4 rounded-lg border border-border/70 bg-muted/20 p-4 sm:p-5"
+      className="flex min-w-0 flex-col gap-4"
       data-recovery-codes="true"
     >
       <h3 className="sr-only" id={`${id}-title`}>
-        {t("dashboard.settings.recoveryCodes.title")}
+        {title}
       </h3>
 
       {label ? <p className="text-sm leading-6 text-muted-foreground">{label}</p> : null}
 
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+        <span className="font-medium text-foreground">
+          {t("dashboard.settings.recoveryCodes.availableLabel", { count: activeCodes.length })}
+        </span>
+        {usedCodes.length > 0 ? (
+          <span>
+            {t("dashboard.settings.recoveryCodes.usedLabel")}: {usedCodes.length}
+          </span>
+        ) : null}
+        {pending ? (
+          <span className="text-primary">{t("dashboard.settings.recoveryCodes.pendingTitle")}</span>
+        ) : null}
+      </div>
+
       {pending ? (
         <Alert className="border-primary/25 bg-primary/5">
-          <ShieldCheck aria-hidden="true" />
+          <ShieldCheck aria-hidden="true" data-icon="inline-start" />
           <AlertTitle>{t("dashboard.settings.recoveryCodes.pendingTitle")}</AlertTitle>
           <AlertDescription>{t("dashboard.settings.recoveryCodes.pendingDescription")}</AlertDescription>
         </Alert>
@@ -109,13 +133,17 @@ export function RecoveryCodes({ entries, fallbackText, id, label, pending }: Rec
                 type="button"
                 variant="outline"
               >
-                {copied === "all" ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
+                {copied === "all" ? (
+                  <Check aria-hidden="true" data-icon="inline-start" />
+                ) : (
+                  <Copy aria-hidden="true" data-icon="inline-start" />
+                )}
                 {copied === "all"
                   ? t("dashboard.settings.recoveryCodes.copied")
                   : t("dashboard.settings.recoveryCodes.copyAll")}
               </Button>
               <Button onClick={downloadCodes} size="sm" type="button" variant="ghost">
-                <Download aria-hidden="true" />
+                <Download aria-hidden="true" data-icon="inline-start" />
                 {downloaded
                   ? t("dashboard.settings.recoveryCodes.downloaded")
                   : t("dashboard.settings.recoveryCodes.download")}
@@ -123,17 +151,19 @@ export function RecoveryCodes({ entries, fallbackText, id, label, pending }: Rec
             </div>
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-2" role="list">
+          <div className="grid min-w-0 gap-2 sm:grid-cols-2" role="list">
             {activeCodes.map((entry, index) => {
               const key = `code-${index}`;
 
               return (
                 <div
-                  className="flex min-h-11 items-center justify-between gap-3 border border-border/70 bg-background px-3"
+                  className="flex min-w-0 min-h-11 items-center justify-between gap-3 border border-border/70 bg-background px-3"
                   key={`${entry.code}-${index}`}
                   role="listitem"
                 >
-                  <code className="font-mono text-sm tracking-[0.12em] text-foreground">{entry.code}</code>
+                  <code className="min-w-0 break-all font-mono text-sm tracking-[0.12em] text-foreground">
+                    {entry.code}
+                  </code>
                   <Button
                     aria-label={t("dashboard.settings.recoveryCodes.copyCode")}
                     onClick={() => copyText(entry.code, key)}
@@ -141,7 +171,11 @@ export function RecoveryCodes({ entries, fallbackText, id, label, pending }: Rec
                     type="button"
                     variant="ghost"
                   >
-                    {copied === key ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
+                    {copied === key ? (
+                      <Check aria-hidden="true" data-icon="inline-start" />
+                    ) : (
+                      <Copy aria-hidden="true" data-icon="inline-start" />
+                    )}
                   </Button>
                 </div>
               );
@@ -174,20 +208,23 @@ export function RecoveryCodes({ entries, fallbackText, id, label, pending }: Rec
           <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
             {t("dashboard.settings.recoveryCodes.usedLabel")}
           </p>
-          <div className="grid gap-2 sm:grid-cols-2" role="list">
+          <div className="grid min-w-0 gap-2 sm:grid-cols-2" role="list">
             {usedCodes.map((entry, index) => {
               const usedAt = formatUsedAt(entry, locale);
 
               return (
                 <div
-                  className="flex min-h-11 items-center justify-between gap-3 border border-border/50 bg-muted/30 px-3 text-sm text-muted-foreground"
+                  className="flex min-w-0 min-h-11 items-center justify-between gap-3 border border-border/50 bg-muted/30 px-3 text-sm text-muted-foreground"
                   key={`used-${index}`}
                   role="listitem"
                 >
-                  <code aria-label={t("dashboard.settings.recoveryCodes.usedCode")} className="font-mono tracking-[0.12em]">
+                  <code
+                    aria-label={t("dashboard.settings.recoveryCodes.usedCode")}
+                    className="font-mono tracking-[0.12em]"
+                  >
                     ********
                   </code>
-                  <span>
+                  <span className="min-w-0 text-right">
                     {usedAt
                       ? t("dashboard.settings.recoveryCodes.usedOn", { date: usedAt })
                       : t("dashboard.settings.recoveryCodes.used")}
@@ -196,6 +233,12 @@ export function RecoveryCodes({ entries, fallbackText, id, label, pending }: Rec
               );
             })}
           </div>
+        </div>
+      ) : null}
+
+      {confirmationAction ? (
+        <div className="flex flex-col items-stretch gap-3 border-t border-border/70 pt-4 sm:flex-row sm:justify-end">
+          {confirmationAction}
         </div>
       ) : null}
     </section>

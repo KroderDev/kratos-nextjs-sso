@@ -82,6 +82,24 @@ function lookupCodesNode(): UiNode {
   } as unknown as UiNode;
 }
 
+function emptyLookupCodesNode(): UiNode {
+  return {
+    type: "text",
+    group: "lookup_secret",
+    messages: [],
+    meta: {},
+    attributes: {
+      node_type: "text",
+      id: "lookup_secret_codes",
+      text: {
+        id: 20,
+        text: "Recovery codes are not available yet",
+        type: "info",
+      },
+    },
+  } as unknown as UiNode;
+}
+
 function buildFlow(nodes: UiNode[], uiOverrides: Record<string, unknown> = {}): OryFlow {
   return {
     id: "flow-id",
@@ -136,7 +154,7 @@ describe("FlowForm", () => {
     expect(loginMarkup).toContain("Avatar URL");
 
     const settingsMarkup = renderToStaticMarkup(
-      <FlowForm flow={flow} kind="settings" separateProviders={false} />,
+      <FlowForm flow={flow} kind="settings" separateProviders={false} settingsArea="profile" />,
     );
     expect(settingsMarkup).not.toContain("Avatar URL");
   });
@@ -174,15 +192,18 @@ describe("FlowForm", () => {
   it("keeps settings provider nodes inline without the social-login menu", () => {
     const flow = buildFlow([inputNode(), providerNode({ name: "link" })]);
     const markup = renderToStaticMarkup(
-      <FlowForm flow={flow} kind="settings" separateProviders={false} />,
+      <FlowForm flow={flow} kind="settings" separateProviders={false} settingsArea="connections" />,
     );
 
     expect(markup).toContain("Connect with Google");
     expect(markup).not.toContain('role="separator"');
     expect(markup).not.toContain('aria-label="Sign in with a social account"');
+    expect(markup).toContain('data-slot="card-content"');
+    expect(markup).not.toContain('data-slot="card-header"');
+    expect(markup).not.toContain('data-slot="card-footer"');
   });
 
-  it("groups settings nodes into translated sections with one form per action", () => {
+  it("renders the selected settings area as cards with one form per Ory group", () => {
     const flow = buildFlow([
       groupedNode("default", { name: "csrf_token", type: "hidden" }),
       groupedNode("profile", {
@@ -211,18 +232,21 @@ describe("FlowForm", () => {
       providerNode({ name: "link" }),
     ]);
     const markup = renderToStaticMarkup(
-      <FlowForm flow={flow} kind="settings" separateProviders={false} />,
+      <FlowForm flow={flow} kind="settings" separateProviders={false} settingsArea="security" />,
     );
 
-    expect(markup).toContain(">Profile<");
+    expect(markup).not.toContain(">Profile<");
     expect(markup).toContain(">Password<");
-    expect(markup).toContain(">Two-factor authentication<");
+    expect(markup).toContain(">Authenticator app<");
     expect(markup).toContain(">Backup recovery codes<");
-    expect(markup).toContain(">Connected accounts<");
+    expect(markup).not.toContain(">Connected accounts<");
     expect(markup).toContain("Generate new backup recovery codes");
-    expect((markup.match(/<form /g) ?? []).length).toBe(5);
-    expect((markup.match(/type="hidden"/g) ?? []).length).toBe(5);
-    expect((markup.match(/data-slot="field-set"/g) ?? []).length).toBe(5);
+    expect(markup).toContain('data-settings-form="lookup_secret"');
+    expect(markup).toContain('data-settings-area-content="security"');
+    expect(markup).toContain('data-slot="card-footer"');
+    expect((markup.match(/<form /g) ?? []).length).toBe(3);
+    expect((markup.match(/type="hidden"/g) ?? []).length).toBe(3);
+    expect((markup.match(/data-settings-card=/g) ?? []).length).toBe(3);
   });
 
   it("renders structured recovery codes without exposing used code values", () => {
@@ -237,15 +261,16 @@ describe("FlowForm", () => {
       }),
     ]);
     const markup = renderToStaticMarkup(
-      <FlowForm flow={flow} kind="settings" separateProviders={false} />,
+      <FlowForm flow={flow} kind="settings" separateProviders={false} settingsArea="security" />,
     );
 
     expect(markup).toContain('data-recovery-codes="true"');
-    expect(markup).toContain("safe-code-1");
-    expect(markup).toContain("********");
+    expect(markup).toContain("1 active codes");
     expect(markup).toContain("Confirm your new codes");
-    expect(markup).toContain("Copy all codes");
+    expect(markup).toContain("Confirm backup recovery codes");
+    expect(markup).not.toContain('data-slot="dialog-trigger"');
     expect(markup).not.toContain("Secret was used at");
+    expect(markup).not.toContain('data-slot="card-footer"');
     expect((markup.match(/<form /g) ?? []).length).toBe(1);
     expect((markup.match(/type="hidden"/g) ?? []).length).toBe(1);
   });
@@ -257,12 +282,58 @@ describe("FlowForm", () => {
       groupedNode("custom", { name: "custom_value", type: "text" }),
     ]);
     const markup = renderToStaticMarkup(
-      <FlowForm flow={flow} kind="settings" separateProviders={false} />,
+      <FlowForm flow={flow} kind="settings" separateProviders={false} settingsArea="profile" />,
     );
 
-    expect(markup).toContain(">Other<");
+    expect(markup).toContain(">Additional settings<");
     expect((markup.match(/name="custom_value"/g) ?? []).length).toBe(1);
     expect((markup.match(/type="hidden"/g) ?? []).length).toBe(2);
+  });
+
+  it("keeps unknown settings groups visible in every settings area", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      groupedNode("custom", { name: "custom_value", type: "text" }),
+    ]);
+    const markup = renderToStaticMarkup(
+      <FlowForm flow={flow} kind="settings" separateProviders={false} settingsArea="security" />,
+    );
+
+    expect(markup).toContain(">Additional settings<");
+    expect(markup).toContain('name="custom_value"');
+  });
+
+  it("keeps a recovery confirmation action visible without structured codes", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      emptyLookupCodesNode(),
+      groupedNode("lookup_secret", {
+        name: "lookup_secret_confirm",
+        type: "submit",
+        value: "true",
+        label: { id: 21, text: "Confirm backup recovery codes", type: "info" },
+      }),
+    ]);
+    const markup = renderToStaticMarkup(
+      <FlowForm flow={flow} kind="settings" separateProviders={false} settingsArea="security" />,
+    );
+
+    expect(markup).toContain("Recovery codes are not available yet");
+    expect(markup).toContain("Confirm backup recovery codes");
+  });
+
+  it("namespaced hidden inputs remain unique across independent settings forms", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      groupedNode("password", { name: "password", type: "password" }),
+      groupedNode("totp", { name: "totp_code", type: "text" }),
+    ]);
+    const markup = renderToStaticMarkup(
+      <FlowForm flow={flow} kind="settings" separateProviders={false} settingsArea="security" />,
+    );
+    const ids = [...markup.matchAll(/ id="([^"]+)"/g)].map((match) => match[1]);
+
+    expect(new Set(ids).size).toBe(ids.length);
   });
 
   it("renders the lookup-secret login field as an alphanumeric recovery-code input", () => {

@@ -66,9 +66,13 @@ describe("i18n locale registry", () => {
   });
 
   it("contains the recovery-code controls in every locale", () => {
+    expect(en.dashboard.settings.areas.security.label).toBe("Security");
+    expect(en.dashboard.settings.navigation.selectLabel).toBe("Choose a settings area");
     expect(en.dashboard.settings.recoveryCodes.copyAll).toBe("Copy all codes");
     expect(en.dashboard.settings.recoveryCodes.usedOn).toBe("Used on {date} UTC");
     expect(dictionaries.es.dashboard.settings.recoveryCodes.copyAll).toBe("Copiar todos los códigos");
     expect(dictionaries.es.dashboard.settings.recoveryCodes.usedOn).toBe("Usado el {date} UTC");
+    expect(dictionaries.es.dashboard.settings.areas.security.label).toBe("Seguridad");
+    expect(dictionaries.es.dashboard.settings.navigation.selectLabel).toBe("Elige un área de configuración");
   });
 });

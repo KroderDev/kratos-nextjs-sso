@@ -13,6 +13,7 @@ services:
       - kratos-sqlite:/var/lib/sqlite
       - ./kratos.yml:/etc/config/kratos/kratos.yml:ro
       - ./identity.schema.json:/etc/config/kratos/identity.schema.json:ro
+      - ./oidc-mapper.jsonnet:/etc/config/kratos/oidc-mapper.jsonnet:ro
 
 volumes:
   kratos-sqlite:

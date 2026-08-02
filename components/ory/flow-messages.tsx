@@ -10,33 +10,79 @@ import {
   AlertTitle,
 } from "@/components/ui/alert";
 
-import { getMessageText } from "@/lib/ory/flow";
+import {
+  getMessageText,
+} from "@/lib/ory/flow";
+import { FLOW_SUCCESS_TOASTS_STORAGE_KEY } from "@/lib/ory/settings-state";
 import { useTranslation } from "@/lib/i18n/client";
 import { toast } from "@/components/ui/toast";
 
 type FlowMessagesProps = {
+  flowState?: string | null;
   messages?: UiText[];
   mode?: "inline" | "toast";
 };
 
 type FlowMessageTranslator = (key: string) => string;
 
+function getPersistedSuccessMessages() {
+  if (typeof window === "undefined") {
+    return new Set<string>();
+  }
+
+  try {
+    const value = window.sessionStorage.getItem(FLOW_SUCCESS_TOASTS_STORAGE_KEY);
+    const messages = value ? JSON.parse(value) : [];
+
+    return Array.isArray(messages)
+      ? new Set(messages.filter((message): message is string => typeof message === "string"))
+      : new Set<string>();
+  } catch {
+    return new Set<string>();
+  }
+}
+
+function persistSuccessMessages(messages: Set<string>) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.sessionStorage.setItem(
+      FLOW_SUCCESS_TOASTS_STORAGE_KEY,
+      JSON.stringify([...messages]),
+    );
+  } catch {
+    // Storage may be unavailable in restricted browser contexts.
+  }
+}
+
 export function announceFlowMessages({
   announcedMessages,
+  flowState,
   locale,
   messages,
   t,
 }: {
   announcedMessages: Set<string>;
+  flowState?: string | null;
   locale: string;
   messages?: UiText[];
   t: FlowMessageTranslator;
 }) {
+  const persistedSuccessMessages = getPersistedSuccessMessages();
+  let successMessagesChanged = false;
+
   (messages ?? []).forEach((message) => {
     const text = getMessageText(message, locale);
-    const messageKey = `${message.id}-${message.type}-${text}`;
+    const isSuccess = message.type === "success" || (flowState === "success" && message.type === "info");
+    const messageKey = `${message.id}-${isSuccess ? "success" : message.type}-${text}`;
 
-    if (!text || announcedMessages.has(messageKey)) {
+    if (
+      !text ||
+      announcedMessages.has(messageKey) ||
+      (isSuccess && persistedSuccessMessages.has(messageKey))
+    ) {
       return;
     }
 
@@ -46,15 +92,24 @@ export function announceFlowMessages({
       title:
         message.type === "error"
           ? t("ory.messages.actionNeeded")
-          : message.type === "success"
+          : isSuccess
             ? t("ory.messages.updated")
             : t("ory.messages.note"),
-      type: message.type === "error" ? "error" : message.type === "success" ? "success" : "info",
+      type: message.type === "error" ? "error" : isSuccess ? "success" : "info",
     });
+
+    if (isSuccess) {
+      persistedSuccessMessages.add(messageKey);
+      successMessagesChanged = true;
+    }
   });
+
+  if (successMessagesChanged) {
+    persistSuccessMessages(persistedSuccessMessages);
+  }
 }
 
-export function FlowMessages({ messages, mode = "inline" }: FlowMessagesProps) {
+export function FlowMessages({ flowState, messages, mode = "inline" }: FlowMessagesProps) {
   const { t, locale } = useTranslation();
   const visibleMessages = (messages ?? []).filter((message) =>
     getMessageText(message, locale),
@@ -68,11 +123,12 @@ export function FlowMessages({ messages, mode = "inline" }: FlowMessagesProps) {
 
     announceFlowMessages({
       announcedMessages: announcedMessages.current,
+      flowState,
       locale,
-      messages: visibleMessages,
+      messages: (messages ?? []).filter((message) => getMessageText(message, locale)),
       t,
     });
-  }, [locale, mode, t, visibleMessages]);
+  }, [flowState, locale, mode, messages, t]);
 
   if (visibleMessages.length === 0 || mode === "toast") {
     return null;

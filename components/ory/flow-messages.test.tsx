@@ -95,4 +95,64 @@ describe("announceFlowMessages", () => {
 
     expect(toast.add).toHaveBeenCalledTimes(1);
   });
+
+  it("does not replay persisted success messages after a reload", () => {
+    const originalWindow = globalThis.window;
+    const storedValues = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => storedValues.get(key) ?? null,
+      removeItem: (key: string) => storedValues.delete(key),
+      setItem: (key: string, value: string) => storedValues.set(key, value),
+    } as unknown as Storage;
+    const messages = [message(1, "Email updated", "success")];
+
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: { sessionStorage: storage },
+    });
+
+    announceFlowMessages({ announcedMessages: new Set(), locale: "en", messages, t: () => "Updated" });
+    announceFlowMessages({ announcedMessages: new Set(), locale: "en", messages, t: () => "Updated" });
+
+    expect(toast.add).toHaveBeenCalledTimes(1);
+
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: originalWindow,
+    });
+  });
+
+  it("persists an informational message when the settings flow succeeds", () => {
+    const originalWindow = globalThis.window;
+    const storedValues = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => storedValues.get(key) ?? null,
+      removeItem: (key: string) => storedValues.delete(key),
+      setItem: (key: string, value: string) => storedValues.set(key, value),
+    } as unknown as Storage;
+
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: { sessionStorage: storage },
+    });
+
+    announceFlowMessages({
+      announcedMessages: new Set(),
+      flowState: "success",
+      locale: "en",
+      messages: [message(1, "Your changes have been saved!", "info")],
+      t: () => "Updated",
+    });
+
+    expect(toast.add).toHaveBeenCalledWith({
+      description: "Your changes have been saved!",
+      title: "Updated",
+      type: "success",
+    });
+
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: originalWindow,
+    });
+  });
 });

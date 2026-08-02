@@ -13,6 +13,18 @@ import type { OryFlowKind } from "@/lib/ory/types";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogClose,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
   Field,
   FieldContent,
   FieldDescription,
@@ -51,6 +63,7 @@ import { ProviderIcon } from "./provider-icon";
 import { RecoveryCodes } from "./recovery-codes";
 import { allowedOryOrigins, isSafeProviderUrl } from "@/lib/ory/security";
 import { appBaseUrl, oryCanonicalUrl, orySdkUrl } from "@/ory.config";
+import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n/client";
 
 const allowedOrigins = allowedOryOrigins([appBaseUrl ?? "", orySdkUrl, oryCanonicalUrl]);
@@ -70,9 +83,12 @@ const SAFE_QR_DATA_URL = /^data:image\/(?:gif|jpeg|png|webp);base64,[A-Za-z0-9+/
 
 type OryNodeProps = {
   compactProvider?: boolean;
+  formId?: string;
   kind?: OryFlowKind;
+  lookupSecretConfirmationNode?: UiNode;
   lookupSecretPending?: boolean;
   node: UiNode;
+  onActionStart?: () => void;
 };
 
 function nodeId(node: UiNode) {
@@ -82,14 +98,18 @@ function nodeId(node: UiNode) {
 
 export function OryNode({
   compactProvider = false,
+  formId,
   kind,
+  lookupSecretConfirmationNode,
   lookupSecretPending = false,
   node,
+  onActionStart,
 }: OryNodeProps) {
   const { t, locale } = useTranslation();
   const [otpValue, setOtpValue] = useState<string | undefined>();
   const attributes = getNodeAttributes(node);
-  const id = nodeId(node);
+  const rawId = nodeId(node);
+  const id = formId ? `${formId}-${rawId}` : rawId;
 
   if (node.type === "input") {
     const inputType = getString(attributes.type) ?? "text";
@@ -137,38 +157,102 @@ export function OryNode({
         : undefined;
       const isLoginAction = kind === "login" && name === "method";
       const isDestructiveLookupAction = lookupSecretAction === "lookup_secret_disable";
+      const isDestructiveTotpAction = kind === "settings" && node.group === "totp" && name === "totp_unlink";
+      const isDestructiveAction = isDestructiveLookupAction || isDestructiveTotpAction;
+      const actionLabel = isLoginAction
+        ? t("ory.nodes.login")
+        : providerAction ?? label ?? stringValue ?? t("ory.nodes.continue");
+      const actionClassName = cn(
+        "min-h-11 w-full px-4",
+        compactProvider
+          ? "justify-center p-0"
+          : isProvider
+            ? "justify-start gap-3"
+            : "justify-between",
+        kind === "settings" && !compactProvider && "sm:w-auto",
+      );
+      const actionChildren = compactProvider ? (
+        <span className="sr-only">{providerAction}</span>
+      ) : (
+        <span className={isProvider ? "flex-1 text-left" : undefined}>{actionLabel}</span>
+      );
+      const actionIcon = !isProvider ? <ArrowUpRight aria-hidden="true" data-icon="inline-end" /> : null;
+
+      if (isDestructiveAction) {
+        const confirmationKey = isDestructiveTotpAction
+          ? "dashboard.settings.confirmations.disableTotp"
+          : "dashboard.settings.confirmations.disableRecovery";
+
+        return (
+          <AlertDialog key={id}>
+            <AlertDialogTrigger
+              render={
+                <Button
+                  aria-label={compactProvider ? providerAction : undefined}
+                  className={actionClassName}
+                  data-ory-destructive-trigger={name}
+                  disabled={disabled}
+                  title={compactProvider ? providerAction : undefined}
+                  type="button"
+                  variant="destructive"
+                />
+              }
+            >
+              {isProvider ? <ProviderIcon node={node} /> : null}
+              {actionChildren}
+              {actionIcon}
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t(`${confirmationKey}.title`)}</AlertDialogTitle>
+                <AlertDialogDescription>{t(`${confirmationKey}.description`)}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t("dashboard.settings.confirmations.cancel")}</AlertDialogCancel>
+                <AlertDialogClose
+                  render={
+                    <OryTriggerButton
+                      className="w-full sm:w-auto"
+                      form={formId}
+                      formNoValidate
+                      name={name}
+                      onClick={onActionStart}
+                      trigger={getString(attributes.onclickTrigger)}
+                      type="submit"
+                      value={stringValue}
+                      variant="destructive"
+                    />
+                  }
+                >
+                  {t(`${confirmationKey}.confirm`)}
+                </AlertDialogClose>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        );
+      }
 
       return (
         <OryTriggerButton
           key={id}
           aria-label={compactProvider ? providerAction : undefined}
-          className={`min-h-11 w-full px-4 ${
-            compactProvider
-              ? "justify-center p-0"
-              : isProvider
-                ? "justify-start gap-3"
-                : "justify-between"
-          }`}
+          className={actionClassName}
           disabled={disabled}
           formNoValidate={
             isProvider || (kind === "login" && name === "method") || undefined
           }
           name={name}
+          onClick={onActionStart}
+          form={formId}
           title={compactProvider ? providerAction : undefined}
           trigger={getString(attributes.onclickTrigger)}
           type={inputType === "button" ? "button" : "submit"}
           value={stringValue}
-          variant={isDestructiveLookupAction ? "destructive" : isProvider ? "outline" : "default"}
+          variant={isProvider ? "outline" : "default"}
         >
           {isProvider ? <ProviderIcon node={node} /> : null}
-          {compactProvider ? (
-            <span className="sr-only">{providerAction}</span>
-          ) : (
-            <span className={isProvider ? "flex-1 text-left" : undefined}>
-              {isLoginAction ? t("ory.nodes.login") : providerAction ?? label ?? stringValue ?? t("ory.nodes.continue")}
-            </span>
-          )}
-          {!isProvider ? <ArrowUpRight aria-hidden="true" data-icon="inline-end" /> : null}
+          {actionChildren}
+          {actionIcon}
         </OryTriggerButton>
       );
     }
@@ -309,6 +393,15 @@ export function OryNode({
           id={id}
           label={getNodeLabel(node, locale)}
           pending={lookupSecretPending}
+          confirmationAction={
+            lookupSecretConfirmationNode ? (
+              <OryNode
+                formId={formId}
+                kind={kind}
+                node={lookupSecretConfirmationNode}
+              />
+            ) : undefined
+          }
         />
       );
     }

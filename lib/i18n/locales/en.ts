@@ -161,14 +161,55 @@ export const en = {
       title: "Keep your identity current.",
       description: "Update the identity attributes and credentials you control.",
       badge: "Account controls",
-      sections: {
-        profile: "Profile",
-        password: "Password",
-        totp: "Two-factor authentication",
-        lookupSecret: "Backup recovery codes",
-        oidc: "Connected accounts",
-        other: "Other",
+      areas: {
+        profile: {
+          label: "Profile",
+          description: "Keep the details people use to recognize your account current.",
+        },
+        security: {
+          label: "Security",
+          description: "Protect sign-in with a strong password, an authenticator, and recovery options.",
+        },
+        connections: {
+          label: "Connected accounts",
+          description: "Manage the external accounts connected to this identity.",
+        },
       },
+      navigation: {
+        label: "Settings navigation",
+        title: "Account settings",
+        selectLabel: "Choose a settings area",
+        currentArea: "Current area",
+        help: "Changes are saved through your identity provider.",
+        returnOverview: "Return to overview",
+      },
+      cards: {
+        profile: {
+          title: "Profile",
+          description: "Update the identity details associated with your account.",
+        },
+        password: {
+          title: "Password",
+          description: "Choose a unique password that you do not reuse elsewhere.",
+        },
+        totp: {
+          title: "Authenticator app",
+          description: "Use a time-based code to add another layer of protection at sign-in.",
+        },
+        lookupSecret: {
+          title: "Backup recovery codes",
+          description: "Use these one-time codes if you lose access to your authenticator. Store them somewhere safe.",
+        },
+        oidc: {
+          title: "Connected accounts",
+          description: "Link or unlink an external account used to sign in.",
+        },
+        other: {
+          title: "Additional settings",
+          description: "Additional account controls provided by your identity service.",
+        },
+      },
+      noSettings: "This area has no settings available for your account.",
       recoveryCodes: {
         title: "Backup recovery codes",
         description: "Use these one-time codes if you lose access to your authenticator. Store them somewhere safe.",
@@ -187,6 +228,19 @@ export const en = {
         usedCode: "Used recovery code",
         usedOn: "Used on {date} UTC",
         used: "Used",
+      },
+      confirmations: {
+        cancel: "Cancel",
+        disableTotp: {
+          title: "Turn off two-factor authentication?",
+          description: "Your account will return to password-only sign-in. You can set up an authenticator again later.",
+          confirm: "Turn off authentication",
+        },
+        disableRecovery: {
+          title: "Disable recovery codes?",
+          description: "Any remaining backup codes will stop working. Generate a new set before disabling them if you still need recovery access.",
+          confirm: "Disable recovery codes",
+        },
       },
       aside: {
         tag: "Next move",

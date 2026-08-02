@@ -14,6 +14,11 @@ export type OryFlow =
   | VerificationFlow
   | SettingsFlow;
 
+export type RenderableOryFlow = {
+  id: string;
+  ui: OryFlow["ui"];
+};
+
 export type OryFlowKind =
   | "login"
   | "registration"
@@ -22,3 +27,7 @@ export type OryFlowKind =
   | "settings";
 
 export type { UiNode };
+
+export function toRenderableOryFlow(flow: OryFlow): RenderableOryFlow {
+  return { id: flow.id, ui: flow.ui };
+}

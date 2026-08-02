@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import type { OryFlow, OryFlowKind } from "@/lib/ory/types";
+import { toRenderableOryFlow, type OryFlow, type OryFlowKind } from "@/lib/ory/types";
 
 import { AuthContent } from "@/components/layout/auth-shell";
 
@@ -49,7 +49,11 @@ export function AuthFlowPage({
       footer={footer}
       title={title}
     >
-      {hasRenderableFlowUi(flow) ? <FlowForm flow={flow} kind={kind} /> : <FlowUnavailable />}
+      {hasRenderableFlowUi(flow) ? (
+        <FlowForm flow={toRenderableOryFlow(flow)} kind={kind} />
+      ) : (
+        <FlowUnavailable />
+      )}
     </AuthContent>
   );
 }

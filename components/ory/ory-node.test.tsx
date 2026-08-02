@@ -78,6 +78,36 @@ describe("OryNode submit/button rendering", () => {
     expect(markup).not.toContain("formnovalidate");
   });
 
+  it("associates detached settings actions with their owning form", () => {
+    const markup = renderToStaticMarkup(
+      <OryNode
+        formId="settings-lookup_secret-form"
+        kind="settings"
+        node={submitNode({ name: "lookup_secret_confirm", label: { id: 1, text: "Confirm codes" } })}
+      />,
+    );
+
+    expect(markup).toContain('form="settings-lookup_secret-form"');
+  });
+
+  it("renders a confirmation dialog for destructive TOTP settings actions", () => {
+    const node = submitNode({
+      name: "totp_unlink",
+      label: { id: 1, text: "Disable this method", type: "info" },
+    });
+    node.group = "totp";
+    const markup = renderToStaticMarkup(
+      <OryNode
+        formId="settings-totp-form"
+        kind="settings"
+        node={node}
+      />,
+    );
+
+    expect(markup).toContain('data-ory-destructive-trigger="totp_unlink"');
+    expect(markup).toContain('data-slot="alert-dialog-trigger"');
+  });
+
   it("renders the button type attribute for button inputs", () => {
     const markup = renderToStaticMarkup(
       <OryNode node={submitNode({ type: "button", name: "resend", label: { id: 1, text: "Resend", type: "info" } })} />,
@@ -364,10 +394,9 @@ describe("OryNode text", () => {
     );
 
     expect(markup).toContain('data-recovery-codes="true"');
-    expect(markup).toContain("active-code");
-    expect(markup).toContain("********");
+    expect(markup).toContain("1 active codes");
     expect(markup).toContain("Confirm your new codes");
-    expect(markup).toContain('type="button"');
+    expect(markup).not.toContain('data-slot="dialog-trigger"');
     expect(markup).not.toContain("Secret was used at");
   });
 
