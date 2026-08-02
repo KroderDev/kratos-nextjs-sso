@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import type { OryFlow, OryFlowKind } from "@/lib/ory/types";
+import { toRenderableOryFlow, type OryFlow, type OryFlowKind } from "@/lib/ory/types";
 
 import { AuthContent } from "@/components/layout/auth-shell";
 
@@ -34,6 +34,17 @@ function hasRenderableFlowUi(flow: OryFlow | null | undefined): flow is OryFlow 
   );
 }
 
+/**
+ * Renders an authentication flow page with its metadata and form content.
+ *
+ * @param flow - The authentication flow to render.
+ * @param kind - The kind of authentication flow.
+ * @param eyebrow - The text displayed above the page title.
+ * @param title - The page title.
+ * @param description - The page description.
+ * @param footer - Optional content displayed below the page.
+ * @returns The rendered authentication flow page.
+ */
 export function AuthFlowPage({
   flow,
   kind,
@@ -49,7 +60,11 @@ export function AuthFlowPage({
       footer={footer}
       title={title}
     >
-      {hasRenderableFlowUi(flow) ? <FlowForm flow={flow} kind={kind} /> : <FlowUnavailable />}
+      {hasRenderableFlowUi(flow) ? (
+        <FlowForm flow={toRenderableOryFlow(flow)} kind={kind} />
+      ) : (
+        <FlowUnavailable />
+      )}
     </AuthContent>
   );
 }

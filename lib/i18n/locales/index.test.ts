@@ -31,12 +31,18 @@ describe("i18n locale registry", () => {
   it("exports the localized provider actions", () => {
     expect(en.ory.nodes.login).toBe("Login");
     expect(en.ory.nodes.continueWith).toBe("Continue with {provider}");
+    expect(en.ory.nodes.connectWith).toBe("Connect with {provider}");
+    expect(en.ory.nodes.unlinkWith).toBe("Unlink {provider}");
+    expect(en.ory.nodes.recoveryCode).toBe("Recovery code");
     expect(en.ory.nodes.socialLogin).toBe("Sign in with a social account");
     expect(en.ory.nodes.emailDivider).toBe("Or");
     expect(en.ory.nodes.emailDividerCompact).toBe("Or continue with");
 
     expect(dictionaries.es.ory.nodes.login).toBe("Iniciar sesión");
     expect(dictionaries.es.ory.nodes.continueWith).toBe("Continuar con {provider}");
+    expect(dictionaries.es.ory.nodes.connectWith).toBe("Conectar con {provider}");
+    expect(dictionaries.es.ory.nodes.unlinkWith).toBe("Desconectar {provider}");
+    expect(dictionaries.es.ory.nodes.recoveryCode).toBe("Código de recuperación");
     expect(dictionaries.es.ory.nodes.socialLogin).toBe("Iniciar sesión con una cuenta social");
     expect(dictionaries.es.ory.nodes.emailDivider).toBe("O");
     expect(dictionaries.es.ory.nodes.emailDividerCompact).toBe("O continúa con");
@@ -57,5 +63,16 @@ describe("i18n locale registry", () => {
     expect(en.auth.recovery.title).toBe("Recover your account");
     expect(en.auth.verification.title).toBe("Verify your email address");
     expect(en.auth.error.title).toBe("Unable to complete request");
+  });
+
+  it("contains the recovery-code controls in every locale", () => {
+    expect(en.dashboard.settings.areas.security.label).toBe("Security");
+    expect(en.dashboard.settings.navigation.selectLabel).toBe("Choose a settings area");
+    expect(en.dashboard.settings.recoveryCodes.copyAll).toBe("Copy all codes");
+    expect(en.dashboard.settings.recoveryCodes.usedOn).toBe("Used on {date} UTC");
+    expect(dictionaries.es.dashboard.settings.recoveryCodes.copyAll).toBe("Copiar todos los códigos");
+    expect(dictionaries.es.dashboard.settings.recoveryCodes.usedOn).toBe("Usado el {date} UTC");
+    expect(dictionaries.es.dashboard.settings.areas.security.label).toBe("Seguridad");
+    expect(dictionaries.es.dashboard.settings.navigation.selectLabel).toBe("Elige un área de configuración");
   });
 });

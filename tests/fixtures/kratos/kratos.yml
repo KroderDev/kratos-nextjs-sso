@@ -18,6 +18,25 @@ selfservice:
   methods:
     password:
       enabled: true
+    totp:
+      enabled: true
+      config:
+        issuer: CI Kratos
+    lookup_secret:
+      enabled: true
+    oidc:
+      enabled: true
+      config:
+        providers:
+          - id: e2e
+            provider: generic
+            client_id: e2e-client
+            client_secret: e2e-secret
+            issuer_url: http://127.0.0.1:4020
+            mapper_url: file:///etc/config/kratos/oidc-mapper.jsonnet
+            claims_source: userinfo
+            scope:
+              - email
 
   flows:
     error:

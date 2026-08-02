@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 
 import { rewriteOryResponseLocation } from "./lib/ory/url";
 import { getForwardedOrigin } from "./lib/ory/request";
+import { formatSettingsAreaCookie } from "./lib/ory/settings-state";
+import { getSettingsArea } from "./components/ory/settings-sections";
 import oryConfig, { appBaseUrl, isOryConfigured } from "./ory.config";
 
 const oryMiddleware = createOryMiddleware({
@@ -11,10 +13,9 @@ const oryMiddleware = createOryMiddleware({
 });
 
 /**
- * Processes requests through Ory middleware when configured and validates the application origin.
+ * Processes configured requests through Ory middleware and handles settings-area requests.
  *
- * @param request - The incoming Next.js request
- * @returns The next response when Ory is unconfigured, the Ory middleware response, or a `400` response for an invalid or mismatched application origin.
+ * @returns The response for the request, including a `400` response for an invalid application origin.
  */
 export async function proxy(request: NextRequest) {
   if (!isOryConfigured) {
@@ -33,6 +34,20 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  if (request.nextUrl.pathname === "/dashboard/settings") {
+    const area = getSettingsArea(request.nextUrl.searchParams.get("section"));
+    const response = NextResponse.next();
+
+    if (area) {
+      response.headers.append(
+        "Set-Cookie",
+        formatSettingsAreaCookie(area),
+      );
+    }
+
+    return response;
+  }
+
   const response = await oryMiddleware(request);
 
   return rewriteOryResponseLocation(response, requestOrigin);
@@ -45,5 +60,6 @@ export const config = {
     "/ui/:path*",
     "/.well-known/ory/:path*",
     "/.ory/:path*",
+    "/dashboard/settings",
   ],
 };

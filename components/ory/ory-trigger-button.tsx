@@ -32,7 +32,7 @@ type OryTriggerButtonProps = Omit<
   ComponentProps<typeof Button>,
   "children" | "onClick"
 > & {
-  children: ReactNode;
+  children?: ReactNode;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
   trigger?: string;
 };

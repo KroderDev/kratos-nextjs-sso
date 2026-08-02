@@ -7,6 +7,7 @@ const PORT = Number(
   process.env.PLAYWRIGHT_APP_PORT ?? (isAuthMode ? 3002 : process.env.CI ? 3000 : 3001),
 );
 const KRATOS_PORT = Number(process.env.PLAYWRIGHT_KRATOS_PORT ?? 4010);
+const OIDC_PORT = Number(process.env.PLAYWRIGHT_OIDC_PORT ?? 4020);
 const appServer = {
   command: `pnpm build && node scripts/prepare-standalone.mjs && node .next/standalone/server.js`,
   port: PORT,
@@ -19,6 +20,7 @@ const appServer = {
     NEXT_PUBLIC_BRAND_MARK: "C",
     NEXT_PUBLIC_APP_URL: `http://127.0.0.1:${PORT}`,
     NEXT_PUBLIC_ORY_SDK_URL: isAuthMode ? `http://127.0.0.1:${KRATOS_PORT}` : "",
+    NEXT_PUBLIC_ORY_OAUTH_ORIGINS: isRealKratosMode ? `http://127.0.0.1:${OIDC_PORT}` : "",
     ORY_SDK_URL: "",
     NEXT_PUBLIC_ORY_PROJECT_NAME: "CI",
     ORY_PROJECT_API_TOKEN: "",
@@ -29,7 +31,7 @@ const appServer = {
 
 export default defineConfig({
   testDir: isAuthMode
-    ? isRealKratosMode
+      ? isRealKratosMode
       ? "./tests/real-auth"
       : "./tests/auth"
     : "./tests",
@@ -64,7 +66,15 @@ export default defineConfig({
   webServer: isAuthMode
     ? [
         ...(isRealKratosMode
-          ? []
+          ? [
+              {
+                command: "node scripts/mock-oidc.mjs",
+                port: OIDC_PORT,
+                reuseExistingServer: !process.env.CI,
+                timeout: 30_000,
+                env: { PORT: OIDC_PORT.toString() },
+              },
+            ]
           : [
               {
                 command: "node scripts/mock-kratos.mjs",

@@ -1,6 +1,10 @@
+// @vitest-environment jsdom
+
 import { renderToStaticMarkup } from "react-dom/server";
+import { act } from "react";
 import * as React from "react";
-import { describe, expect, it, vi } from "vitest";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { UiNode } from "@ory/client-fetch";
 
 vi.mock("@/lib/ory/security", () => ({
@@ -26,6 +30,18 @@ vi.mock("next/script", () => ({
 }));
 
 import { OryNode } from "./ory-node";
+
+let mountedRoot: Root | undefined;
+let mountedContainer: HTMLDivElement | undefined;
+
+afterEach(() => {
+  if (mountedRoot) {
+    act(() => mountedRoot?.unmount());
+  }
+  mountedContainer?.remove();
+  mountedRoot = undefined;
+  mountedContainer = undefined;
+});
 
 function baseNode(
   type: string,
@@ -56,14 +72,16 @@ function submitNode(overrides: Record<string, unknown> = {}): UiNode {
 }
 
 function providerNode(overrides: Record<string, unknown> = {}): UiNode {
-  return submitNode({
+  return {
+    ...submitNode({
+      name: "provider",
+      type: "submit",
+      value: "google-provider",
+      label: { id: 1, text: "Sign in with Google", type: "info" },
+      ...overrides,
+    }),
     group: "oidc",
-    name: "provider",
-    type: "submit",
-    value: "google-provider",
-    label: { id: 1, text: "Sign in with Google", type: "info" },
-    ...overrides,
-  });
+  } as UiNode;
 }
 
 describe("OryNode submit/button rendering", () => {
@@ -74,6 +92,115 @@ describe("OryNode submit/button rendering", () => {
     expect(markup).toContain('type="submit"');
     expect(markup).toContain('data-icon="inline-end"');
     expect(markup).not.toContain("formnovalidate");
+  });
+
+  it("falls back to the generic action label when submit attributes are empty", () => {
+    const markup = renderToStaticMarkup(
+      <OryNode
+        node={submitNode({ name: undefined, value: undefined, label: undefined })}
+      />,
+    );
+
+    expect(markup).toContain(">Continue<");
+  });
+
+  it("associates detached settings actions with their owning form", () => {
+    const markup = renderToStaticMarkup(
+      <OryNode
+        formId="settings-lookup_secret-form"
+        kind="settings"
+        node={submitNode({ name: "lookup_secret_confirm", label: { id: 1, text: "Confirm codes" } })}
+      />,
+    );
+
+    expect(markup).toContain('form="settings-lookup_secret-form"');
+  });
+
+  it("renders a confirmation dialog for destructive TOTP settings actions", () => {
+    const node = submitNode({
+      name: "totp_unlink",
+      label: { id: 1, text: "Disable this method", type: "info" },
+    });
+    node.group = "totp";
+    const markup = renderToStaticMarkup(
+      <OryNode
+        formId="settings-totp-form"
+        kind="settings"
+        node={node}
+      />,
+    );
+
+    expect(markup).toContain('data-ory-destructive-trigger="totp_unlink"');
+    expect(markup).toContain('data-slot="alert-dialog-trigger"');
+  });
+
+  it("renders a confirmation dialog for disabling recovery codes", () => {
+    const node = submitNode({
+      name: "lookup_secret_disable",
+      label: { id: 1, text: "Disable recovery codes", type: "info" },
+    });
+    node.group = "lookup_secret";
+    const markup = renderToStaticMarkup(
+      <OryNode
+        formId="settings-lookup_secret-form"
+        kind="settings"
+        node={node}
+      />,
+    );
+
+    expect(markup).toContain('data-ory-destructive-trigger="lookup_secret_disable"');
+    expect(markup).toContain('data-slot="alert-dialog-trigger"');
+  });
+
+  it("supports compact rendering for destructive actions", () => {
+    const node = submitNode({
+      name: "lookup_secret_disable",
+      label: { id: 1, text: "Disable recovery codes", type: "info" },
+    });
+    node.group = "lookup_secret";
+    const markup = renderToStaticMarkup(
+      <OryNode
+        compactProvider
+        formId="settings-lookup_secret-form"
+        kind="settings"
+        node={node}
+      />,
+    );
+
+    expect(markup).toContain('data-ory-destructive-trigger="lookup_secret_disable"');
+    expect(markup).not.toContain('aria-label="');
+  });
+
+  it("forwards the owning form to the recovery-code confirmation action", () => {
+    const node = submitNode({
+      name: "lookup_secret_disable",
+      label: { id: 1, text: "Disable recovery codes", type: "info" },
+    });
+    node.group = "lookup_secret";
+    mountedContainer = document.createElement("div");
+    document.body.append(mountedContainer);
+    mountedRoot = createRoot(mountedContainer);
+
+    act(() => {
+      mountedRoot?.render(
+        <OryNode
+          formId="settings-lookup_secret-form"
+          kind="settings"
+          node={node}
+        />,
+      );
+    });
+
+    const trigger = mountedContainer.querySelector<HTMLButtonElement>(
+      '[data-ory-destructive-trigger="lookup_secret_disable"]',
+    );
+    expect(trigger).not.toBeNull();
+
+    act(() => trigger?.click());
+
+    expect(
+      document.querySelector('button[type="submit"][form="settings-lookup_secret-form"]'),
+    ).not.toBeNull();
   });
 
   it("renders the button type attribute for button inputs", () => {
@@ -91,6 +218,14 @@ describe("OryNode submit/button rendering", () => {
     );
 
     expect(markup).toContain(">Login<");
+  });
+
+  it("bypasses browser validation when selecting a login method", () => {
+    const markup = renderToStaticMarkup(
+      <OryNode kind="login" node={submitNode({ name: "method", value: "lookup_secret" })} />,
+    );
+
+    expect(markup).toContain("formNoValidate");
   });
 
   it("does not override the label when the flow kind is not login", () => {
@@ -119,6 +254,24 @@ describe("OryNode submit/button rendering", () => {
     expect(markup).toContain("formNoValidate");
     expect(markup).not.toContain('data-icon="inline-end"');
     expect(markup).not.toContain('aria-label="Continue with Google"');
+  });
+
+  it("uses connect wording for settings provider actions", () => {
+    const markup = renderToStaticMarkup(
+      <OryNode kind="settings" node={providerNode({ name: "link" })} />,
+    );
+
+    expect(markup).toContain(">Connect with Google<");
+    expect(markup).not.toContain("Continue with Google");
+  });
+
+  it("uses unlink wording for connected settings providers", () => {
+    const markup = renderToStaticMarkup(
+      <OryNode kind="settings" node={providerNode({ name: "unlink" })} />,
+    );
+
+    expect(markup).toContain(">Unlink Google<");
+    expect(markup).not.toContain("Connect with Google");
   });
 
   it("renders a compact provider button as icon-only with screen-reader text", () => {
@@ -189,6 +342,19 @@ describe("OryNode checkbox input", () => {
 
     expect(markup).toContain('data-invalid="true"');
   });
+
+  it("uses the default checkbox label and value when attributes are absent", () => {
+    const node = inputNode({
+      type: "checkbox",
+      name: undefined,
+      value: undefined,
+      label: undefined,
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain("Confirm this choice");
+    expect(markup).toContain('value="true"');
+  });
 });
 
 describe("OryNode code input", () => {
@@ -204,6 +370,68 @@ describe("OryNode code input", () => {
     expect(markup).toContain('data-slot="input-otp"');
     expect(markup).toContain("Verification code");
   });
+
+  it("renders code input errors", () => {
+    const node = inputNode({
+      type: "text",
+      name: "code",
+      maxlength: 6,
+      label: { id: 1, text: "Verification code", type: "info" },
+    });
+    node.messages = [{ id: 2, text: "Invalid code", type: "error" }];
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain("Invalid code");
+  });
+
+  it("renders a Kratos TOTP code as an OTP input", () => {
+    const node = inputNode({
+      group: "totp",
+      type: "text",
+      name: "totp_code",
+      maxlength: 6,
+      label: { id: 1, text: "Authenticator code", type: "info" },
+    });
+    const markup = renderToStaticMarkup(<OryNode kind="login" node={node} />);
+
+    expect(markup).toContain('name="totp_code"');
+    expect(markup).toContain('data-slot="input-otp"');
+    expect(markup).toContain('autoComplete="one-time-code"');
+    expect(markup).toContain('value="password"');
+    expect(markup).not.toContain("defaultValue");
+    expect(markup).toContain("Authenticator code");
+  });
+
+  it("renders a lookup-secret login input as a text recovery-code field", () => {
+    const node = inputNode({
+      group: "lookup_secret",
+      name: "lookup_secret",
+      type: "text",
+      required: true,
+      label: { id: 1, text: "Recovery code", type: "info" },
+    });
+    node.group = "lookup_secret";
+    const markup = renderToStaticMarkup(<OryNode kind="login" node={node} />);
+
+    expect(markup).toContain('name="lookup_secret"');
+    expect(markup).toContain('autoComplete="one-time-code"');
+    expect(markup).toContain("Recovery code");
+    expect(markup).not.toContain('data-slot="input-otp"');
+  });
+
+  it("renders lookup-secret input errors", () => {
+    const node = inputNode({
+      group: "lookup_secret",
+      name: "lookup_secret",
+      type: "text",
+      label: { id: 1, text: "Recovery code", type: "info" },
+    });
+    node.group = "lookup_secret";
+    node.messages = [{ id: 2, text: "Invalid recovery code", type: "error" }];
+    const markup = renderToStaticMarkup(<OryNode kind="login" node={node} />);
+
+    expect(markup).toContain("Invalid recovery code");
+  });
 });
 
 describe("OryNode default text input", () => {
@@ -218,6 +446,16 @@ describe("OryNode default text input", () => {
     expect(markup).toContain('data-slot="field"');
     expect(markup).toContain("Email address");
     expect(markup).toContain('type="email"');
+  });
+
+  it("uses fallback attributes and labels for an unconfigured text input", () => {
+    const markup = renderToStaticMarkup(
+      <OryNode node={inputNode({ name: undefined, type: undefined, label: undefined })} />,
+    );
+
+    expect(markup).toContain('id="ory-node"');
+    expect(markup).toContain('name="ory-node"');
+    expect(markup).toContain(">Value<");
   });
 
   it("renders description text when provided", () => {
@@ -269,6 +507,53 @@ describe("OryNode text", () => {
   it("returns null when text is empty", () => {
     const node = baseNode("text", "default", { text: { id: 1, text: "", type: "info" } });
     expect(renderToStaticMarkup(<OryNode node={node} />)).toBe("");
+  });
+
+  it("renders active recovery codes and redacts used entries", () => {
+    const node = baseNode("text", "lookup_secret", {
+      id: "lookup_secret_codes",
+      text: {
+        id: 1,
+        text: "active-code, used",
+        type: "info",
+        context: {
+          secrets: [
+            {
+              id: 2,
+              text: "active-code",
+              type: "info",
+              context: { secret: "active-code" },
+            },
+            {
+              id: 3,
+              text: "Secret was used at 2021-10-14T07:38:51Z",
+              type: "info",
+              context: { used_at_unix: 1634197131 },
+            },
+          ],
+        },
+      },
+    });
+    const markup = renderToStaticMarkup(
+      <OryNode kind="settings" lookupSecretPending node={node} />,
+    );
+
+    expect(markup).toContain('data-recovery-codes="true"');
+    expect(markup).toContain("1 active code");
+    expect(markup).toContain("Confirm your new codes");
+    expect(markup).not.toContain('data-slot="dialog-trigger"');
+    expect(markup).not.toContain("Secret was used at");
+  });
+
+  it("falls back to the Ory text when recovery-code context is unavailable", () => {
+    const node = baseNode("text", "lookup_secret", {
+      id: "lookup_secret_codes",
+      text: { id: 1, text: "Recovery codes are available", type: "info" },
+    });
+    const markup = renderToStaticMarkup(<OryNode kind="settings" node={node} />);
+
+    expect(markup).toContain("Recovery codes are available");
+    expect(markup).toContain("text-sm leading-6 text-muted-foreground");
   });
 });
 
@@ -325,6 +610,22 @@ describe("OryNode image", () => {
     expect(markup).toContain("QR code");
   });
 
+  it("renders a base64 QR code supplied by Ory", () => {
+    const node = baseNode("img", "totp", {
+      src: "data:image/png;base64,iVBORw0KGgo=",
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain('src="data:image/png;base64,iVBORw0KGgo="');
+  });
+
+  it("returns null for an unsafe QR code data URL", () => {
+    const node = baseNode("img", "totp", {
+      src: "data:image/svg+xml,<svg></svg>",
+    });
+    expect(renderToStaticMarkup(<OryNode node={node} />)).toBe("");
+  });
+
   it("returns null for an unsafe image src", () => {
     const node = baseNode("img", "default", {
       src: "http://evil.example.com/img.png",
@@ -347,6 +648,22 @@ describe("OryNode div", () => {
     expect(markup).toContain('data-customAttr="value1"');
     expect(markup).toContain('data-other="value2"');
   });
+
+  it("preserves existing data prefixes and ignores non-object data", () => {
+    const prefixedMarkup = renderToStaticMarkup(
+      <OryNode
+        node={baseNode("div", "default", {
+          data: { "data-existing": "value" },
+        })}
+      />,
+    );
+    const invalidMarkup = renderToStaticMarkup(
+      <OryNode node={baseNode("div", "default", { data: "invalid" })} />,
+    );
+
+    expect(prefixedMarkup).toContain('data-existing="value"');
+    expect(invalidMarkup).not.toContain("data-invalid");
+  });
 });
 
 describe("OryNode script", () => {
@@ -360,6 +677,32 @@ describe("OryNode script", () => {
 
     expect(markup).toContain('src="https://example.com/webauthn.js"');
     expect(markup).toContain('data-strategy="afterInteractive"');
+  });
+
+  it("keeps valid script security attributes and drops invalid values", () => {
+    const validMarkup = renderToStaticMarkup(
+      <OryNode
+        node={baseNode("script", "default", {
+          src: "https://example.com/webauthn.js",
+          crossorigin: "anonymous",
+          referrerpolicy: "strict-origin",
+        })}
+      />,
+    );
+    const invalidMarkup = renderToStaticMarkup(
+      <OryNode
+        node={baseNode("script", "default", {
+          src: "https://example.com/webauthn.js",
+          crossorigin: "invalid",
+          referrerpolicy: "invalid",
+        })}
+      />,
+    );
+
+    expect(validMarkup).toContain('crossorigin="anonymous"');
+    expect(validMarkup).toContain('referrerPolicy="strict-origin"');
+    expect(invalidMarkup).not.toContain('crossorigin="invalid"');
+    expect(invalidMarkup).not.toContain('referrerPolicy="invalid"');
   });
 
   it("returns null for an unsafe script src", () => {

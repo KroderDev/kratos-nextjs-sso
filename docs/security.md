@@ -155,6 +155,26 @@ The session check only runs when Ory is configured (`isOryConfigured` is
 `true`). In unconfigured environments (local development without an Ory
 project, E2E smoke tests), the dashboard renders without authentication.
 
+## Multi-Factor Authentication
+
+Kratos owns TOTP and backup recovery-code validation. The UI only renders the
+flow nodes and submits the selected method; it never verifies, stores, or
+logs TOTP secrets or recovery codes. Login method buttons bypass native browser
+validation because Kratos can render multiple required MFA methods in one form
+(for example TOTP and lookup-secret recovery); the selected method is still
+validated server-side by Kratos.
+
+The settings flow supports TOTP enrollment and unlinking, backup-code
+generation, confirmation, regeneration, disablement, and redacted display of
+used codes. Recovery codes are displayed only in the flow response that
+generated them and should be stored by the user in a secure location.
+
+The real authentication E2E suite validates password-login TOTP challenges,
+invalid TOTP codes, backup-code login, reused-code rejection, and TOTP
+disablement. Keep the Kratos `totp` issuer, `lookup_secret` method, and
+Authenticator Assurance Level policy aligned between the test fixture and
+production configuration.
+
 ## Ory Inline JavaScript Boundaries
 
 Ory self-service flows sometimes include inline `onclick` and `onload`

@@ -4,6 +4,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import type { UiNode } from "@ory/client-fetch";
+import { useState } from "react";
 import Script from "next/script";
 import { ArrowUpRight } from "lucide-react";
 
@@ -11,6 +12,18 @@ import type { OryFlowKind } from "@/lib/ory/types";
 
 import { ButtonLink } from "@/components/ui/button-link";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogClose,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldContent,
@@ -28,6 +41,8 @@ import {
 import {
   getNodeAttributes,
   getErrorMessages,
+  getLookupSecretAction,
+  getLookupSecretEntries,
   getNodeLabel,
   getNodeMessages,
   getNodeText,
@@ -35,15 +50,20 @@ import {
   getProviderName,
   getString,
   getSafeText,
+  isLookupSecretInput,
+  isLookupSecretCodeNode,
   isProviderNode,
   isChecked,
   isCodeInput,
+  isTotpCodeInput,
 } from "@/lib/ory/flow";
 
 import { OryTriggerButton } from "./ory-trigger-button";
 import { ProviderIcon } from "./provider-icon";
+import { RecoveryCodes } from "./recovery-codes";
 import { allowedOryOrigins, isSafeProviderUrl } from "@/lib/ory/security";
 import { appBaseUrl, oryCanonicalUrl, orySdkUrl } from "@/ory.config";
+import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n/client";
 
 const allowedOrigins = allowedOryOrigins([appBaseUrl ?? "", orySdkUrl, oryCanonicalUrl]);
@@ -59,21 +79,53 @@ const VALID_REFERRER_POLICIES = new Set([
   "unsafe-url",
 ]);
 
+const SAFE_QR_DATA_URL = /^data:image\/(?:gif|jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/;
+
 type OryNodeProps = {
   compactProvider?: boolean;
+  formId?: string;
   kind?: OryFlowKind;
+  lookupSecretConfirmationNode?: UiNode;
+  lookupSecretPending?: boolean;
   node: UiNode;
+  onActionStart?: () => void;
 };
 
+/**
+ * Derives an identifier for an Ory UI node.
+ *
+ * @param node - The UI node whose identifier is derived
+ * @returns The node's `id`, its `name`, or `"ory-node"` when neither is available
+ */
 function nodeId(node: UiNode) {
   const attributes = getNodeAttributes(node);
   return getString(attributes.id) ?? getString(attributes.name) ?? "ory-node";
 }
 
-export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
+/**
+ * Renders an Ory UI node according to its type, flow, locale, and validation state.
+ *
+ * @param compactProvider - Whether provider actions should use a compact icon-only layout.
+ * @param formId - Optional form identifier used to associate rendered actions with a form.
+ * @param kind - The flow kind used to determine flow-specific labels and behavior.
+ * @param lookupSecretConfirmationNode - Optional node rendered as the lookup-secret confirmation action.
+ * @param lookupSecretPending - Whether lookup-secret recovery codes are pending.
+ * @param onActionStart - Callback invoked when an Ory action starts.
+ */
+export function OryNode({
+  compactProvider = false,
+  formId,
+  kind,
+  lookupSecretConfirmationNode,
+  lookupSecretPending = false,
+  node,
+  onActionStart,
+}: OryNodeProps) {
   const { t, locale } = useTranslation();
+  const [otpValue, setOtpValue] = useState<string | undefined>();
   const attributes = getNodeAttributes(node);
-  const id = nodeId(node);
+  const rawId = nodeId(node);
+  const id = formId ? `${formId}-${rawId}` : rawId;
 
   if (node.type === "input") {
     const inputType = getString(attributes.type) ?? "text";
@@ -108,26 +160,106 @@ export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
 
     if (inputType === "submit" || inputType === "button") {
       const isProvider = isProviderNode(node);
+      const lookupSecretAction = getLookupSecretAction(node);
       const providerName = isProvider ? getProviderName(node) : undefined;
+      const providerActionKey =
+        kind === "settings"
+          ? name === "unlink"
+            ? "ory.nodes.unlinkWith"
+            : "ory.nodes.connectWith"
+          : "ory.nodes.continueWith";
       const providerAction = providerName
-        ? t("ory.nodes.continueWith", { provider: providerName })
+        ? t(providerActionKey, { provider: providerName })
         : undefined;
       const isLoginAction = kind === "login" && name === "method";
+      const isDestructiveLookupAction = lookupSecretAction === "lookup_secret_disable";
+      const isDestructiveTotpAction = kind === "settings" && node.group === "totp" && name === "totp_unlink";
+      const isDestructiveAction = isDestructiveLookupAction || isDestructiveTotpAction;
+      const actionLabel = isLoginAction
+        ? t("ory.nodes.login")
+        : providerAction ?? label ?? stringValue ?? t("ory.nodes.continue");
+      const actionClassName = cn(
+        "min-h-11 w-full px-4",
+        compactProvider
+          ? "justify-center p-0"
+          : isProvider
+            ? "justify-start gap-3"
+            : "justify-between",
+        kind === "settings" && !compactProvider && "sm:w-auto",
+      );
+      const actionChildren = compactProvider ? (
+        <span className="sr-only">{providerAction}</span>
+      ) : (
+        <span className={isProvider ? "flex-1 text-left" : undefined}>{actionLabel}</span>
+      );
+      const actionIcon = !isProvider ? <ArrowUpRight aria-hidden="true" data-icon="inline-end" /> : null;
+
+      if (isDestructiveAction) {
+        const confirmationKey = isDestructiveTotpAction
+          ? "dashboard.settings.confirmations.disableTotp"
+          : "dashboard.settings.confirmations.disableRecovery";
+
+        return (
+          <AlertDialog key={id}>
+            <AlertDialogTrigger
+              render={
+                <Button
+                  aria-label={compactProvider ? providerAction : undefined}
+                  className={actionClassName}
+                  data-ory-destructive-trigger={name}
+                  disabled={disabled}
+                  title={compactProvider ? providerAction : undefined}
+                  type="button"
+                  variant="destructive"
+                />
+              }
+            >
+              {isProvider ? <ProviderIcon node={node} /> : null}
+              {actionChildren}
+              {actionIcon}
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t(`${confirmationKey}.title`)}</AlertDialogTitle>
+                <AlertDialogDescription>{t(`${confirmationKey}.description`)}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t("dashboard.settings.confirmations.cancel")}</AlertDialogCancel>
+                <AlertDialogClose
+                  render={
+                    <OryTriggerButton
+                      className="w-full sm:w-auto"
+                      form={formId}
+                      formNoValidate
+                      name={name}
+                      onClick={onActionStart}
+                      trigger={getString(attributes.onclickTrigger)}
+                      type="submit"
+                      value={stringValue}
+                      variant="destructive"
+                    />
+                  }
+                >
+                  {t(`${confirmationKey}.confirm`)}
+                </AlertDialogClose>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        );
+      }
 
       return (
         <OryTriggerButton
           key={id}
           aria-label={compactProvider ? providerAction : undefined}
-          className={`min-h-11 w-full px-4 ${
-            compactProvider
-              ? "justify-center p-0"
-              : isProvider
-                ? "justify-start gap-3"
-                : "justify-between"
-          }`}
+          className={actionClassName}
           disabled={disabled}
-          formNoValidate={isProvider || undefined}
+          formNoValidate={
+            isProvider || (kind === "login" && name === "method") || undefined
+          }
           name={name}
+          onClick={onActionStart}
+          form={formId}
           title={compactProvider ? providerAction : undefined}
           trigger={getString(attributes.onclickTrigger)}
           type={inputType === "button" ? "button" : "submit"}
@@ -135,14 +267,8 @@ export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
           variant={isProvider ? "outline" : "default"}
         >
           {isProvider ? <ProviderIcon node={node} /> : null}
-          {compactProvider ? (
-            <span className="sr-only">{providerAction}</span>
-          ) : (
-            <span className={isProvider ? "flex-1 text-left" : undefined}>
-              {isLoginAction ? t("ory.nodes.login") : providerAction ?? label ?? stringValue ?? t("ory.nodes.continue")}
-            </span>
-          )}
-          {!isProvider ? <ArrowUpRight aria-hidden="true" data-icon="inline-end" /> : null}
+          {actionChildren}
+          {actionIcon}
         </OryTriggerButton>
       );
     }
@@ -177,23 +303,26 @@ export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
       );
     }
 
-    if (isCodeInput(node)) {
+    if (isCodeInput(node) || isTotpCodeInput(node)) {
       const length = Math.min(Math.max(maxLength ?? 6, 4), 8);
 
       return (
         <Field key={id} data-invalid={hasErrors || undefined}>
-          <FieldLabel htmlFor={id}>{label ?? t("ory.nodes.verificationCode")}</FieldLabel>
+          <FieldLabel htmlFor={id}>
+            {label ?? (isTotpCodeInput(node) ? t("ory.nodes.totpCode") : t("ory.nodes.verificationCode"))}
+          </FieldLabel>
           <InputOTP
-            autoComplete={getString(attributes.autocomplete)}
+            autoComplete={getString(attributes.autocomplete) ?? "one-time-code"}
             aria-invalid={hasErrors || undefined}
             aria-describedby={describedBy}
-            defaultValue={stringValue ?? ""}
             disabled={disabled}
             id={id}
             maxLength={length}
             name={name}
+            onChange={setOtpValue}
             pattern={getString(attributes.pattern)}
             required={required}
+            value={otpValue ?? stringValue ?? ""}
           >
             <InputOTPGroup>
               {Array.from({ length }, (_, index) => (
@@ -203,7 +332,35 @@ export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
           </InputOTP>
           <FieldError
             id={errorId}
-            errors={getErrorMessages(messages).map((message) => ({
+            errors={getErrorMessages(messages, locale).map((message) => ({
+              message: message.text,
+            }))}
+          />
+        </Field>
+      );
+    }
+
+    if (isLookupSecretInput(node)) {
+      return (
+        <Field key={id} data-invalid={hasErrors || undefined}>
+          <FieldLabel htmlFor={id}>{label ?? t("ory.nodes.recoveryCode")}</FieldLabel>
+          <Input
+            aria-invalid={hasErrors || undefined}
+            aria-describedby={describedBy}
+            autoComplete={getString(attributes.autocomplete) ?? "one-time-code"}
+            defaultValue={stringValue}
+            disabled={disabled}
+            id={id}
+            maxLength={maxLength}
+            name={name}
+            pattern={getString(attributes.pattern)}
+            required={required}
+            spellCheck={false}
+            type="text"
+          />
+          <FieldError
+            id={errorId}
+            errors={getErrorMessages(messages, locale).map((message) => ({
               message: message.text,
             }))}
           />
@@ -233,7 +390,7 @@ export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
         ) : null}
         <FieldError
           id={errorId}
-          errors={getErrorMessages(messages).map((message) => ({
+          errors={getErrorMessages(messages, locale).map((message) => ({
             message: message.text,
           }))}
         />
@@ -242,6 +399,29 @@ export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
   }
 
   if (node.type === "text") {
+    const lookupSecretEntries = getLookupSecretEntries(node);
+
+    if (isLookupSecretCodeNode(node) && lookupSecretEntries?.length) {
+      return (
+        <RecoveryCodes
+          entries={lookupSecretEntries}
+          fallbackText={getNodeText(node, locale)}
+          id={id}
+          label={getNodeLabel(node, locale)}
+          pending={lookupSecretPending}
+          confirmationAction={
+            lookupSecretConfirmationNode ? (
+              <OryNode
+                formId={formId}
+                kind={kind}
+                node={lookupSecretConfirmationNode}
+              />
+            ) : undefined
+          }
+        />
+      );
+    }
+
     const text = getNodeText(node, locale);
 
     return text ? (
@@ -289,7 +469,10 @@ export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
     const src = getString(attributes.src);
     const isQrCode = node.group === "totp";
 
-    if (!isSafeProviderUrl(src, allowedOrigins)) {
+    const isSafeImage = isSafeProviderUrl(src, allowedOrigins) ||
+      (isQrCode && typeof src === "string" && SAFE_QR_DATA_URL.test(src));
+
+    if (!isSafeImage) {
       return null;
     }
 

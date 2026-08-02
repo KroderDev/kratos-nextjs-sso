@@ -87,14 +87,19 @@ describe("playwright.config.ts", () => {
     const appServer = servers.find((server) =>
       server.command?.includes(".next/standalone/server.js"),
     );
+    const oidcServer = servers.find((server) => server.command?.includes("mock-oidc"));
 
     expect(config.testDir).toBe("./tests/real-auth");
     expect(config.testIgnore).toEqual([]);
-    expect(servers).toHaveLength(1);
+    expect(servers).toHaveLength(2);
     expect(servers.some((server) => server.command?.includes("mock-kratos"))).toBe(false);
+    expect(oidcServer?.port).toBe(4020);
     expect(appServer?.port).toBe(3002);
     expect(appServer?.env?.NEXT_PUBLIC_ORY_SDK_URL).toBe(
       "http://127.0.0.1:4010",
+    );
+    expect(appServer?.env?.NEXT_PUBLIC_ORY_OAUTH_ORIGINS).toBe(
+      "http://127.0.0.1:4020",
     );
     expect(appServer?.env?.HOSTNAME).toBe("127.0.0.1");
     expect(appServer?.reuseExistingServer).toBe(false);

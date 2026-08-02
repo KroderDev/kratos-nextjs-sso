@@ -1,11 +1,12 @@
-import Link from "next/link";
 import { getServerSession, getSettingsFlow, type OryPageParams } from "@ory/nextjs/app";
+import { cookies } from "next/headers";
 import { getSafeLogoutFlow } from "@/lib/ory/logout";
 import { redirect, unstable_rethrow } from "next/navigation";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { FlowForm } from "@/components/ory/flow-form";
 import { FlowUnavailable } from "@/components/ory/flow-unavailable";
+import { SettingsWorkspace } from "@/components/ory/settings-workspace";
+import { getSettingsArea } from "@/components/ory/settings-sections";
 import { OrySetupState } from "@/components/ory/setup-state";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -15,9 +16,12 @@ import {
   getIdentityInitials,
   getIdentityName,
 } from "@/lib/ory/identity";
+import { isValidLocale } from "@/lib/i18n/config";
 import { rewriteOryFlow } from "@/lib/ory/url";
 import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
 import { buildCleanFlowUrl } from "@/lib/ory/params";
+import { SETTINGS_AREA_COOKIE } from "@/lib/ory/settings-state";
+import { toRenderableOryFlow } from "@/lib/ory/types";
 import config, { appBaseUrl, isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 
@@ -28,6 +32,11 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
   return { title: t("common.navigation.settings") };
 }
 
+/**
+ * Renders the localized settings page introduction and status badge.
+ *
+ * @param t - Translation function used to retrieve the displayed text
+ */
 function SettingsIntro({ t }: { t: (key: string) => string }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-6">
@@ -35,10 +44,10 @@ function SettingsIntro({ t }: { t: (key: string) => string }) {
         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
           {t("dashboard.settings.eyebrow")}
         </p>
-        <h1 className="mt-4 max-w-2xl text-4xl font-semibold leading-[1.03] tracking-[-0.055em] sm:text-6xl">
+        <h1 className="mt-3 max-w-2xl text-3xl font-semibold leading-[1.04] tracking-[-0.05em] sm:mt-4 sm:text-6xl sm:tracking-[-0.055em]">
           {t("dashboard.settings.title")}
         </h1>
-        <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground">
+        <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:mt-5 sm:text-base sm:leading-7">
           {t("dashboard.settings.description")}
         </p>
       </div>
@@ -73,15 +82,18 @@ function SettingsAside({ t }: { t: (key: string) => string }) {
 }
 
 /**
- * Renders the localized account settings page.
+ * Renders the localized account settings page and its active settings workspace.
  *
- * Displays setup guidance when Ory is not configured, redirects unauthenticated users to login, and renders the settings form or an unavailable state when the settings flow cannot be loaded.
+ * Displays setup guidance when Ory is not configured, redirects unauthenticated users to login, and shows an unavailable state when the settings flow cannot be loaded.
  *
- * @param searchParams - URL parameters used to load translations and the settings flow
+ * @param searchParams - URL parameters that select the settings section and locale and identify the settings flow
  */
 export default async function SettingsPage({ searchParams }: OryPageParams) {
   const { t } = await getTranslations(searchParams);
   const params = await searchParams;
+  const requestedArea = getSettingsArea(params.section);
+  const requestedLocale =
+    typeof params.lang === "string" && isValidLocale(params.lang) ? params.lang : undefined;
 
   if (!isOryConfigured) {
     return (
@@ -102,10 +114,24 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
   const session = await getServerSession();
 
   if (!session?.identity) {
-    redirect("/auth/login?return_to=/dashboard/settings");
+    redirect(`/auth/login?${new URLSearchParams({ return_to: "/dashboard/settings" }).toString()}`);
   }
 
   const identity = session.identity;
+  const cookieStore = await cookies();
+  const rememberedArea = getSettingsArea(cookieStore.get(SETTINGS_AREA_COOKIE)?.value);
+  const activeArea = requestedArea ?? rememberedArea ?? "profile";
+
+  if (!requestedArea && rememberedArea) {
+    redirect(
+      buildCleanFlowUrl(
+        "/dashboard/settings",
+        { ...params, section: rememberedArea },
+        ["flow", "lang", "section"],
+      ),
+    );
+  }
+
   const name = getIdentityName(identity);
   const logoutFlow = await getSafeLogoutFlow(appBaseUrl);
   let flow = null;
@@ -114,7 +140,7 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
     flow = rewriteOryFlow(await getSettingsFlow(config, params)) || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "settings")) {
-      redirect(buildCleanFlowUrl("/dashboard/settings", params, ["lang"]));
+      redirect(buildCleanFlowUrl("/dashboard/settings", params, ["lang", "section"]));
     }
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders
@@ -130,19 +156,20 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
         logoutUrl: logoutFlow.logout_url,
       }}
     >
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-16">
-        <div>
-          <SettingsIntro t={t} />
-          <div className="mt-12 max-w-3xl">
-            {flow ? <FlowForm embedded flow={flow} kind="settings" /> : <FlowUnavailable />}
-            <div className="mt-7 text-center text-sm text-muted-foreground">
-              <Link className="font-medium text-primary hover:underline" href="/dashboard">
-                {t("dashboard.settings.returnOverview")}
-              </Link>
-            </div>
+      <SettingsIntro t={t} />
+      <div className="mt-8 sm:mt-12">
+        {flow ? (
+          <SettingsWorkspace
+            flow={toRenderableOryFlow(flow)}
+            flowState={flow.state}
+            initialArea={activeArea}
+            locale={requestedLocale}
+          />
+        ) : (
+          <div className="max-w-3xl">
+            <FlowUnavailable />
           </div>
-        </div>
-        <SettingsAside t={t} />
+        )}
       </div>
     </DashboardShell>
   );
