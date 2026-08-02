@@ -364,11 +364,7 @@ export function FlowForm({
   const onloadTriggers = flow.ui.nodes
     .map((node) => getString(getNodeAttributes(node).onloadTrigger))
     .filter((trigger): trigger is string => Boolean(trigger));
-  const nodes = flow.ui.nodes.filter((node) => {
-    if (kind !== "registration" && kind !== "settings") return true;
-    const name = getString(getNodeAttributes(node).name);
-    return name !== "traits.avatar_url";
-  });
+  const nodes = flow.ui.nodes;
   const providerNodes = separateProviders ? nodes.filter(isProviderNode) : [];
   const formNodes = separateProviders ? nodes.filter((node) => !isProviderNode(node)) : nodes;
   const compactProviders = providerNodes.length >= 3;

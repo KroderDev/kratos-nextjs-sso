@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button-link";
 import { ArrowUpRight } from "lucide-react";
 import {
+  getIdentityAvatarUrl,
   getIdentityEmail,
   getIdentityInitials,
   getIdentityName,
@@ -150,6 +151,7 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
     <DashboardShell
       activeNav="settings"
       account={{
+        avatarUrl: getIdentityAvatarUrl(identity),
         email: getIdentityEmail(identity),
         initials: getIdentityInitials(identity),
         label: name,

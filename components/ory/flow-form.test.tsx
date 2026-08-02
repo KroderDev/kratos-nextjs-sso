@@ -131,34 +131,6 @@ describe("FlowForm", () => {
     expect(postMarkup).toContain('method="post"');
   });
 
-  it("filters out the avatar_url field for registration and settings flows", () => {
-    const nodes = [
-      inputNode({
-        name: "traits.avatar_url",
-        type: "text",
-        label: { id: 1, text: "Avatar URL", type: "info" },
-      }),
-      inputNode({
-        name: "identifier",
-        type: "email",
-        label: { id: 2, text: "Email address", type: "info" },
-      }),
-    ];
-    const flow = buildFlow(nodes);
-
-    const registrationMarkup = renderToStaticMarkup(<FlowForm flow={flow} kind="registration" />);
-    expect(registrationMarkup).not.toContain("Avatar URL");
-    expect(registrationMarkup).toContain("Email address");
-
-    const loginMarkup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
-    expect(loginMarkup).toContain("Avatar URL");
-
-    const settingsMarkup = renderToStaticMarkup(
-      <FlowForm flow={flow} kind="settings" separateProviders={false} settingsArea="profile" />,
-    );
-    expect(settingsMarkup).not.toContain("Avatar URL");
-  });
-
   it("renders no divider or provider section when there are no provider nodes", () => {
     const flow = buildFlow([inputNode()]);
     const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);

@@ -2,13 +2,14 @@ import { describe, expect, it } from "vitest";
 import type { Identity } from "@ory/client-fetch";
 
 import {
+  getIdentityAvatarUrl,
   getIdentityEmail,
   getIdentityInitials,
   getIdentityName,
 } from "./identity";
 
-function identity(traits: unknown) {
-  return { traits } as Identity;
+function identity(traits: unknown, metadata_public?: unknown) {
+  return { traits, metadata_public } as Identity;
 }
 
 describe("identity helpers", () => {
@@ -32,6 +33,25 @@ describe("identity helpers", () => {
     expect(getIdentityName(identity({ display_name: "The Analyst" }))).toBe(
       "The Analyst",
     );
+  });
+
+  it("reads avatar URLs from public metadata instead of traits", () => {
+    expect(
+      getIdentityAvatarUrl(
+        identity({ avatar_url: "https://example.com/trait-avatar.png" }),
+      ),
+    ).toBeUndefined();
+    expect(
+      getIdentityAvatarUrl(
+        identity({}, { avatar_url: "  https://example.com/avatar.png  " }),
+      ),
+    ).toBe("https://example.com/avatar.png");
+  });
+
+  it("ignores unsafe or malformed public avatar URLs", () => {
+    expect(getIdentityAvatarUrl(identity({}, { avatar_url: "javascript:alert(1)" }))).toBeUndefined();
+    expect(getIdentityAvatarUrl(identity({}, { avatar_url: "not a URL" }))).toBeUndefined();
+    expect(getIdentityAvatarUrl(identity({}, { avatar_url: 42 }))).toBeUndefined();
   });
 
   it("creates up to two uppercase initials", () => {

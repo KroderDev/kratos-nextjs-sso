@@ -14,6 +14,7 @@ type DashboardShellProps = {
   activeNav: "overview" | "settings";
   children: ReactNode;
   account?: {
+    avatarUrl?: string;
     email: string;
     initials: string;
     label: string;
@@ -63,4 +64,3 @@ export function DashboardShell({ activeNav, account, children }: DashboardShellP
     </div>
   );
 }
-
