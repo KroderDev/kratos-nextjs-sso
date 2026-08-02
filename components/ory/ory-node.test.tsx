@@ -325,6 +325,22 @@ describe("OryNode image", () => {
     expect(markup).toContain("QR code");
   });
 
+  it("renders a base64 QR code supplied by Ory", () => {
+    const node = baseNode("img", "totp", {
+      src: "data:image/png;base64,iVBORw0KGgo=",
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain('src="data:image/png;base64,iVBORw0KGgo="');
+  });
+
+  it("returns null for an unsafe QR code data URL", () => {
+    const node = baseNode("img", "totp", {
+      src: "data:image/svg+xml,<svg></svg>",
+    });
+    expect(renderToStaticMarkup(<OryNode node={node} />)).toBe("");
+  });
+
   it("returns null for an unsafe image src", () => {
     const node = baseNode("img", "default", {
       src: "http://evil.example.com/img.png",

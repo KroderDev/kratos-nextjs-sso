@@ -59,6 +59,8 @@ const VALID_REFERRER_POLICIES = new Set([
   "unsafe-url",
 ]);
 
+const SAFE_QR_DATA_URL = /^data:image\/(?:gif|jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/;
+
 type OryNodeProps = {
   compactProvider?: boolean;
   kind?: OryFlowKind;
@@ -289,7 +291,10 @@ export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
     const src = getString(attributes.src);
     const isQrCode = node.group === "totp";
 
-    if (!isSafeProviderUrl(src, allowedOrigins)) {
+    const isSafeImage = isSafeProviderUrl(src, allowedOrigins) ||
+      (isQrCode && typeof src === "string" && SAFE_QR_DATA_URL.test(src));
+
+    if (!isSafeImage) {
       return null;
     }
 
