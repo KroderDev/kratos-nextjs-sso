@@ -8,6 +8,7 @@ import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
 import { rewriteOryFlow } from "@/lib/ory/url";
 import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
+import { buildCleanFlowUrl } from "@/lib/ory/params";
 import config, { isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 
@@ -57,7 +58,7 @@ export default async function RegistrationPage({
     // Restart stale registration flows at the clean route. Disabled registration
     // is handled by the explicit flow error below when the provider returns it.
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "registration")) {
-      redirect("/auth/registration");
+      redirect(buildCleanFlowUrl("/auth/registration", params, ["lang"]));
     }
 
     unstable_rethrow(e);

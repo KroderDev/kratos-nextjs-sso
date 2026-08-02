@@ -9,6 +9,7 @@ import { rewriteOryFlow } from "@/lib/ory/url";
 import config, { isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
+import { buildCleanFlowUrl } from "@/lib/ory/params";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +57,7 @@ export default async function VerificationPage({
       rewriteOryFlow(await getVerificationFlow(config, params)) || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "verification")) {
-      redirect("/auth/verification");
+      redirect(buildCleanFlowUrl("/auth/verification", params, ["lang"]));
     }
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders

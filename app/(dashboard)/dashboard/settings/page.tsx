@@ -17,6 +17,7 @@ import {
 } from "@/lib/ory/identity";
 import { rewriteOryFlow } from "@/lib/ory/url";
 import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
+import { buildCleanFlowUrl } from "@/lib/ory/params";
 import config, { appBaseUrl, isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 
@@ -113,7 +114,7 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
     flow = rewriteOryFlow(await getSettingsFlow(config, params)) || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "settings")) {
-      redirect("/dashboard/settings");
+      redirect(buildCleanFlowUrl("/dashboard/settings", params, ["lang"]));
     }
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders

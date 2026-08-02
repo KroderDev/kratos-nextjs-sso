@@ -19,6 +19,18 @@ describe("getOAuthOrigins", () => {
     ).toEqual([]);
   });
 
+  it("rejects wildcard hostnames", () => {
+    expect(
+      getOAuthOrigins("https://*.example.com https://*.subdomain.example.com"),
+    ).toEqual([]);
+  });
+
+  it("allows valid origins while rejecting wildcard origins", () => {
+    expect(
+      getOAuthOrigins("https://accounts.google.com https://*.malicious.com https://github.com"),
+    ).toEqual(["https://accounts.google.com", "https://github.com"]);
+  });
+
   it("returns no origins when configuration is missing", () => {
     expect(getOAuthOrigins(undefined)).toEqual([]);
   });

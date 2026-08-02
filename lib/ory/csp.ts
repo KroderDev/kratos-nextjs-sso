@@ -23,7 +23,8 @@ export function getOAuthOrigins(value: string | undefined) {
         url.password ||
         url.pathname !== "/" ||
         url.search ||
-        url.hash
+        url.hash ||
+        url.hostname.includes("*")
       ) {
         continue;
       }

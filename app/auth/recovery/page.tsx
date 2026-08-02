@@ -9,6 +9,7 @@ import { rewriteOryFlow } from "@/lib/ory/url";
 import config, { isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
+import { buildCleanFlowUrl } from "@/lib/ory/params";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +47,7 @@ export default async function RecoveryPage({ searchParams }: OryPageParams) {
     flow = rewriteOryFlow(await getRecoveryFlow(config, params)) || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "recovery")) {
-      redirect("/auth/recovery");
+      redirect(buildCleanFlowUrl("/auth/recovery", params, ["lang"]));
     }
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders
