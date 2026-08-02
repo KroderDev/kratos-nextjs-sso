@@ -62,6 +62,18 @@ const OTHER_SETTINGS_SECTION = {
   label: "dashboard.settings.cards.other.title",
 } as const;
 
+/**
+ * Renders Ory flow nodes as `OryNode` components.
+ *
+ * @param nodes - The flow nodes to render
+ * @param kind - The type of Ory flow
+ * @param keyPrefix - Prefix used to generate stable component keys
+ * @param lookupSecretPending - Whether lookup-secret confirmation is pending
+ * @param formId - Optional identifier of the containing form
+ * @param lookupSecretConfirmationNode - Optional lookup-secret confirmation node
+ * @param onActionStart - Optional callback invoked when an action begins
+ * @returns The rendered Ory node components
+ */
 function renderNodes(
   nodes: OryFlow["ui"]["nodes"],
   kind: OryFlowKind,
@@ -84,6 +96,16 @@ function renderNodes(
   ));
 }
 
+/**
+ * Renders a settings section as a form within a card.
+ *
+ * @param action - The form submission URL
+ * @param kind - The type of Ory flow being rendered
+ * @param section - The settings section and its nodes
+ * @param settingsArea - The settings area containing the section
+ * @param sharedNodes - Hidden or shared nodes rendered in the section
+ * @returns The rendered settings section form
+ */
 function SettingsSectionCard({
   action,
   kind,
@@ -200,6 +222,16 @@ function SettingsSectionCard({
   );
 }
 
+/**
+ * Renders the settings-flow nodes grouped into configured sections for the selected settings area.
+ *
+ * @param action - Form action URL used by each settings section
+ * @param kind - Ory flow kind
+ * @param method - Form submission method
+ * @param nodes - Nodes to group and render
+ * @param settingsArea - Settings area whose sections should be displayed
+ * @param t - Translation function for section labels and messages
+ */
 function SettingsNodeSections({
   action,
   kind,
@@ -273,6 +305,12 @@ function SettingsNodeSections({
   );
 }
 
+/**
+ * Determines whether an Ory flow node represents an action control.
+ *
+ * @param node - The flow node to inspect
+ * @returns `true` if the node is a submit or button input, `false` otherwise.
+ */
 function isActionNode(node: OryFlow["ui"]["nodes"][number]) {
   if (node.type !== "input") {
     return false;
@@ -283,11 +321,14 @@ function isActionNode(node: OryFlow["ui"]["nodes"][number]) {
 }
 
 /**
- * Renders an Ory authentication flow form with optional embedded styling.
+ * Renders an Ory authentication or settings flow form with optional embedded styling.
  *
- * @param embedded - Whether to render the form without the surrounding card
- * @param flow - The Ory authentication flow to render
- * @param kind - The type of authentication flow
+ * @param embedded - Whether to render the form without a surrounding card
+ * @param flow - The Ory flow to render
+ * @param flowState - Optional state associated with the flow
+ * @param kind - The type of flow being rendered
+ * @param separateProviders - Whether to render provider nodes separately from other form nodes
+ * @param settingsArea - The settings area whose sections should be rendered
  * @returns The rendered form, or `null` when the flow action is unsafe
  */
 export function FlowForm({

@@ -91,11 +91,27 @@ type OryNodeProps = {
   onActionStart?: () => void;
 };
 
+/**
+ * Derives an identifier for an Ory UI node.
+ *
+ * @param node - The UI node whose identifier is derived
+ * @returns The node's `id`, its `name`, or `"ory-node"` when neither is available
+ */
 function nodeId(node: UiNode) {
   const attributes = getNodeAttributes(node);
   return getString(attributes.id) ?? getString(attributes.name) ?? "ory-node";
 }
 
+/**
+ * Renders an Ory UI node according to its type, flow, locale, and validation state.
+ *
+ * @param compactProvider - Whether provider actions should use a compact icon-only layout.
+ * @param formId - Optional form identifier used to associate rendered actions with a form.
+ * @param kind - The flow kind used to determine flow-specific labels and behavior.
+ * @param lookupSecretConfirmationNode - Optional node rendered as the lookup-secret confirmation action.
+ * @param lookupSecretPending - Whether lookup-secret recovery codes are pending.
+ * @param onActionStart - Callback invoked when an Ory action starts.
+ */
 export function OryNode({
   compactProvider = false,
   formId,

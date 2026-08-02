@@ -2,6 +2,12 @@ import { createHmac } from "node:crypto";
 
 const BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
+/**
+ * Decodes a Base32-encoded string into a byte buffer.
+ *
+ * @param value - The Base32-encoded value, optionally with trailing padding
+ * @returns The decoded bytes
+ */
 function decodeBase32(value: string) {
   const normalized = value.replace(/=+$/, "").toUpperCase();
   const bytes: number[] = [];
@@ -27,6 +33,13 @@ function decodeBase32(value: string) {
   return Buffer.from(bytes);
 }
 
+/**
+ * Generates a six-digit time-based one-time password from a Base32-encoded secret.
+ *
+ * @param secret - The Base32-encoded secret used to generate the code
+ * @param timestamp - The timestamp used to determine the 30-second time window
+ * @returns A zero-padded six-digit one-time password
+ */
 export function generateTotpCode(secret: string, timestamp = Date.now()) {
   const counter = Math.floor(timestamp / 1000 / 30);
   const counterBuffer = Buffer.alloc(8);

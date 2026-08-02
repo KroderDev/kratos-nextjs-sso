@@ -25,6 +25,11 @@ type FlowMessagesProps = {
 
 type FlowMessageTranslator = (key: string) => string;
 
+/**
+ * Retrieves previously persisted success-message keys from session storage.
+ *
+ * @returns A set of persisted success-message keys, or an empty set when storage is unavailable or contains invalid data.
+ */
 function getPersistedSuccessMessages() {
   if (typeof window === "undefined") {
     return new Set<string>();
@@ -42,6 +47,11 @@ function getPersistedSuccessMessages() {
   }
 }
 
+/**
+ * Persists success-message keys for toast duplicate suppression across page loads.
+ *
+ * @param messages - The success-message keys to store
+ */
 function persistSuccessMessages(messages: Set<string>) {
   if (typeof window === "undefined") {
     return;
@@ -57,6 +67,15 @@ function persistSuccessMessages(messages: Set<string>) {
   }
 }
 
+/**
+ * Announces flow messages as localized toasts while suppressing duplicates.
+ *
+ * @param announcedMessages - Message keys already announced during the current component lifetime
+ * @param flowState - Current flow state used to classify informational messages in successful flows
+ * @param locale - Locale used to localize message text
+ * @param messages - Messages to announce
+ * @param t - Translator for toast titles
+ */
 export function announceFlowMessages({
   announcedMessages,
   flowState,
@@ -109,6 +128,13 @@ export function announceFlowMessages({
   }
 }
 
+/**
+ * Displays localized flow messages inline or announces them as toast notifications.
+ *
+ * @param flowState - Optional state of the flow used to classify informational messages.
+ * @param messages - Messages to display or announce.
+ * @param mode - Rendering mode: `inline` displays alerts, while `toast` announces notifications.
+ */
 export function FlowMessages({ flowState, messages, mode = "inline" }: FlowMessagesProps) {
   const { t, locale } = useTranslation();
   const visibleMessages = (messages ?? []).filter((message) =>

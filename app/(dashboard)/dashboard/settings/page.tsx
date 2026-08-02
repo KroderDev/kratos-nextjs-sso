@@ -32,6 +32,11 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
   return { title: t("common.navigation.settings") };
 }
 
+/**
+ * Renders the localized settings page introduction and status badge.
+ *
+ * @param t - Translation function used to retrieve the displayed text
+ */
 function SettingsIntro({ t }: { t: (key: string) => string }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-6">
@@ -77,11 +82,11 @@ function SettingsAside({ t }: { t: (key: string) => string }) {
 }
 
 /**
- * Renders the localized account settings page.
+ * Renders the localized account settings page and its active settings workspace.
  *
- * Displays setup guidance when Ory is not configured, redirects unauthenticated users to login, and renders the settings form or an unavailable state when the settings flow cannot be loaded.
+ * Displays setup guidance when Ory is not configured, redirects unauthenticated users to login, and shows an unavailable state when the settings flow cannot be loaded.
  *
- * @param searchParams - URL parameters used to load translations and the settings flow
+ * @param searchParams - URL parameters that select the settings section and locale and identify the settings flow
  */
 export default async function SettingsPage({ searchParams }: OryPageParams) {
   const { t } = await getTranslations(searchParams);

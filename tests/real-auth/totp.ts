@@ -3,6 +3,12 @@ import { PNG } from "pngjs";
 
 export { generateTotpCode } from "@/lib/ory/totp";
 
+/**
+ * Extracts the TOTP secret from a PNG data URL containing a TOTP QR code.
+ *
+ * @param dataUrl - A base64-encoded PNG data URL containing the QR code
+ * @returns The TOTP secret encoded in the QR code
+ */
 export function readTotpSecretFromQrDataUrl(dataUrl: string) {
   const match = dataUrl.match(/^data:image\/png;base64,(.+)$/);
 

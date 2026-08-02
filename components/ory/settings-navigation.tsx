@@ -16,6 +16,11 @@ import {
   type SettingsAreaDefinition,
 } from "./settings-sections";
 
+/**
+ * Persists the selected settings area in a path-scoped browser cookie.
+ *
+ * @param area - The settings area to remember
+ */
 export function rememberSettingsArea(area: SettingsArea) {
   if (typeof document !== "undefined") {
     document.cookie = `${SETTINGS_AREA_COOKIE}=${encodeURIComponent(area)}; Max-Age=${SETTINGS_AREA_COOKIE_MAX_AGE}; Path=/dashboard/settings; SameSite=Lax`;
@@ -23,6 +28,13 @@ export function rememberSettingsArea(area: SettingsArea) {
 
 }
 
+/**
+ * Stores the selected settings area and clears any persisted flow-success toast data.
+ *
+ * Storage errors are ignored when session storage is unavailable.
+ *
+ * @param area - The settings area to remember
+ */
 export function rememberSettingsAction(area: SettingsArea) {
   rememberSettingsArea(area);
 
@@ -43,6 +55,14 @@ type SettingsNavigationProps = {
   onAreaChange?: (area: SettingsArea) => void;
 };
 
+/**
+ * Builds a settings dashboard URL for the specified area.
+ *
+ * @param area - The settings area to display
+ * @param flowId - An optional flow identifier to preserve in the URL
+ * @param locale - An optional language identifier to include in the URL
+ * @returns A settings dashboard URL with the selected area and optional query parameters
+ */
 function getSettingsAreaHref(area: SettingsArea, flowId?: string, locale?: string) {
   const searchParams = new URLSearchParams();
   searchParams.set("section", area);
@@ -58,6 +78,15 @@ function getSettingsAreaHref(area: SettingsArea, flowId?: string, locale?: strin
   return `/dashboard/settings?${searchParams.toString()}`;
 }
 
+/**
+ * Renders responsive navigation for the settings areas.
+ *
+ * @param activeArea - The currently selected settings area
+ * @param areas - The settings areas available for navigation
+ * @param flowId - Optional flow identifier preserved in navigation URLs
+ * @param locale - Optional locale preserved in navigation URLs
+ * @param onAreaChange - Optional callback for handling ordinary left-click area changes without navigation
+ */
 export function SettingsNavigation({
   activeArea,
   areas,

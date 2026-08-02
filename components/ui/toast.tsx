@@ -9,14 +9,29 @@ import { XIcon, CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Load
 
 const toast = ToastPrimitive.createToastManager()
 
+/**
+ * Provides context for managing toast notifications.
+ *
+ * @param props - Properties forwarded to the toast provider.
+ */
 function ToastProvider({ ...props }: ToastPrimitive.Provider.Props) {
   return <ToastPrimitive.Provider {...props} />
 }
 
+/**
+ * Renders a portal for displaying toast content outside the normal component hierarchy.
+ *
+ * @param props - Props forwarded to the toast portal primitive
+ */
 function ToastPortal({ ...props }: ToastPrimitive.Portal.Props) {
   return <ToastPrimitive.Portal data-slot="toast-portal" {...props} />
 }
 
+/**
+ * Renders the viewport that positions toast notifications on the screen.
+ *
+ * @param className - Additional classes to apply to the viewport
+ */
 function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {
   return (
     <ToastPrimitive.Viewport
@@ -30,6 +45,9 @@ function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {
   )
 }
 
+/**
+ * Renders a styled toast notification with stacking, swipe, focus, and transition states.
+ */
 function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
   return (
     <ToastPrimitive.Root
@@ -57,6 +75,11 @@ function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
   )
 }
 
+/**
+ * Renders the content area of a toast with layout, spacing, and state-based opacity styling.
+ *
+ * @param className - Additional classes to apply to the toast content
+ */
 function ToastContent({ className, ...props }: ToastPrimitive.Content.Props) {
   return (
     <ToastPrimitive.Content
@@ -70,6 +93,11 @@ function ToastContent({ className, ...props }: ToastPrimitive.Content.Props) {
   )
 }
 
+/**
+ * Renders a styled title for a toast notification.
+ *
+ * @param className - Additional classes to apply to the title
+ */
 function ToastTitle({ className, ...props }: ToastPrimitive.Title.Props) {
   return (
     <ToastPrimitive.Title
@@ -80,6 +108,11 @@ function ToastTitle({ className, ...props }: ToastPrimitive.Title.Props) {
   )
 }
 
+/**
+ * Renders descriptive text for a toast notification.
+ *
+ * @param className - Additional classes to apply to the description
+ */
 function ToastDescription({
   className,
   ...props
@@ -93,6 +126,12 @@ function ToastDescription({
   )
 }
 
+/**
+ * Renders an action control within a toast.
+ *
+ * @param className - Additional classes applied to the action control
+ * @param render - Element used to render the action control
+ */
 function ToastAction({
   className,
   render = <Button variant="outline" size="sm" />,
@@ -132,6 +171,12 @@ function ToastClose({
   )
 }
 
+/**
+ * Renders the icon associated with a toast type.
+ *
+ * @param type - The toast type used to select the icon.
+ * @returns The corresponding toast icon, or `null` when the type is unsupported or absent.
+ */
 function ToastIcon({ type }: { type: string | undefined }) {
   let icon: React.ReactNode = null
 
@@ -179,6 +224,9 @@ function ToastIcon({ type }: { type: string | undefined }) {
   )
 }
 
+/**
+ * Renders the current toast notifications with their content, status icon, actions, and close controls.
+ */
 function ToastList() {
   const { toasts } = ToastPrimitive.useToastManager()
 
@@ -197,6 +245,12 @@ function ToastList() {
   ))
 }
 
+/**
+ * Provides toast context and renders the toast portal, viewport, and current notifications.
+ *
+ * @param children - The content to render alongside the toast notifications
+ * @param toastManager - The toast manager used to create and access notifications
+ */
 function Toaster({
   children,
   toastManager = toast,
