@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { CircleAlert, CircleCheck, Info } from "lucide-react";
 import type { UiText } from "@ory/client-fetch";
 
@@ -11,18 +12,48 @@ import {
 
 import { getMessageText } from "@/lib/ory/flow";
 import { useTranslation } from "@/lib/i18n/client";
+import { toast } from "@/components/ui/toast";
 
 type FlowMessagesProps = {
   messages?: UiText[];
+  mode?: "inline" | "toast";
 };
 
-export function FlowMessages({ messages }: FlowMessagesProps) {
+export function FlowMessages({ messages, mode = "inline" }: FlowMessagesProps) {
   const { t, locale } = useTranslation();
   const visibleMessages = (messages ?? []).filter((message) =>
     getMessageText(message, locale),
   );
+  const announcedMessages = useRef(new Set<string>());
 
-  if (visibleMessages.length === 0) {
+  useEffect(() => {
+    if (mode !== "toast") {
+      return;
+    }
+
+    visibleMessages.forEach((message) => {
+      const text = getMessageText(message, locale);
+      const messageKey = `${message.id}-${message.type}-${text}`;
+
+      if (!text || announcedMessages.current.has(messageKey)) {
+        return;
+      }
+
+      announcedMessages.current.add(messageKey);
+      toast.add({
+        description: text,
+        title:
+          message.type === "error"
+            ? t("ory.messages.actionNeeded")
+            : message.type === "success"
+              ? t("ory.messages.updated")
+              : t("ory.messages.note"),
+        type: message.type === "error" ? "error" : message.type === "success" ? "success" : "info",
+      });
+    });
+  }, [locale, mode, t, visibleMessages]);
+
+  if (visibleMessages.length === 0 || mode === "toast") {
     return null;
   }
 
@@ -54,5 +85,3 @@ export function FlowMessages({ messages }: FlowMessagesProps) {
     </div>
   );
 }
-
-

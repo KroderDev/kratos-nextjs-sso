@@ -132,7 +132,7 @@ export function FlowForm({ embedded = false, flow, kind, separateProviders = tru
   const form =
     kind === "settings" ? (
       <>
-        <FlowMessages messages={flow.ui.messages} />
+        <FlowMessages messages={flow.ui.messages} mode="toast" />
         <SettingsNodeSections
           action={flow.ui.action}
           kind={kind}

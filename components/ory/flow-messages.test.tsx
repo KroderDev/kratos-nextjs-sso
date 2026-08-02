@@ -30,4 +30,12 @@ describe("FlowMessages", () => {
     expect(renderToStaticMarkup(<FlowMessages />)).toBe("");
     expect(renderToStaticMarkup(<FlowMessages messages={[message(1, "")]} />)).toBe("");
   });
+
+  it("renders nothing when messages are delegated to toasts", () => {
+    const markup = renderToStaticMarkup(
+      <FlowMessages messages={[message(1, "Email updated", "success")]} mode="toast" />,
+    );
+
+    expect(markup).toBe("");
+  });
 });
