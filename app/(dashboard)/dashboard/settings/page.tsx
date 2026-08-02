@@ -17,6 +17,7 @@ import {
 } from "@/lib/ory/identity";
 import { rewriteOryFlow } from "@/lib/ory/url";
 import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
+import { buildCleanFlowUrl } from "@/lib/ory/params";
 import config, { appBaseUrl, isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 
@@ -71,6 +72,13 @@ function SettingsAside({ t }: { t: (key: string) => string }) {
   );
 }
 
+/**
+ * Renders the localized account settings page.
+ *
+ * Displays setup guidance when Ory is not configured, redirects unauthenticated users to login, and renders the settings form or an unavailable state when the settings flow cannot be loaded.
+ *
+ * @param searchParams - URL parameters used to load translations and the settings flow
+ */
 export default async function SettingsPage({ searchParams }: OryPageParams) {
   const { t } = await getTranslations(searchParams);
   const params = await searchParams;
@@ -106,7 +114,7 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
     flow = rewriteOryFlow(await getSettingsFlow(config, params)) || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "settings")) {
-      redirect("/auth/error");
+      redirect(buildCleanFlowUrl("/dashboard/settings", params, ["lang"]));
     }
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders

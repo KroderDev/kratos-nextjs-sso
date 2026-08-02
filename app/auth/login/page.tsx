@@ -10,6 +10,7 @@ import { isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 import { getLoginFlowWithRequestHeaders } from "@/lib/ory/login";
 import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
+import { buildCleanFlowUrl } from "@/lib/ory/params";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
 }
 
 /**
- * Renders the localized login page and its authentication state.
+ * Renders the localized login page with setup, authentication, or flow-unavailable state.
  *
  * @param searchParams - Request parameters used to load translations and retrieve the login flow.
  */
@@ -52,7 +53,7 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
     flow = rewriteOryFlow(await getLoginFlowWithRequestHeaders(params)) || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "login")) {
-      redirect("/auth/error");
+      redirect(buildCleanFlowUrl("/auth/login", params, ["return_to", "lang"]));
     }
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders

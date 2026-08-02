@@ -111,6 +111,11 @@ The allowed origin set is built from three configuration values (mapped in
 2. `NEXT_PUBLIC_ORY_SDK_URL` — the Ory Identity API origin.
 3. `NEXT_PUBLIC_ORY_CANONICAL_URL` — an optional canonical provider URL.
 
+The CSP `form-action` directive also includes the origins in
+`NEXT_PUBLIC_ORY_OAUTH_ORIGINS`. Set this build-time variable to the explicit
+OAuth authorization origins used by the configured providers, separated by
+commas or whitespace. Do not use a wildcard origin.
+
 Only origins with `http:` or `https:` protocol are included. Invalid or
 unset URLs are silently excluded from the set.
 

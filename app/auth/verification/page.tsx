@@ -9,6 +9,7 @@ import { rewriteOryFlow } from "@/lib/ory/url";
 import config, { isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
+import { buildCleanFlowUrl } from "@/lib/ory/params";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,13 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
   return { title: t("auth.verification.eyebrow") };
 }
 
+/**
+ * Renders the localized Ory verification page.
+ *
+ * Displays setup information when Ory is unavailable and otherwise loads the verification flow, redirecting to a fresh flow when the current one must be restarted.
+ *
+ * @param searchParams - Request search parameters used to load the verification flow and translations
+ */
 export default async function VerificationPage({
   searchParams,
 }: OryPageParams) {
@@ -49,7 +57,7 @@ export default async function VerificationPage({
       rewriteOryFlow(await getVerificationFlow(config, params)) || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "verification")) {
-      redirect("/auth/error");
+      redirect(buildCleanFlowUrl("/auth/verification", params, ["lang"]));
     }
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders

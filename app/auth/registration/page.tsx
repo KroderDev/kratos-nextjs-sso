@@ -8,6 +8,7 @@ import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
 import { rewriteOryFlow } from "@/lib/ory/url";
 import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
+import { buildCleanFlowUrl } from "@/lib/ory/params";
 import config, { isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 
@@ -18,6 +19,12 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
   return { title: t("home.hero.createIdentity") };
 }
 
+/**
+ * Renders the localized registration page and its current Ory registration flow.
+ *
+ * @param searchParams - Request query parameters used to load the registration flow and preserve the language.
+ * @returns The registration page content, setup state, or flow-unavailable state.
+ */
 export default async function RegistrationPage({
   searchParams,
 }: OryPageParams) {
@@ -48,10 +55,10 @@ export default async function RegistrationPage({
   try {
     rawFlow = await getRegistrationFlow(config, params);
   } catch (e) {
-    // The SDK restarts missing registration flows indefinitely when registration
-    // is disabled. Show the error UI instead of redirecting back into that loop.
+    // Restart stale registration flows at the clean route. Disabled registration
+    // is handled by the explicit flow error below when the provider returns it.
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "registration")) {
-      redirect("/auth/error");
+      redirect(buildCleanFlowUrl("/auth/registration", params, ["lang"]));
     }
 
     unstable_rethrow(e);

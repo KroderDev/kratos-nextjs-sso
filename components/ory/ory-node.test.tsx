@@ -7,7 +7,12 @@ vi.mock("@/lib/ory/security", () => ({
   allowedOryOrigins: () => ["https://example.com"],
   isSafeProviderUrl: (href: string | undefined) => {
     if (!href) return false;
-    return href.startsWith("/") || href.startsWith("https://example.com");
+    if (href.startsWith("/")) return true;
+    try {
+      return new URL(href).origin === "https://example.com";
+    } catch {
+      return false;
+    }
   },
   isSafeFlowAction: (action: string | undefined) => {
     if (!action) return false;
