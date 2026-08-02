@@ -1,5 +1,103 @@
 # Changelog
 
+## [0.4.0](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.3.0...v0.4.0) (2026-08-02)
+
+
+### Features
+
+* **auth:** add branded identity providers ([54d8825](https://github.com/KroderDev/kratos-nextjs-sso/commit/54d8825513c35e9f04cc3d0738832122dcfa6949))
+* **auth:** improve responsive social login ([1a17a41](https://github.com/KroderDev/kratos-nextjs-sso/commit/1a17a41c724ed8332f19d1d03a8cd0f1546bbc60))
+* **auth:** redesign provider login layout ([fca1cd3](https://github.com/KroderDev/kratos-nextjs-sso/commit/fca1cd3ae80d928177dd82bb64cced45339fa1fe))
+
+
+### Bug Fixes
+
+* apply CodeRabbit auto-fixes ([a3a9945](https://github.com/KroderDev/kratos-nextjs-sso/commit/a3a9945cedd970499e1e982b836f738205e50d01))
+* apply CodeRabbit auto-fixes ([c0901a1](https://github.com/KroderDev/kratos-nextjs-sso/commit/c0901a1e0909a5f19d5fc1d29ef17ecb7989f628))
+* apply CodeRabbit auto-fixes ([0165314](https://github.com/KroderDev/kratos-nextjs-sso/commit/0165314b6f2b0e8fc58049e90192231f27443975))
+* apply CodeRabbit auto-fixes ([fa785a0](https://github.com/KroderDev/kratos-nextjs-sso/commit/fa785a0c0313c73c861750fdaecd61e101035788))
+* **auth:** add clean flow parameter helper ([1f6a2ae](https://github.com/KroderDev/kratos-nextjs-sso/commit/1f6a2aee7ddc577e779786babf1d1ced72785f45))
+* **auth:** allow fresh flow initialization ([6f57f2d](https://github.com/KroderDev/kratos-nextjs-sso/commit/6f57f2d46328f5b816cf82209c6ef90600b6ef14))
+* **auth:** allow oauth redirects and restart expired flows ([aa3edf9](https://github.com/KroderDev/kratos-nextjs-sso/commit/aa3edf96de1fc7e0628c6b3766ec6f4cf2fc9f3c))
+* **auth:** allow OAuth redirects and restart expired flows ([7c1f391](https://github.com/KroderDev/kratos-nextjs-sso/commit/7c1f391cef4f64cd2f8b21994cb2d3b390fc57d9))
+* **auth:** forward browser cookies in login flows ([9202d68](https://github.com/KroderDev/kratos-nextjs-sso/commit/9202d68cb9c3ae382318d2b5c0edc8c3d71a584c))
+* **auth:** forward browser cookies when loading login flows ([7d236cc](https://github.com/KroderDev/kratos-nextjs-sso/commit/7d236cc776cce2df50c1a3288e43a8cabcd80662))
+* **auth:** handle disabled registration errors ([1a2ef94](https://github.com/KroderDev/kratos-nextjs-sso/commit/1a2ef948c38b58a381f97978e4530ce43b49f70a))
+* **auth:** stop invalid flow redirect loops ([08a9799](https://github.com/KroderDev/kratos-nextjs-sso/commit/08a979909f4a5a900ae80021fa2500dfd90052fd))
+* **branding:** fall back to light logo when dark logo is explicitly empty ([f055cb0](https://github.com/KroderDev/kratos-nextjs-sso/commit/f055cb0c2a9e83d98a5ecc451a835289bd89322d))
+* **branding:** switch favicon on app theme toggle instead of OS-only media query ([d028ddd](https://github.com/KroderDev/kratos-nextjs-sso/commit/d028ddd634aa65fa303d79e407720e14c3cf81c6))
+* **build:** add missing branding build args to Dockerfile ([7083b56](https://github.com/KroderDev/kratos-nextjs-sso/commit/7083b5662406d3de505d06cc5307e61ca955e9c1))
+* **ci:** authenticate Codecov uploads ([6df38dd](https://github.com/KroderDev/kratos-nextjs-sso/commit/6df38dd9b80783d751b2bf063e63402ced10e8e9))
+* **ci:** raise security audit sensitivity and Trivy scan severity ([9373bce](https://github.com/KroderDev/kratos-nextjs-sso/commit/9373bce8c8795e2db257a717e77f1c11403dabb8))
+* **ci:** scope pnpm audit to production dependencies ([0825c8a](https://github.com/KroderDev/kratos-nextjs-sso/commit/0825c8a5def4ceb085aa166e594633b574f8f56b))
+* create the function with vi.hoisted before the mock factory. ([2b5115f](https://github.com/KroderDev/kratos-nextjs-sso/commit/2b5115fe39f97f9d11366bc50fbe8983c1f8a640))
+* **ory:** secure URL validation in isSafeProviderUrl mock ([84742aa](https://github.com/KroderDev/kratos-nextjs-sso/commit/84742aa62990311faac539b8563b0f324322da9b))
+* **proxy:** honor forwarded public origin ([2b140db](https://github.com/KroderDev/kratos-nextjs-sso/commit/2b140db680b6bf8c68f0a74bb82832aa99339bca))
+* **proxy:** honor forwarded public origin ([2e84d17](https://github.com/KroderDev/kratos-nextjs-sso/commit/2e84d17476fdf54f5b279595c8f65fde8d2fcb43))
+* **proxy:** honor forwarded public origin ([81f2ca5](https://github.com/KroderDev/kratos-nextjs-sso/commit/81f2ca582f206ff3cc064bb6386def02e8417226))
+* **security:** add rel="noopener noreferrer" to logout anchor ([59e5b75](https://github.com/KroderDev/kratos-nextjs-sso/commit/59e5b751daeeae504aad031a1ccbd3c0713e3e88))
+* **security:** allow unsafe-inline in CSP style-src for Next.js dynamic styles ([d77d846](https://github.com/KroderDev/kratos-nextjs-sso/commit/d77d8464c92ab562ac819b6b80be7abf4b7ad650))
+* **security:** allow unsafe-inline in CSP style-src for Next.js dynamic styles ([b4bef14](https://github.com/KroderDev/kratos-nextjs-sso/commit/b4bef1445e01c38190496b8663945ef6b67a1520))
+* **security:** extend Permissions-Policy to disable additional sensitive browser APIs ([b8dc47c](https://github.com/KroderDev/kratos-nextjs-sso/commit/b8dc47c7cc3a7c8526890493abacd265ce0127e2))
+* **security:** fail release build when NEXT_PUBLIC_APP_URL is unset or malformed ([416b365](https://github.com/KroderDev/kratos-nextjs-sso/commit/416b3653b92ada00eba8219ed6b9511f8c1f80f5))
+* **security:** harden proxy origin validation, outage audit gaps, and add aggressive security tests ([fc60f8b](https://github.com/KroderDev/kratos-nextjs-sso/commit/fc60f8b76a90ddcdee69a8c111707a8898ff35f5))
+* **security:** pass required build args in release workflow to enable proxy origin validation ([ae04b67](https://github.com/KroderDev/kratos-nextjs-sso/commit/ae04b678302cbde32fd1e31104712d95d8026e04))
+* **seo:** block all search-engine indexing via robots.ts ([55cc4b1](https://github.com/KroderDev/kratos-nextjs-sso/commit/55cc4b1dc91a7051638f1782d4ba192fb8b28801))
+* **seo:** block all search-engine indexing via robots.ts ([b245d99](https://github.com/KroderDev/kratos-nextjs-sso/commit/b245d99842b901e7ab3d25515a2aa2a451fd4e48))
+* **test:** correct Ory client mock specifier ([f2ce629](https://github.com/KroderDev/kratos-nextjs-sso/commit/f2ce629dd8cfca71f070759d19d36b1899da7e12))
+* **tests:** require at least one CI auth web server. ([ec661ae](https://github.com/KroderDev/kratos-nextjs-sso/commit/ec661aea9dee270e30492844097436771d0e0c53))
+
+
+### Performance
+
+* align components with Vercel React Best Practices ([592e3a4](https://github.com/KroderDev/kratos-nextjs-sso/commit/592e3a4dcac46bd0b5db8cb356068e13bd85fdc3))
+* **auth:** optimize provider and navigation rendering ([9a90649](https://github.com/KroderDev/kratos-nextjs-sso/commit/9a90649301292fb30628aae47c1753eec863b053))
+
+
+### Refactoring
+
+* use canonical tracking-tighter class over arbitrary value ([12bb58b](https://github.com/KroderDev/kratos-nextjs-sso/commit/12bb58b41fbaf6ee154da9346b6042742830c902))
+* use Next.js unstable_rethrow in auth page catch blocks ([60f948d](https://github.com/KroderDev/kratos-nextjs-sso/commit/60f948d682ac081838a31f6ea3655af7dde290cb))
+
+
+### Documentation
+
+* add production README and coverage reporting ([b2aeb4d](https://github.com/KroderDev/kratos-nextjs-sso/commit/b2aeb4d52ac3320392984dbcac74660766bfbd5a))
+* add production README and coverage reporting ([e5f9a45](https://github.com/KroderDev/kratos-nextjs-sso/commit/e5f9a45085c3d8809a3c3f05dc72615b2b6b7791))
+* document search-engine indexing policy and customization ([68919a0](https://github.com/KroderDev/kratos-nextjs-sso/commit/68919a029abcb10c3894092a201fea5cdb28b10d))
+
+
+### Tests
+
+* **auth:** cover disabled registration responses ([e5b9cf8](https://github.com/KroderDev/kratos-nextjs-sso/commit/e5b9cf84328aa57dfb9049dd5a53b24725bc9962))
+* **auth:** cover provider rendering and normalization ([52bc01c](https://github.com/KroderDev/kratos-nextjs-sso/commit/52bc01c75fd05730d8e67f6c9a7a6252c92d83c5))
+* **auth:** fix generated provider assertions ([e5f91d5](https://github.com/KroderDev/kratos-nextjs-sso/commit/e5f91d5a20839a4fa4425f69f91f66eb00e004bc))
+* **config:** exercise runtime environment branches ([c0e5464](https://github.com/KroderDev/kratos-nextjs-sso/commit/c0e5464a44ca4675606153afb170d26b73b0775c))
+* cover Playwright config CI branches ([eca745c](https://github.com/KroderDev/kratos-nextjs-sso/commit/eca745cae411c0ab3cc3749279ebb79b70f9949b))
+* **dashboard:** add component behavior tests ([9adc258](https://github.com/KroderDev/kratos-nextjs-sso/commit/9adc25867e6eec15277f16c8b2fa6da76b65e808))
+* **e2e:** cover configured login flow ([3a0c62f](https://github.com/KroderDev/kratos-nextjs-sso/commit/3a0c62f3d46baea17767f4bc7154ce7336099168))
+* **e2e:** cover configured login flow ([18b7ba5](https://github.com/KroderDev/kratos-nextjs-sso/commit/18b7ba5a1bb6a8050e96d055903d4103fe718e58))
+* **e2e:** stabilize layout selectors ([65f6a56](https://github.com/KroderDev/kratos-nextjs-sso/commit/65f6a566ddb199f23854c0d9bde7efe6e5895aa8))
+* **e2e:** unify Playwright auth configuration ([3910489](https://github.com/KroderDev/kratos-nextjs-sso/commit/391048977489d39abc631a19225b26c2ba0cf7c7))
+* **i18n:** organize locale and translation tests ([dc39179](https://github.com/KroderDev/kratos-nextjs-sso/commit/dc39179b17e154d503d5fd1d324d94d6f7df2972))
+* improve unit test coverage to 95% and remove docs tests ([062af10](https://github.com/KroderDev/kratos-nextjs-sso/commit/062af10baa1ec978fe930e45be704c064a4f5892))
+* improve unit test coverage to 95% and remove docs tests ([c259243](https://github.com/KroderDev/kratos-nextjs-sso/commit/c25924323d3e39f926486320e4b87f9fe9e6bbce))
+* **layout:** add component behavior tests ([a785635](https://github.com/KroderDev/kratos-nextjs-sso/commit/a7856356adc9d20302bbaa80c80d4e0343433372))
+* **layout:** exercise client effects and conditional branches in layout tests ([6c5b862](https://github.com/KroderDev/kratos-nextjs-sso/commit/6c5b86232384559fa3b45c39677c04bad43ae206))
+* **ory:** expand coverage for node rendering, trigger runtime, and form branches ([729f02e](https://github.com/KroderDev/kratos-nextjs-sso/commit/729f02e0e1b97c6ba097e3da6ee2d969d27279f6))
+* **ory:** organize component tests ([946b9bc](https://github.com/KroderDev/kratos-nextjs-sso/commit/946b9bce226015ce3e74cacbf30d1ac49317f240))
+* **security:** add E2E tests for cache-control, CSP form-action, proxy paths, and permissions-policy ([509d1ef](https://github.com/KroderDev/kratos-nextjs-sso/commit/509d1ef72c47509ba4f9ec9a766a1a97df663759))
+* **security:** add URL bypass edge-case tests for isSafeProviderUrl ([38308de](https://github.com/KroderDev/kratos-nextjs-sso/commit/38308deb7f5c0046b5a11470c713bbb98b7f40b5))
+* **security:** harden E2E assertions with maxRedirects, strict form-action source check ([804f5b9](https://github.com/KroderDev/kratos-nextjs-sso/commit/804f5b937d2ffed4cc26ee487ee683616069fa82))
+* **theme:** add provider and toggle tests ([30844d4](https://github.com/KroderDev/kratos-nextjs-sso/commit/30844d4aa188c078d3bafefdf4f275cc8857f4ef))
+* **ui:** add unit tests for avatar, card, checkbox, dropdown-menu, and field ([e2b6dd8](https://github.com/KroderDev/kratos-nextjs-sso/commit/e2b6dd8fff59d342c2144f5a764a72a91815d5c2))
+
+
+### Continuous Integration
+
+* **auth:** run real Kratos authentication tests ([7d10d35](https://github.com/KroderDev/kratos-nextjs-sso/commit/7d10d35594744db92579f8469ee584823f6f14a0))
+* **auth:** run real Kratos authentication tests ([d451e9c](https://github.com/KroderDev/kratos-nextjs-sso/commit/d451e9ccfd956448095023e906e82f3fbaa38888))
+
 ## [0.3.0](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.2.1...v0.3.0) (2026-07-31)
 
 
