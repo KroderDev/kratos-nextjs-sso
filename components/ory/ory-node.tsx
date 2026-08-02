@@ -42,6 +42,7 @@ import {
   isProviderNode,
   isChecked,
   isCodeInput,
+  isTotpCodeInput,
 } from "@/lib/ory/flow";
 
 import { OryTriggerButton } from "./ory-trigger-button";
@@ -147,7 +148,9 @@ export function OryNode({
                 : "justify-between"
           }`}
           disabled={disabled}
-          formNoValidate={isProvider || undefined}
+          formNoValidate={
+            isProvider || (kind === "login" && name === "method") || undefined
+          }
           name={name}
           title={compactProvider ? providerAction : undefined}
           trigger={getString(attributes.onclickTrigger)}
@@ -198,14 +201,16 @@ export function OryNode({
       );
     }
 
-    if (isCodeInput(node)) {
+    if (isCodeInput(node) || isTotpCodeInput(node)) {
       const length = Math.min(Math.max(maxLength ?? 6, 4), 8);
 
       return (
         <Field key={id} data-invalid={hasErrors || undefined}>
-          <FieldLabel htmlFor={id}>{label ?? t("ory.nodes.verificationCode")}</FieldLabel>
+          <FieldLabel htmlFor={id}>
+            {label ?? (isTotpCodeInput(node) ? t("ory.nodes.totpCode") : t("ory.nodes.verificationCode"))}
+          </FieldLabel>
           <InputOTP
-            autoComplete={getString(attributes.autocomplete)}
+            autoComplete={getString(attributes.autocomplete) ?? "one-time-code"}
             aria-invalid={hasErrors || undefined}
             aria-describedby={describedBy}
             defaultValue={stringValue ?? ""}

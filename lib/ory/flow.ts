@@ -61,6 +61,7 @@ const oryTranslationsEs: Record<string, string> = {
   // Messages & Errors
   "use a valid address.": "Usa una dirección válida.",
   "the credential is invalid.": "La credencial no es válida.",
+  "this backup recovery code has already been used.": "Este código de recuperación de respaldo ya ha sido utilizado.",
   "the recovery code is invalid or has already been used.": "El código de recuperación no es válido o ya ha sido utilizado.",
   "an email containing a recovery code has been sent to the email address you provided.": "Se ha enviado un correo electrónico con el código de recuperación a tu dirección.",
   "an email containing a verification code has been sent to the email address you provided.": "Se ha enviado un correo electrónico con el código de verificación a tu dirección.",
@@ -327,6 +328,21 @@ export function isCodeInput(node: UiNode) {
     maxLength >= 4 &&
     maxLength <= 8
   );
+}
+
+/**
+ * Determines whether a UI node is a TOTP authenticator-code input.
+ *
+ * Kratos uses `totp_code` for both the login challenge and settings
+ * enrollment confirmation, while email verification uses the generic `code`
+ * field handled by `isCodeInput` above.
+ */
+export function isTotpCodeInput(node: UiNode) {
+  const attributes = getNodeAttributes(node);
+  const name = getString(attributes.name);
+  const type = getString(attributes.type);
+
+  return node.type === "input" && name === "totp_code" && type === "text";
 }
 
 export function isLookupSecretInput(node: UiNode) {

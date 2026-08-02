@@ -95,6 +95,14 @@ describe("OryNode submit/button rendering", () => {
     expect(markup).toContain(">Login<");
   });
 
+  it("bypasses browser validation when selecting a login method", () => {
+    const markup = renderToStaticMarkup(
+      <OryNode kind="login" node={submitNode({ name: "method", value: "lookup_secret" })} />,
+    );
+
+    expect(markup).toContain("formNoValidate");
+  });
+
   it("does not override the label when the flow kind is not login", () => {
     const markup = renderToStaticMarkup(
       <OryNode kind="registration" node={submitNode({ name: "method", label: { id: 1, text: "Sign in" } })} />,
@@ -223,6 +231,22 @@ describe("OryNode code input", () => {
 
     expect(markup).toContain('data-slot="input-otp"');
     expect(markup).toContain("Verification code");
+  });
+
+  it("renders a Kratos TOTP code as an OTP input", () => {
+    const node = inputNode({
+      group: "totp",
+      type: "text",
+      name: "totp_code",
+      maxlength: 6,
+      label: { id: 1, text: "Authenticator code", type: "info" },
+    });
+    const markup = renderToStaticMarkup(<OryNode kind="login" node={node} />);
+
+    expect(markup).toContain('name="totp_code"');
+    expect(markup).toContain('data-slot="input-otp"');
+    expect(markup).toContain('autoComplete="one-time-code"');
+    expect(markup).toContain("Authenticator code");
   });
 
   it("renders a lookup-secret login input as a text recovery-code field", () => {

@@ -25,6 +25,7 @@ This is a **polished Next.js App Router frontend** for [Ory Kratos](https://www.
 - **Theme-aware branding:** logos, favicons, dark mode, and shadcn/ui theming.
 - **Automatic English and Spanish support** with a typed locale system.
 - **WebAuthn/passkey support** through a safe trigger allowlist.
+- **Kratos MFA support:** TOTP enrollment, authenticator challenges, and backup recovery codes.
 - **Security hardening:** provider URL validation, security headers, origin checks, and server-only API tokens.
 - **Production packaging:** standalone Docker output, non-root runtime, and a `/api/health` endpoint.
 - **Automated coverage** with unit, security, and Playwright smoke tests.
@@ -171,6 +172,8 @@ pnpm test:e2e
 ```
 
 The automated suite covers Ory flow helpers, security boundaries, localization key parity, health behavior, the unconfigured smoke experience, and real local Kratos auth flows. Production sign-in, registration, recovery, verification, and settings behavior requires a configured Ory project.
+
+The real Kratos auth suite also covers TOTP enrollment and disablement, invalid authenticator codes, password-login MFA challenges, backup-code generation and confirmation, recovery-code login, and rejection of reused recovery codes. The fixture enables TOTP and lookup-secret methods with the `CI Kratos` issuer.
 
 The CI workflow also runs the auth suite against a pinned, ephemeral Ory Kratos container. To reproduce that suite locally on Linux:
 

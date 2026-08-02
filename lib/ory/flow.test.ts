@@ -14,6 +14,7 @@ import {
   getSafeText,
   isChecked,
   isCodeInput,
+  isTotpCodeInput,
   isLookupSecretInput,
   isProviderNode,
   translateOryText,
@@ -53,6 +54,14 @@ describe("Ory flow helpers", () => {
     expect(isCodeInput(inputNode({ name: "email", type: "email" }))).toBe(false);
   });
 
+  it("identifies TOTP authenticator-code inputs separately from verification codes", () => {
+    expect(
+      isTotpCodeInput(inputNode({ name: "totp_code", type: "text" })),
+    ).toBe(true);
+    expect(isTotpCodeInput(inputNode({ name: "code", type: "text" }))).toBe(false);
+    expect(isTotpCodeInput(inputNode({ name: "totp_code", type: "email" }))).toBe(false);
+  });
+
   it("identifies lookup-secret login inputs and settings actions", () => {
     const lookupInput = inputNode({
       group: "lookup_secret",
@@ -71,6 +80,17 @@ describe("Ory flow helpers", () => {
     expect(isLookupSecretInput(inputNode({ name: "lookup_secret", type: "email" }))).toBe(false);
     expect(getLookupSecretAction(revealAction)).toBe("lookup_secret_reveal");
     expect(getLookupSecretAction(inputNode({ name: "method", type: "submit" }))).toBeUndefined();
+
+    for (const action of [
+      "lookup_secret_confirm",
+      "lookup_secret_disable",
+      "lookup_secret_regenerate",
+      "lookup_secret_reveal",
+    ] as const) {
+      const actionNode = inputNode({ name: action, type: "submit" });
+      actionNode.group = "lookup_secret";
+      expect(getLookupSecretAction(actionNode)).toBe(action);
+    }
   });
 
   it("identifies provider submit nodes without treating regular submits as providers", () => {
@@ -201,6 +221,9 @@ describe("Ory flow helpers", () => {
     expect(translateOryText("Recovery code", "es")).toBe("Código de recuperación");
     expect(translateOryText("Confirm backup recovery codes", "es")).toBe(
       "Confirmar códigos de recuperación de respaldo",
+    );
+    expect(translateOryText("This backup recovery code has already been used.", "es")).toBe(
+      "Este código de recuperación de respaldo ya ha sido utilizado.",
     );
     expect(translateOryText("Unknown text", "es")).toBe("Unknown text");
     expect(translateOryText("email", "en")).toBe("email");

@@ -18,6 +18,12 @@ selfservice:
   methods:
     password:
       enabled: true
+    totp:
+      enabled: true
+      config:
+        issuer: CI Kratos
+    lookup_secret:
+      enabled: true
 
   flows:
     error:
