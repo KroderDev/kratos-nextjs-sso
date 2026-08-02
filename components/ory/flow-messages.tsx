@@ -19,6 +19,41 @@ type FlowMessagesProps = {
   mode?: "inline" | "toast";
 };
 
+type FlowMessageTranslator = (key: string) => string;
+
+export function announceFlowMessages({
+  announcedMessages,
+  locale,
+  messages,
+  t,
+}: {
+  announcedMessages: Set<string>;
+  locale: string;
+  messages?: UiText[];
+  t: FlowMessageTranslator;
+}) {
+  (messages ?? []).forEach((message) => {
+    const text = getMessageText(message, locale);
+    const messageKey = `${message.id}-${message.type}-${text}`;
+
+    if (!text || announcedMessages.has(messageKey)) {
+      return;
+    }
+
+    announcedMessages.add(messageKey);
+    toast.add({
+      description: text,
+      title:
+        message.type === "error"
+          ? t("ory.messages.actionNeeded")
+          : message.type === "success"
+            ? t("ory.messages.updated")
+            : t("ory.messages.note"),
+      type: message.type === "error" ? "error" : message.type === "success" ? "success" : "info",
+    });
+  });
+}
+
 export function FlowMessages({ messages, mode = "inline" }: FlowMessagesProps) {
   const { t, locale } = useTranslation();
   const visibleMessages = (messages ?? []).filter((message) =>
@@ -31,25 +66,11 @@ export function FlowMessages({ messages, mode = "inline" }: FlowMessagesProps) {
       return;
     }
 
-    visibleMessages.forEach((message) => {
-      const text = getMessageText(message, locale);
-      const messageKey = `${message.id}-${message.type}-${text}`;
-
-      if (!text || announcedMessages.current.has(messageKey)) {
-        return;
-      }
-
-      announcedMessages.current.add(messageKey);
-      toast.add({
-        description: text,
-        title:
-          message.type === "error"
-            ? t("ory.messages.actionNeeded")
-            : message.type === "success"
-              ? t("ory.messages.updated")
-              : t("ory.messages.note"),
-        type: message.type === "error" ? "error" : message.type === "success" ? "success" : "info",
-      });
+    announceFlowMessages({
+      announcedMessages: announcedMessages.current,
+      locale,
+      messages: visibleMessages,
+      t,
     });
   }, [locale, mode, t, visibleMessages]);
 
