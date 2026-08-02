@@ -35,6 +35,7 @@ const oryTranslationsEs: Record<string, string> = {
   "submit": "Enviar",
   "continue": "Continuar",
   "resend code": "Reenviar código",
+  "generate new backup recovery codes": "Generar nuevos códigos de recuperación de respaldo",
   // Messages & Errors
   "use a valid address.": "Usa una dirección válida.",
   "the credential is invalid.": "La credencial no es válida.",

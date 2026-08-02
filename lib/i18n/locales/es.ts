@@ -163,6 +163,13 @@ export const es: TranslationKeys = {
       title: "Mantén tu identidad al día.",
       description: "Actualiza los atributos de identidad y las credenciales que controlas.",
       badge: "Controles de cuenta",
+      sections: {
+        profile: "Perfil",
+        password: "Contraseña",
+        totp: "Autenticación de dos factores",
+        lookupSecret: "Códigos de recuperación de respaldo",
+        oidc: "Cuentas conectadas",
+      },
       aside: {
         tag: "Siguiente paso",
         title: "Mantén tu acceso útil.",

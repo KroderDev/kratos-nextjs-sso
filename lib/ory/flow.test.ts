@@ -172,6 +172,9 @@ describe("Ory flow helpers", () => {
   it("translates text to Spanish when es locale is passed", () => {
     expect(translateOryText("email", "es")).toBe("Correo electrónico");
     expect(translateOryText("sign in", "es")).toBe("Iniciar sesión");
+    expect(translateOryText("Generate new backup recovery codes", "es")).toBe(
+      "Generar nuevos códigos de recuperación de respaldo",
+    );
     expect(translateOryText("Unknown text", "es")).toBe("Unknown text");
     expect(translateOryText("email", "en")).toBe("email");
     expect(translateOryText(undefined)).toBeUndefined();

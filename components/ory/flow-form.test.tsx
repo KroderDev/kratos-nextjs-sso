@@ -35,6 +35,13 @@ function providerNode(overrides: Record<string, unknown> = {}): UiNode {
   } as UiNode;
 }
 
+function groupedNode(group: string, overrides: Record<string, unknown> = {}): UiNode {
+  return {
+    ...inputNode(overrides),
+    group,
+  } as UiNode;
+}
+
 function buildFlow(nodes: UiNode[], uiOverrides: Record<string, unknown> = {}): OryFlow {
   return {
     id: "flow-id",
@@ -66,7 +73,7 @@ describe("FlowForm", () => {
     expect(postMarkup).toContain('method="post"');
   });
 
-  it("filters out the avatar_url field only for the registration flow kind", () => {
+  it("filters out the avatar_url field for registration and settings flows", () => {
     const nodes = [
       inputNode({
         name: "traits.avatar_url",
@@ -87,6 +94,11 @@ describe("FlowForm", () => {
 
     const loginMarkup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
     expect(loginMarkup).toContain("Avatar URL");
+
+    const settingsMarkup = renderToStaticMarkup(
+      <FlowForm flow={flow} kind="settings" separateProviders={false} />,
+    );
+    expect(settingsMarkup).not.toContain("Avatar URL");
   });
 
   it("renders no divider or provider section when there are no provider nodes", () => {
@@ -128,6 +140,49 @@ describe("FlowForm", () => {
     expect(markup).toContain("Connect with Google");
     expect(markup).not.toContain('role="separator"');
     expect(markup).not.toContain('aria-label="Sign in with a social account"');
+  });
+
+  it("groups settings nodes into translated sections with one form per action", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      groupedNode("profile", {
+        name: "traits.email",
+        required: true,
+        label: { id: 2, text: "Email address", type: "info" },
+      }),
+      groupedNode("password", {
+        name: "password",
+        type: "password",
+        required: true,
+        label: { id: 3, text: "Password", type: "info" },
+      }),
+      groupedNode("totp", {
+        name: "action",
+        type: "submit",
+        value: "totp",
+        label: { id: 4, text: "Save", type: "info" },
+      }),
+      groupedNode("lookup_secret", {
+        name: "action",
+        type: "submit",
+        value: "lookup_secret_regenerate",
+        label: { id: 5, text: "Generate new backup recovery codes", type: "info" },
+      }),
+      providerNode({ name: "link" }),
+    ]);
+    const markup = renderToStaticMarkup(
+      <FlowForm flow={flow} kind="settings" separateProviders={false} />,
+    );
+
+    expect(markup).toContain(">Profile<");
+    expect(markup).toContain(">Password<");
+    expect(markup).toContain(">Two-factor authentication<");
+    expect(markup).toContain(">Backup recovery codes<");
+    expect(markup).toContain(">Connected accounts<");
+    expect(markup).toContain("Generate new backup recovery codes");
+    expect((markup.match(/<form /g) ?? []).length).toBe(5);
+    expect((markup.match(/type="hidden"/g) ?? []).length).toBe(5);
+    expect((markup.match(/data-slot="field-set"/g) ?? []).length).toBe(5);
   });
 
   it("switches to a compact three-column layout with the 'Or continue with' divider for three or more providers", () => {

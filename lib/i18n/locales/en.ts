@@ -161,6 +161,13 @@ export const en = {
       title: "Keep your identity current.",
       description: "Update the identity attributes and credentials you control.",
       badge: "Account controls",
+      sections: {
+        profile: "Profile",
+        password: "Password",
+        totp: "Two-factor authentication",
+        lookupSecret: "Backup recovery codes",
+        oidc: "Connected accounts",
+      },
       aside: {
         tag: "Next move",
         title: "Keep your access useful.",
