@@ -134,7 +134,7 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
         <div>
           <SettingsIntro t={t} />
           <div className="mt-12 max-w-3xl">
-            {flow ? <FlowForm embedded flow={flow} kind="settings" /> : <FlowUnavailable />}
+            {flow ? <FlowForm embedded flow={flow} kind="settings" separateProviders={false} /> : <FlowUnavailable />}
             <div className="mt-7 text-center text-sm text-muted-foreground">
               <Link className="font-medium text-primary hover:underline" href="/dashboard">
                 {t("dashboard.settings.returnOverview")}

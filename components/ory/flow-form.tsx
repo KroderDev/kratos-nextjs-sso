@@ -18,6 +18,7 @@ type FlowFormProps = {
   embedded?: boolean;
   flow: OryFlow;
   kind: OryFlowKind;
+  separateProviders?: boolean;
 };
 
 /**
@@ -28,7 +29,7 @@ type FlowFormProps = {
  * @param kind - The type of authentication flow
  * @returns The rendered form, or `null` when the flow action is unsafe
  */
-export function FlowForm({ embedded = false, flow, kind }: FlowFormProps) {
+export function FlowForm({ embedded = false, flow, kind, separateProviders = true }: FlowFormProps) {
   const { t } = useTranslation();
   const method = flow.ui.method.toLowerCase() === "get" ? "get" : "post";
   const origins = allowedOryOrigins([appBaseUrl ?? "", orySdkUrl, oryCanonicalUrl]);
@@ -53,8 +54,8 @@ export function FlowForm({ embedded = false, flow, kind }: FlowFormProps) {
     const name = getString(getNodeAttributes(node).name);
     return name !== "traits.avatar_url";
   });
-  const providerNodes = nodes.filter(isProviderNode);
-  const formNodes = nodes.filter((node) => !isProviderNode(node));
+  const providerNodes = separateProviders ? nodes.filter(isProviderNode) : [];
+  const formNodes = separateProviders ? nodes.filter((node) => !isProviderNode(node)) : nodes;
   const compactProviders = providerNodes.length >= 3;
   const providerGridClass = compactProviders
     ? "grid-cols-3"

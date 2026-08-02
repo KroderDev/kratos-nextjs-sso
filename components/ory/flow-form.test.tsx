@@ -117,6 +117,17 @@ describe("FlowForm", () => {
     expect(markup).toContain('aria-label="Or"');
   });
 
+  it("keeps settings provider nodes inline without the social-login menu", () => {
+    const flow = buildFlow([inputNode(), providerNode()]);
+    const markup = renderToStaticMarkup(
+      <FlowForm flow={flow} kind="settings" separateProviders={false} />,
+    );
+
+    expect(markup).toContain("Continue with Google");
+    expect(markup).not.toContain('role="separator"');
+    expect(markup).not.toContain('aria-label="Sign in with a social account"');
+  });
+
   it("switches to a compact three-column layout with the 'Or continue with' divider for three or more providers", () => {
     const flow = buildFlow([
       inputNode(),
