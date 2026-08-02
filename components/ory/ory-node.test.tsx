@@ -246,6 +246,8 @@ describe("OryNode code input", () => {
     expect(markup).toContain('name="totp_code"');
     expect(markup).toContain('data-slot="input-otp"');
     expect(markup).toContain('autoComplete="one-time-code"');
+    expect(markup).toContain('value="password"');
+    expect(markup).not.toContain("defaultValue");
     expect(markup).toContain("Authenticator code");
   });
 

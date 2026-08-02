@@ -4,6 +4,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import type { UiNode } from "@ory/client-fetch";
+import { useState } from "react";
 import Script from "next/script";
 import { ArrowUpRight } from "lucide-react";
 
@@ -86,6 +87,7 @@ export function OryNode({
   node,
 }: OryNodeProps) {
   const { t, locale } = useTranslation();
+  const [otpValue, setOtpValue] = useState<string | undefined>();
   const attributes = getNodeAttributes(node);
   const id = nodeId(node);
 
@@ -213,13 +215,14 @@ export function OryNode({
             autoComplete={getString(attributes.autocomplete) ?? "one-time-code"}
             aria-invalid={hasErrors || undefined}
             aria-describedby={describedBy}
-            defaultValue={stringValue ?? ""}
             disabled={disabled}
             id={id}
             maxLength={length}
             name={name}
+            onChange={setOtpValue}
             pattern={getString(attributes.pattern)}
             required={required}
+            value={otpValue ?? stringValue ?? ""}
           >
             <InputOTPGroup>
               {Array.from({ length }, (_, index) => (
