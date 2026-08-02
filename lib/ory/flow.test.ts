@@ -3,6 +3,8 @@ import type { UiNode, UiText } from "@ory/client-fetch";
 
 import {
   getErrorMessages,
+  getLookupSecretAction,
+  getLookupSecretEntries,
   getMessageText,
   getNodeLabel,
   getNodeMessages,
@@ -12,6 +14,7 @@ import {
   getSafeText,
   isChecked,
   isCodeInput,
+  isLookupSecretInput,
   isProviderNode,
   translateOryText,
 } from "./flow";
@@ -48,6 +51,26 @@ describe("Ory flow helpers", () => {
     ).toBe(true);
     expect(isCodeInput(inputNode({ name: "code", type: "text" }))).toBe(false);
     expect(isCodeInput(inputNode({ name: "email", type: "email" }))).toBe(false);
+  });
+
+  it("identifies lookup-secret login inputs and settings actions", () => {
+    const lookupInput = inputNode({
+      group: "lookup_secret",
+      name: "lookup_secret",
+      type: "text",
+    });
+    const revealAction = inputNode({
+      name: "lookup_secret_reveal",
+      type: "submit",
+      value: "true",
+    });
+    lookupInput.group = "lookup_secret";
+    revealAction.group = "lookup_secret";
+
+    expect(isLookupSecretInput(lookupInput)).toBe(true);
+    expect(isLookupSecretInput(inputNode({ name: "lookup_secret", type: "email" }))).toBe(false);
+    expect(getLookupSecretAction(revealAction)).toBe("lookup_secret_reveal");
+    expect(getLookupSecretAction(inputNode({ name: "method", type: "submit" }))).toBeUndefined();
   });
 
   it("identifies provider submit nodes without treating regular submits as providers", () => {
@@ -175,6 +198,10 @@ describe("Ory flow helpers", () => {
     expect(translateOryText("Generate new backup recovery codes", "es")).toBe(
       "Generar nuevos códigos de recuperación de respaldo",
     );
+    expect(translateOryText("Recovery code", "es")).toBe("Código de recuperación");
+    expect(translateOryText("Confirm backup recovery codes", "es")).toBe(
+      "Confirmar códigos de recuperación de respaldo",
+    );
     expect(translateOryText("Unknown text", "es")).toBe("Unknown text");
     expect(translateOryText("email", "en")).toBe("email");
     expect(translateOryText(undefined)).toBeUndefined();
@@ -184,6 +211,62 @@ describe("Ory flow helpers", () => {
     const node = inputNode({ text: { text: "Helpful hint text" } });
     expect(getNodeText(node)).toBe("Helpful hint text");
     expect(getNodeText(inputNode({ text: { text: "email" } }), "es")).toBe("Correo electrónico");
+  });
+
+  it("extracts active and used lookup-secret entries from the structured context", () => {
+    const node = {
+      type: "text",
+      group: "lookup_secret",
+      messages: [],
+      meta: {},
+      attributes: {
+        node_type: "text",
+        id: "lookup_secret_codes",
+        text: {
+          id: 1,
+          text: "ory-code-1, used",
+          type: "info",
+          context: {
+            secrets: [
+              {
+                id: 2,
+                text: "ory-code-1",
+                type: "info",
+                context: { secret: "ory-code-1" },
+              },
+              {
+                id: 3,
+                text: "Secret was used at 2021-10-14T07:38:51Z",
+                type: "info",
+                context: { used_at_unix: 1634197131 },
+              },
+            ],
+          },
+        },
+      },
+    } as unknown as UiNode;
+
+    expect(getLookupSecretEntries(node)).toEqual([
+      { kind: "active", code: "ory-code-1" },
+      { kind: "used", usedAtUnix: 1634197131 },
+    ]);
+  });
+
+  it("returns an empty lookup-secret entry list when structured context is unavailable", () => {
+    const node = {
+      type: "text",
+      group: "lookup_secret",
+      messages: [],
+      meta: {},
+      attributes: {
+        node_type: "text",
+        id: "lookup_secret_codes",
+        text: { id: 1, text: "codes", type: "info" },
+      },
+    } as unknown as UiNode;
+
+    expect(getLookupSecretEntries(node)).toEqual([]);
+    expect(getLookupSecretEntries(inputNode())).toBeUndefined();
   });
 
   it("filters and formats error messages using getErrorMessages", () => {

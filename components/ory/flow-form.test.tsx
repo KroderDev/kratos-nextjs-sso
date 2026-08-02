@@ -42,6 +42,46 @@ function groupedNode(group: string, overrides: Record<string, unknown> = {}): Ui
   } as UiNode;
 }
 
+function lookupCodesNode(): UiNode {
+  return {
+    type: "text",
+    group: "lookup_secret",
+    messages: [],
+    meta: {
+      label: {
+        id: 10,
+        text: "These are your back up recovery codes. Please keep them in a safe place!",
+        type: "info",
+      },
+    },
+    attributes: {
+      node_type: "text",
+      id: "lookup_secret_codes",
+      text: {
+        id: 11,
+        text: "safe-code-1, used",
+        type: "info",
+        context: {
+          secrets: [
+            {
+              id: 12,
+              text: "safe-code-1",
+              type: "info",
+              context: { secret: "safe-code-1" },
+            },
+            {
+              id: 13,
+              text: "Secret was used at 2021-10-14T07:38:51Z",
+              type: "info",
+              context: { used_at: "2021-10-14T07:38:51Z" },
+            },
+          ],
+        },
+      },
+    },
+  } as unknown as UiNode;
+}
+
 function buildFlow(nodes: UiNode[], uiOverrides: Record<string, unknown> = {}): OryFlow {
   return {
     id: "flow-id",
@@ -163,9 +203,9 @@ describe("FlowForm", () => {
         label: { id: 4, text: "Save", type: "info" },
       }),
       groupedNode("lookup_secret", {
-        name: "action",
+        name: "lookup_secret_regenerate",
         type: "submit",
-        value: "lookup_secret_regenerate",
+        value: "true",
         label: { id: 5, text: "Generate new backup recovery codes", type: "info" },
       }),
       providerNode({ name: "link" }),
@@ -183,6 +223,62 @@ describe("FlowForm", () => {
     expect((markup.match(/<form /g) ?? []).length).toBe(5);
     expect((markup.match(/type="hidden"/g) ?? []).length).toBe(5);
     expect((markup.match(/data-slot="field-set"/g) ?? []).length).toBe(5);
+  });
+
+  it("renders structured recovery codes without exposing used code values", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      lookupCodesNode(),
+      groupedNode("lookup_secret", {
+        name: "lookup_secret_confirm",
+        type: "submit",
+        value: "true",
+        label: { id: 14, text: "Confirm backup recovery codes", type: "info" },
+      }),
+    ]);
+    const markup = renderToStaticMarkup(
+      <FlowForm flow={flow} kind="settings" separateProviders={false} />,
+    );
+
+    expect(markup).toContain('data-recovery-codes="true"');
+    expect(markup).toContain("safe-code-1");
+    expect(markup).toContain("********");
+    expect(markup).toContain("Confirm your new codes");
+    expect(markup).toContain("Copy all codes");
+    expect(markup).not.toContain("Secret was used at");
+    expect((markup.match(/<form /g) ?? []).length).toBe(1);
+    expect((markup.match(/type="hidden"/g) ?? []).length).toBe(1);
+  });
+
+  it("keeps visible nodes from unknown settings groups in one additional form", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      groupedNode("profile", { name: "traits.email", type: "email" }),
+      groupedNode("custom", { name: "custom_value", type: "text" }),
+    ]);
+    const markup = renderToStaticMarkup(
+      <FlowForm flow={flow} kind="settings" separateProviders={false} />,
+    );
+
+    expect(markup).toContain(">Other<");
+    expect((markup.match(/name="custom_value"/g) ?? []).length).toBe(1);
+    expect((markup.match(/type="hidden"/g) ?? []).length).toBe(2);
+  });
+
+  it("renders the lookup-secret login field as an alphanumeric recovery-code input", () => {
+    const lookupInput = groupedNode("lookup_secret", {
+      name: "lookup_secret",
+      type: "text",
+      required: true,
+      label: { id: 15, text: "Recovery code", type: "info" },
+    });
+    const flow = buildFlow([lookupInput]);
+    const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
+
+    expect(markup).toContain('name="lookup_secret"');
+    expect(markup).toContain('autoComplete="one-time-code"');
+    expect(markup).toContain("Recovery code");
+    expect(markup).not.toContain('data-slot="input-otp"');
   });
 
   it("switches to a compact three-column layout with the 'Or continue with' divider for three or more providers", () => {

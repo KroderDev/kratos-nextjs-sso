@@ -1,11 +1,17 @@
 "use client";
 
 import type { OryFlow, OryFlowKind } from "@/lib/ory/types";
-import { getNodeAttributes, getString, isProviderNode } from "@/lib/ory/flow";
+import {
+  getLookupSecretAction,
+  getNodeAttributes,
+  getString,
+  isHiddenInputNode,
+  isProviderNode,
+} from "@/lib/ory/flow";
 import Script from "next/script";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { FieldGroup, FieldLegend, FieldSet } from "@/components/ui/field";
+import { FieldDescription, FieldGroup, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
 
 import { FlowMessages } from "./flow-messages";
@@ -30,9 +36,19 @@ const SETTINGS_SECTION_DEFINITIONS = [
   { group: "oidc", label: "dashboard.settings.sections.oidc" },
 ] as const;
 
-function renderNodes(nodes: OryFlow["ui"]["nodes"], kind: OryFlowKind, keyPrefix: string) {
+function renderNodes(
+  nodes: OryFlow["ui"]["nodes"],
+  kind: OryFlowKind,
+  keyPrefix: string,
+  lookupSecretPending = false,
+) {
   return nodes.map((node, index) => (
-    <OryNode key={`${keyPrefix}-${node.type}-${index}`} kind={kind} node={node} />
+    <OryNode
+      key={`${keyPrefix}-${node.type}-${index}`}
+      kind={kind}
+      lookupSecretPending={lookupSecretPending}
+      node={node}
+    />
   ));
 }
 
@@ -53,8 +69,16 @@ function SettingsNodeSections({
     ...section,
     nodes: nodes.filter((node) => node.group === section.group),
   }));
+  const sharedNodes = nodes.filter(
+    (node) =>
+      !SETTINGS_SECTION_DEFINITIONS.some((section) => section.group === node.group) &&
+      isHiddenInputNode(node),
+  );
   const ungroupedNodes = nodes.filter(
     (node) => !SETTINGS_SECTION_DEFINITIONS.some((section) => section.group === node.group),
+  ).filter((node) => !isHiddenInputNode(node));
+  const lookupSecretPending = nodes.some(
+    (node) => getLookupSecretAction(node) === "lookup_secret_confirm",
   );
 
   return (
@@ -71,16 +95,40 @@ function SettingsNodeSections({
             >
               {t(section.label)}
             </FieldLegend>
+            {section.group === "lookup_secret" ? (
+              <FieldDescription>{t("dashboard.settings.recoveryCodes.description")}</FieldDescription>
+            ) : null}
             <form action={action} className="flex flex-col gap-5" method={method}>
-              {renderNodes(ungroupedNodes, kind, `settings-${section.group}-ungrouped`)}
-              <FieldGroup>{renderNodes(section.nodes, kind, `settings-${section.group}`)}</FieldGroup>
+              {renderNodes(sharedNodes, kind, `settings-${section.group}-shared`, lookupSecretPending)}
+              <FieldGroup>
+                {renderNodes(section.nodes, kind, `settings-${section.group}`, lookupSecretPending)}
+              </FieldGroup>
             </form>
           </FieldSet>
         ) : null,
       )}
-      {groupedNodes.every((section) => section.nodes.length === 0) && ungroupedNodes.length > 0 ? (
+      {ungroupedNodes.length > 0 ? (
+        <FieldSet
+          className="gap-5 rounded-none border-0 border-t border-border/70 px-0 py-6"
+          key="other"
+        >
+          <FieldLegend
+            className="mb-2 flex w-full items-center gap-4 font-mono text-[10px] uppercase tracking-[0.18em] text-primary after:h-px after:flex-1 after:bg-border/70 after:content-['']"
+            variant="label"
+          >
+            {t("dashboard.settings.sections.other")}
+          </FieldLegend>
+          <form action={action} className="flex flex-col gap-5" method={method}>
+            {renderNodes(sharedNodes, kind, "settings-other-shared", lookupSecretPending)}
+            <FieldGroup>{renderNodes(ungroupedNodes, kind, "settings-other", lookupSecretPending)}</FieldGroup>
+          </form>
+        </FieldSet>
+      ) : null}
+      {groupedNodes.every((section) => section.nodes.length === 0) &&
+      ungroupedNodes.length === 0 &&
+      sharedNodes.length > 0 ? (
         <form action={action} className="flex flex-col gap-5" method={method}>
-          {renderNodes(ungroupedNodes, kind, "settings-ungrouped")}
+          {renderNodes(sharedNodes, kind, "settings-ungrouped", lookupSecretPending)}
         </form>
       ) : null}
     </div>

@@ -4,6 +4,22 @@ type UnknownRecord = Record<string, unknown>;
 const providerReferencePattern =
   /\b(?:ory(?:apis)?|kratos)\b|\/(?:self-service|sessions|ui|\.well-known\/ory)(?:\/|\b)/i;
 
+export const LOOKUP_SECRET_ACTIONS = {
+  confirm: "lookup_secret_confirm",
+  disable: "lookup_secret_disable",
+  regenerate: "lookup_secret_regenerate",
+  reveal: "lookup_secret_reveal",
+} as const;
+
+export type LookupSecretAction = (typeof LOOKUP_SECRET_ACTIONS)[keyof typeof LOOKUP_SECRET_ACTIONS];
+
+export type LookupSecretEntry =
+  | { kind: "active"; code: string }
+  | { kind: "used"; usedAt?: string; usedAtUnix?: number };
+
+const LOOKUP_SECRET_CODE_NODE_ID = "lookup_secret_codes";
+const lookupSecretActionNames = new Set<string>(Object.values(LOOKUP_SECRET_ACTIONS));
+
 const oryTranslationsEs: Record<string, string> = {
   // Field labels
   "email": "Correo electrónico",
@@ -24,6 +40,7 @@ const oryTranslationsEs: Record<string, string> = {
   "code": "Código de verificación",
   "totp code": "Código TOTP",
   "lookup code": "Código de recuperación",
+  "recovery code": "Código de recuperación",
   "traits.email": "Correo electrónico",
   "traits.name.first": "Nombre",
   "traits.name.last": "Apellido",
@@ -35,7 +52,12 @@ const oryTranslationsEs: Record<string, string> = {
   "submit": "Enviar",
   "continue": "Continuar",
   "resend code": "Reenviar código",
+  "reveal backup recovery codes": "Mostrar códigos de recuperación de respaldo",
   "generate new backup recovery codes": "Generar nuevos códigos de recuperación de respaldo",
+  "confirm backup recovery codes": "Confirmar códigos de recuperación de respaldo",
+  "disable this method": "Desactivar este método",
+  "these are your back up recovery codes. please keep them in a safe place!":
+    "Estos son tus códigos de recuperación de respaldo. ¡Guárdalos en un lugar seguro!",
   // Messages & Errors
   "use a valid address.": "Usa una dirección válida.",
   "the credential is invalid.": "La credencial no es válida.",
@@ -101,6 +123,67 @@ export function getNumber(value: unknown) {
 
 export function getNodeAttributes(node: UiNode) {
   return asRecord(node.attributes);
+}
+
+export function getLookupSecretAction(node: UiNode): LookupSecretAction | undefined {
+  const attributes = getNodeAttributes(node);
+  const name = getString(attributes.name);
+  const type = getString(attributes.type);
+
+  if (
+    node.type !== "input" ||
+    node.group !== "lookup_secret" ||
+    (type !== "submit" && type !== "button") ||
+    !name ||
+    !lookupSecretActionNames.has(name)
+  ) {
+    return undefined;
+  }
+
+  return name as LookupSecretAction;
+}
+
+export function isLookupSecretCodeNode(node: UiNode) {
+  return (
+    node.type === "text" &&
+    node.group === "lookup_secret" &&
+    getString(getNodeAttributes(node).id) === LOOKUP_SECRET_CODE_NODE_ID
+  );
+}
+
+/**
+ * Extracts the structured lookup-secret payload supplied by Kratos.
+ * Used entries intentionally omit the original code and only expose usage metadata.
+ */
+export function getLookupSecretEntries(node: UiNode): LookupSecretEntry[] | undefined {
+  if (!isLookupSecretCodeNode(node)) {
+    return undefined;
+  }
+
+  const textAttributes = asRecord(getNodeAttributes(node).text);
+  const context = asRecord(textAttributes.context);
+  const secrets = context.secrets;
+
+  if (!Array.isArray(secrets)) {
+    return [];
+  }
+
+  return secrets.flatMap((secret): LookupSecretEntry[] => {
+    const secretMessage = asRecord(secret);
+    const secretContext = asRecord(secretMessage.context);
+    const code = getString(secretContext.secret);
+
+    if (code?.trim()) {
+      return [{ kind: "active", code }];
+    }
+
+    const usedAt = getString(secretContext.used_at);
+    const usedAtUnix = getNumber(secretContext.used_at_unix);
+
+    return usedAt || usedAtUnix !== undefined
+      ? [{ kind: "used", usedAt, usedAtUnix }]
+      : [];
+  });
 }
 
 export function getNodeMessages(node: UiNode) {
@@ -246,6 +329,16 @@ export function isCodeInput(node: UiNode) {
   );
 }
 
+export function isLookupSecretInput(node: UiNode) {
+  const attributes = getNodeAttributes(node);
+  return (
+    node.type === "input" &&
+    node.group === "lookup_secret" &&
+    getString(attributes.name) === "lookup_secret" &&
+    getString(attributes.type) === "text"
+  );
+}
+
 /**
  * Determines whether a UI node represents an identity provider action.
  *
@@ -262,6 +355,11 @@ export function isProviderNode(node: UiNode) {
     (type === "submit" || type === "button") &&
     (name === "provider" || node.group === "oidc")
   );
+}
+
+export function isHiddenInputNode(node: UiNode) {
+  const attributes = getNodeAttributes(node);
+  return node.type === "input" && getString(attributes.type) === "hidden";
 }
 
 /**

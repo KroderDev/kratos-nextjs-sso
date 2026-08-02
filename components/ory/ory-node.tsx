@@ -28,6 +28,8 @@ import {
 import {
   getNodeAttributes,
   getErrorMessages,
+  getLookupSecretAction,
+  getLookupSecretEntries,
   getNodeLabel,
   getNodeMessages,
   getNodeText,
@@ -35,6 +37,8 @@ import {
   getProviderName,
   getString,
   getSafeText,
+  isLookupSecretInput,
+  isLookupSecretCodeNode,
   isProviderNode,
   isChecked,
   isCodeInput,
@@ -42,6 +46,7 @@ import {
 
 import { OryTriggerButton } from "./ory-trigger-button";
 import { ProviderIcon } from "./provider-icon";
+import { RecoveryCodes } from "./recovery-codes";
 import { allowedOryOrigins, isSafeProviderUrl } from "@/lib/ory/security";
 import { appBaseUrl, oryCanonicalUrl, orySdkUrl } from "@/ory.config";
 import { useTranslation } from "@/lib/i18n/client";
@@ -64,6 +69,7 @@ const SAFE_QR_DATA_URL = /^data:image\/(?:gif|jpeg|png|webp);base64,[A-Za-z0-9+/
 type OryNodeProps = {
   compactProvider?: boolean;
   kind?: OryFlowKind;
+  lookupSecretPending?: boolean;
   node: UiNode;
 };
 
@@ -72,7 +78,12 @@ function nodeId(node: UiNode) {
   return getString(attributes.id) ?? getString(attributes.name) ?? "ory-node";
 }
 
-export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
+export function OryNode({
+  compactProvider = false,
+  kind,
+  lookupSecretPending = false,
+  node,
+}: OryNodeProps) {
   const { t, locale } = useTranslation();
   const attributes = getNodeAttributes(node);
   const id = nodeId(node);
@@ -110,6 +121,7 @@ export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
 
     if (inputType === "submit" || inputType === "button") {
       const isProvider = isProviderNode(node);
+      const lookupSecretAction = getLookupSecretAction(node);
       const providerName = isProvider ? getProviderName(node) : undefined;
       const providerActionKey =
         kind === "settings"
@@ -121,6 +133,7 @@ export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
         ? t(providerActionKey, { provider: providerName })
         : undefined;
       const isLoginAction = kind === "login" && name === "method";
+      const isDestructiveLookupAction = lookupSecretAction === "lookup_secret_disable";
 
       return (
         <OryTriggerButton
@@ -140,7 +153,7 @@ export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
           trigger={getString(attributes.onclickTrigger)}
           type={inputType === "button" ? "button" : "submit"}
           value={stringValue}
-          variant={isProvider ? "outline" : "default"}
+          variant={isDestructiveLookupAction ? "destructive" : isProvider ? "outline" : "default"}
         >
           {isProvider ? <ProviderIcon node={node} /> : null}
           {compactProvider ? (
@@ -211,7 +224,35 @@ export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
           </InputOTP>
           <FieldError
             id={errorId}
-            errors={getErrorMessages(messages).map((message) => ({
+            errors={getErrorMessages(messages, locale).map((message) => ({
+              message: message.text,
+            }))}
+          />
+        </Field>
+      );
+    }
+
+    if (isLookupSecretInput(node)) {
+      return (
+        <Field key={id} data-invalid={hasErrors || undefined}>
+          <FieldLabel htmlFor={id}>{label ?? t("ory.nodes.recoveryCode")}</FieldLabel>
+          <Input
+            aria-invalid={hasErrors || undefined}
+            aria-describedby={describedBy}
+            autoComplete={getString(attributes.autocomplete) ?? "one-time-code"}
+            defaultValue={stringValue}
+            disabled={disabled}
+            id={id}
+            maxLength={maxLength}
+            name={name}
+            pattern={getString(attributes.pattern)}
+            required={required}
+            spellCheck={false}
+            type="text"
+          />
+          <FieldError
+            id={errorId}
+            errors={getErrorMessages(messages, locale).map((message) => ({
               message: message.text,
             }))}
           />
@@ -241,7 +282,7 @@ export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
         ) : null}
         <FieldError
           id={errorId}
-          errors={getErrorMessages(messages).map((message) => ({
+          errors={getErrorMessages(messages, locale).map((message) => ({
             message: message.text,
           }))}
         />
@@ -250,6 +291,20 @@ export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
   }
 
   if (node.type === "text") {
+    const lookupSecretEntries = getLookupSecretEntries(node);
+
+    if (isLookupSecretCodeNode(node) && lookupSecretEntries?.length) {
+      return (
+        <RecoveryCodes
+          entries={lookupSecretEntries}
+          fallbackText={getNodeText(node, locale)}
+          id={id}
+          label={getNodeLabel(node, locale)}
+          pending={lookupSecretPending}
+        />
+      );
+    }
+
     const text = getNodeText(node, locale);
 
     return text ? (

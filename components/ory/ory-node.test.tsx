@@ -224,6 +224,23 @@ describe("OryNode code input", () => {
     expect(markup).toContain('data-slot="input-otp"');
     expect(markup).toContain("Verification code");
   });
+
+  it("renders a lookup-secret login input as a text recovery-code field", () => {
+    const node = inputNode({
+      group: "lookup_secret",
+      name: "lookup_secret",
+      type: "text",
+      required: true,
+      label: { id: 1, text: "Recovery code", type: "info" },
+    });
+    node.group = "lookup_secret";
+    const markup = renderToStaticMarkup(<OryNode kind="login" node={node} />);
+
+    expect(markup).toContain('name="lookup_secret"');
+    expect(markup).toContain('autoComplete="one-time-code"');
+    expect(markup).toContain("Recovery code");
+    expect(markup).not.toContain('data-slot="input-otp"');
+  });
 });
 
 describe("OryNode default text input", () => {
@@ -289,6 +306,54 @@ describe("OryNode text", () => {
   it("returns null when text is empty", () => {
     const node = baseNode("text", "default", { text: { id: 1, text: "", type: "info" } });
     expect(renderToStaticMarkup(<OryNode node={node} />)).toBe("");
+  });
+
+  it("renders active recovery codes and redacts used entries", () => {
+    const node = baseNode("text", "lookup_secret", {
+      id: "lookup_secret_codes",
+      text: {
+        id: 1,
+        text: "active-code, used",
+        type: "info",
+        context: {
+          secrets: [
+            {
+              id: 2,
+              text: "active-code",
+              type: "info",
+              context: { secret: "active-code" },
+            },
+            {
+              id: 3,
+              text: "Secret was used at 2021-10-14T07:38:51Z",
+              type: "info",
+              context: { used_at_unix: 1634197131 },
+            },
+          ],
+        },
+      },
+    });
+    const markup = renderToStaticMarkup(
+      <OryNode kind="settings" lookupSecretPending node={node} />,
+    );
+
+    expect(markup).toContain('data-recovery-codes="true"');
+    expect(markup).toContain("active-code");
+    expect(markup).toContain("********");
+    expect(markup).toContain("Confirm your new codes");
+    expect(markup).toContain('type="button"');
+    expect(markup).not.toContain("Secret was used at");
+  });
+
+  it("falls back to the Ory text when recovery-code context is unavailable", () => {
+    const node = baseNode("text", "lookup_secret", {
+      id: "lookup_secret_codes",
+      text: { id: 1, text: "Recovery codes are available", type: "info" },
+    });
+    const markup = renderToStaticMarkup(<OryNode kind="settings" node={node} />);
+
+    expect(markup).toContain("Recovery codes are available");
+    expect(markup).toContain("text-sm leading-6 text-muted-foreground");
   });
 });
 
