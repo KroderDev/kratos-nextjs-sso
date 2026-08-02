@@ -56,14 +56,16 @@ function submitNode(overrides: Record<string, unknown> = {}): UiNode {
 }
 
 function providerNode(overrides: Record<string, unknown> = {}): UiNode {
-  return submitNode({
+  return {
+    ...submitNode({
+      name: "provider",
+      type: "submit",
+      value: "google-provider",
+      label: { id: 1, text: "Sign in with Google", type: "info" },
+      ...overrides,
+    }),
     group: "oidc",
-    name: "provider",
-    type: "submit",
-    value: "google-provider",
-    label: { id: 1, text: "Sign in with Google", type: "info" },
-    ...overrides,
-  });
+  } as UiNode;
 }
 
 describe("OryNode submit/button rendering", () => {
@@ -119,6 +121,24 @@ describe("OryNode submit/button rendering", () => {
     expect(markup).toContain("formNoValidate");
     expect(markup).not.toContain('data-icon="inline-end"');
     expect(markup).not.toContain('aria-label="Continue with Google"');
+  });
+
+  it("uses connect wording for settings provider actions", () => {
+    const markup = renderToStaticMarkup(
+      <OryNode kind="settings" node={providerNode({ name: "link" })} />,
+    );
+
+    expect(markup).toContain(">Connect with Google<");
+    expect(markup).not.toContain("Continue with Google");
+  });
+
+  it("uses unlink wording for connected settings providers", () => {
+    const markup = renderToStaticMarkup(
+      <OryNode kind="settings" node={providerNode({ name: "unlink" })} />,
+    );
+
+    expect(markup).toContain(">Unlink Google<");
+    expect(markup).not.toContain("Connect with Google");
   });
 
   it("renders a compact provider button as icon-only with screen-reader text", () => {

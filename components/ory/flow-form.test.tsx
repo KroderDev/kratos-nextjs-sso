@@ -23,14 +23,16 @@ function inputNode(overrides: Record<string, unknown> = {}): UiNode {
 }
 
 function providerNode(overrides: Record<string, unknown> = {}): UiNode {
-  return inputNode({
+  return {
+    ...inputNode({
+      name: "provider",
+      type: "submit",
+      value: "google-provider",
+      label: { id: 1, text: "Sign in with Google", type: "info" },
+      ...overrides,
+    }),
     group: "oidc",
-    name: "provider",
-    type: "submit",
-    value: "google-provider",
-    label: { id: 1, text: "Sign in with Google", type: "info" },
-    ...overrides,
-  });
+  } as UiNode;
 }
 
 function buildFlow(nodes: UiNode[], uiOverrides: Record<string, unknown> = {}): OryFlow {
@@ -118,12 +120,12 @@ describe("FlowForm", () => {
   });
 
   it("keeps settings provider nodes inline without the social-login menu", () => {
-    const flow = buildFlow([inputNode(), providerNode()]);
+    const flow = buildFlow([inputNode(), providerNode({ name: "link" })]);
     const markup = renderToStaticMarkup(
       <FlowForm flow={flow} kind="settings" separateProviders={false} />,
     );
 
-    expect(markup).toContain("Continue with Google");
+    expect(markup).toContain("Connect with Google");
     expect(markup).not.toContain('role="separator"');
     expect(markup).not.toContain('aria-label="Sign in with a social account"');
   });

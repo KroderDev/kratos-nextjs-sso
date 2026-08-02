@@ -31,12 +31,16 @@ describe("i18n locale registry", () => {
   it("exports the localized provider actions", () => {
     expect(en.ory.nodes.login).toBe("Login");
     expect(en.ory.nodes.continueWith).toBe("Continue with {provider}");
+    expect(en.ory.nodes.connectWith).toBe("Connect with {provider}");
+    expect(en.ory.nodes.unlinkWith).toBe("Unlink {provider}");
     expect(en.ory.nodes.socialLogin).toBe("Sign in with a social account");
     expect(en.ory.nodes.emailDivider).toBe("Or");
     expect(en.ory.nodes.emailDividerCompact).toBe("Or continue with");
 
     expect(dictionaries.es.ory.nodes.login).toBe("Iniciar sesión");
     expect(dictionaries.es.ory.nodes.continueWith).toBe("Continuar con {provider}");
+    expect(dictionaries.es.ory.nodes.connectWith).toBe("Conectar con {provider}");
+    expect(dictionaries.es.ory.nodes.unlinkWith).toBe("Desconectar {provider}");
     expect(dictionaries.es.ory.nodes.socialLogin).toBe("Iniciar sesión con una cuenta social");
     expect(dictionaries.es.ory.nodes.emailDivider).toBe("O");
     expect(dictionaries.es.ory.nodes.emailDividerCompact).toBe("O continúa con");

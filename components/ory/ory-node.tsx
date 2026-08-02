@@ -111,8 +111,14 @@ export function OryNode({ compactProvider = false, kind, node }: OryNodeProps) {
     if (inputType === "submit" || inputType === "button") {
       const isProvider = isProviderNode(node);
       const providerName = isProvider ? getProviderName(node) : undefined;
+      const providerActionKey =
+        kind === "settings"
+          ? name === "unlink"
+            ? "ory.nodes.unlinkWith"
+            : "ory.nodes.connectWith"
+          : "ory.nodes.continueWith";
       const providerAction = providerName
-        ? t("ory.nodes.continueWith", { provider: providerName })
+        ? t(providerActionKey, { provider: providerName })
         : undefined;
       const isLoginAction = kind === "login" && name === "method";
 

@@ -188,6 +188,8 @@ export const en = {
       continue: "Continue",
       login: "Login",
       continueWith: "Continue with {provider}",
+      connectWith: "Connect with {provider}",
+      unlinkWith: "Unlink {provider}",
       confirmChoice: "Confirm this choice",
       verificationCode: "Verification code",
       value: "Value",

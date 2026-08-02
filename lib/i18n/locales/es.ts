@@ -190,6 +190,8 @@ export const es: TranslationKeys = {
       continue: "Continuar",
       login: "Iniciar sesión",
       continueWith: "Continuar con {provider}",
+      connectWith: "Conectar con {provider}",
+      unlinkWith: "Desconectar {provider}",
       confirmChoice: "Confirmar esta opción",
       verificationCode: "Código de verificación",
       value: "Valor",
