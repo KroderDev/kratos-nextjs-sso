@@ -106,6 +106,16 @@ describe("announceFlowMessages", () => {
     expect(toast.add).toHaveBeenCalledTimes(1);
   });
 
+  it("does nothing when no messages are provided", () => {
+    announceFlowMessages({
+      announcedMessages: new Set(),
+      locale: "en",
+      t: () => "Updated",
+    });
+
+    expect(toast.add).not.toHaveBeenCalled();
+  });
+
   it("does not replay persisted success messages after a reload", () => {
     const storedValues = new Map<string, string>();
     const storage = {

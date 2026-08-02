@@ -51,7 +51,7 @@ describe("FlowMessages browser behavior", () => {
     await act(async () => {
       mountedRoot?.render(
         <FlowMessages
-          messages={[message(1, "A note for the account")]}
+          messages={[message(1, ""), message(2, "A note for the account")]}
           mode="toast"
         />,
       );
@@ -80,8 +80,23 @@ describe("FlowMessages browser behavior", () => {
     expect(mountedContainer.textContent).toContain("An inline message");
   });
 
+  it("does not announce a toast flow with no messages", async () => {
+    mountedContainer = document.createElement("div");
+    document.body.append(mountedContainer);
+    mountedRoot = createRoot(mountedContainer);
+
+    await act(async () => {
+      mountedRoot?.render(<FlowMessages mode="toast" />);
+    });
+
+    expect(toast.add).not.toHaveBeenCalled();
+  });
+
   it("ignores malformed persisted values and stores only the success identifier", () => {
-    window.sessionStorage.setItem(FLOW_SUCCESS_TOASTS_STORAGE_KEY, "not-json");
+    window.sessionStorage.setItem(
+      FLOW_SUCCESS_TOASTS_STORAGE_KEY,
+      JSON.stringify({ stale: "value" }),
+    );
 
     announceFlowMessages({
       announcedMessages: new Set(),
@@ -116,6 +131,28 @@ describe("FlowMessages browser behavior", () => {
       flowState: "success",
       locale: "en",
       messages: [message(8, "Saved securely", "info")],
+      t: () => "Updated",
+    });
+
+    expect(toast.add).toHaveBeenCalledTimes(1);
+  });
+
+  it("continues when reading session storage fails", () => {
+    Object.defineProperty(window, "sessionStorage", {
+      configurable: true,
+      value: {
+        getItem: () => {
+          throw new Error("storage denied");
+        },
+        setItem: () => undefined,
+      },
+    });
+
+    announceFlowMessages({
+      announcedMessages: new Set(),
+      flowState: "success",
+      locale: "en",
+      messages: [message(9, "Saved after storage failure", "info")],
       t: () => "Updated",
     });
 

@@ -94,6 +94,16 @@ describe("OryNode submit/button rendering", () => {
     expect(markup).not.toContain("formnovalidate");
   });
 
+  it("falls back to the generic action label when submit attributes are empty", () => {
+    const markup = renderToStaticMarkup(
+      <OryNode
+        node={submitNode({ name: undefined, value: undefined, label: undefined })}
+      />,
+    );
+
+    expect(markup).toContain(">Continue<");
+  });
+
   it("associates detached settings actions with their owning form", () => {
     const markup = renderToStaticMarkup(
       <OryNode
@@ -140,6 +150,25 @@ describe("OryNode submit/button rendering", () => {
 
     expect(markup).toContain('data-ory-destructive-trigger="lookup_secret_disable"');
     expect(markup).toContain('data-slot="alert-dialog-trigger"');
+  });
+
+  it("supports compact rendering for destructive actions", () => {
+    const node = submitNode({
+      name: "lookup_secret_disable",
+      label: { id: 1, text: "Disable recovery codes", type: "info" },
+    });
+    node.group = "lookup_secret";
+    const markup = renderToStaticMarkup(
+      <OryNode
+        compactProvider
+        formId="settings-lookup_secret-form"
+        kind="settings"
+        node={node}
+      />,
+    );
+
+    expect(markup).toContain('data-ory-destructive-trigger="lookup_secret_disable"');
+    expect(markup).not.toContain('aria-label="');
   });
 
   it("forwards the owning form to the recovery-code confirmation action", () => {
@@ -313,6 +342,19 @@ describe("OryNode checkbox input", () => {
 
     expect(markup).toContain('data-invalid="true"');
   });
+
+  it("uses the default checkbox label and value when attributes are absent", () => {
+    const node = inputNode({
+      type: "checkbox",
+      name: undefined,
+      value: undefined,
+      label: undefined,
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain("Confirm this choice");
+    expect(markup).toContain('value="true"');
+  });
 });
 
 describe("OryNode code input", () => {
@@ -404,6 +446,16 @@ describe("OryNode default text input", () => {
     expect(markup).toContain('data-slot="field"');
     expect(markup).toContain("Email address");
     expect(markup).toContain('type="email"');
+  });
+
+  it("uses fallback attributes and labels for an unconfigured text input", () => {
+    const markup = renderToStaticMarkup(
+      <OryNode node={inputNode({ name: undefined, type: undefined, label: undefined })} />,
+    );
+
+    expect(markup).toContain('id="ory-node"');
+    expect(markup).toContain('name="ory-node"');
+    expect(markup).toContain(">Value<");
   });
 
   it("renders description text when provided", () => {
@@ -596,6 +648,22 @@ describe("OryNode div", () => {
     expect(markup).toContain('data-customAttr="value1"');
     expect(markup).toContain('data-other="value2"');
   });
+
+  it("preserves existing data prefixes and ignores non-object data", () => {
+    const prefixedMarkup = renderToStaticMarkup(
+      <OryNode
+        node={baseNode("div", "default", {
+          data: { "data-existing": "value" },
+        })}
+      />,
+    );
+    const invalidMarkup = renderToStaticMarkup(
+      <OryNode node={baseNode("div", "default", { data: "invalid" })} />,
+    );
+
+    expect(prefixedMarkup).toContain('data-existing="value"');
+    expect(invalidMarkup).not.toContain("data-invalid");
+  });
 });
 
 describe("OryNode script", () => {
@@ -609,6 +677,32 @@ describe("OryNode script", () => {
 
     expect(markup).toContain('src="https://example.com/webauthn.js"');
     expect(markup).toContain('data-strategy="afterInteractive"');
+  });
+
+  it("keeps valid script security attributes and drops invalid values", () => {
+    const validMarkup = renderToStaticMarkup(
+      <OryNode
+        node={baseNode("script", "default", {
+          src: "https://example.com/webauthn.js",
+          crossorigin: "anonymous",
+          referrerpolicy: "strict-origin",
+        })}
+      />,
+    );
+    const invalidMarkup = renderToStaticMarkup(
+      <OryNode
+        node={baseNode("script", "default", {
+          src: "https://example.com/webauthn.js",
+          crossorigin: "invalid",
+          referrerpolicy: "invalid",
+        })}
+      />,
+    );
+
+    expect(validMarkup).toContain('crossorigin="anonymous"');
+    expect(validMarkup).toContain('referrerPolicy="strict-origin"');
+    expect(invalidMarkup).not.toContain('crossorigin="invalid"');
+    expect(invalidMarkup).not.toContain('referrerPolicy="invalid"');
   });
 
   it("returns null for an unsafe script src", () => {

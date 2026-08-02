@@ -4,6 +4,7 @@ import {
   getSettingsArea,
   getSettingsAreaDefinition,
   SETTINGS_AREA_DEFINITIONS,
+  type SettingsArea,
 } from "./settings-sections";
 
 describe("settings sections", () => {
@@ -20,5 +21,8 @@ describe("settings sections", () => {
       "dashboard.settings.areas.security.label",
     );
     expect(getSettingsAreaDefinition("profile")).toBe(SETTINGS_AREA_DEFINITIONS[0]);
+    expect(getSettingsAreaDefinition("unknown" as SettingsArea)).toBe(
+      SETTINGS_AREA_DEFINITIONS[0],
+    );
   });
 });

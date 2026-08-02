@@ -412,6 +412,29 @@ describe("FlowForm", () => {
     expect(markup).not.toContain('data-slot="card"');
   });
 
+  it("renders embedded settings flows without the authentication border", () => {
+    const flow = buildFlow([
+      groupedNode("password", {
+        name: "password",
+        type: "password",
+        label: { id: 1, text: "Password", type: "info" },
+        onloadTrigger: "oryWebAuthnRegistration",
+      }),
+    ]);
+    const markup = renderToStaticMarkup(
+      <FlowForm
+        embedded
+        flow={flow}
+        kind="settings"
+        separateProviders={false}
+        settingsArea="security"
+      />,
+    );
+
+    expect(markup).not.toContain("border-t border-border/70 pt-8");
+    expect(markup).toContain('data-settings-area-content="security"');
+  });
+
   it("wraps the form in a card by default", () => {
     const flow = buildFlow([inputNode()]);
     const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);

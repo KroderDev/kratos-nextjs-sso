@@ -12,6 +12,7 @@ import {
   getNumber,
   getProviderName,
   getSafeText,
+  getString,
   isChecked,
   isCodeInput,
   isTotpCodeInput,
@@ -80,6 +81,18 @@ describe("Ory flow helpers", () => {
     expect(isLookupSecretInput(inputNode({ name: "lookup_secret", type: "email" }))).toBe(false);
     expect(getLookupSecretAction(revealAction)).toBe("lookup_secret_reveal");
     expect(getLookupSecretAction(inputNode({ name: "method", type: "submit" }))).toBeUndefined();
+    expect(
+      getLookupSecretAction({
+        type: "text",
+        group: "lookup_secret",
+        attributes: { node_type: "text", name: "lookup_secret_confirm", type: "submit" },
+      } as unknown as UiNode),
+    ).toBeUndefined();
+    expect(
+      getLookupSecretAction(
+        inputNode({ name: "lookup_secret_confirm", type: "email", group: "lookup_secret" }),
+      ),
+    ).toBeUndefined();
 
     for (const action of [
       "lookup_secret_confirm",
@@ -91,6 +104,9 @@ describe("Ory flow helpers", () => {
       actionNode.group = "lookup_secret";
       expect(getLookupSecretAction(actionNode)).toBe(action);
     }
+    const buttonAction = inputNode({ name: "lookup_secret_confirm", type: "button" });
+    buttonAction.group = "lookup_secret";
+    expect(getLookupSecretAction(buttonAction)).toBe("lookup_secret_confirm");
   });
 
   it("identifies provider submit nodes without treating regular submits as providers", () => {
@@ -263,6 +279,18 @@ describe("Ory flow helpers", () => {
                 type: "info",
                 context: { used_at_unix: 1634197131 },
               },
+              {
+                id: 4,
+                text: "Secret was used at 2021-10-15T07:38:51Z",
+                type: "info",
+                context: { used_at: "2021-10-15T07:38:51Z" },
+              },
+              {
+                id: 5,
+                text: "Ignored entry",
+                type: "info",
+                context: {},
+              },
             ],
           },
         },
@@ -272,6 +300,7 @@ describe("Ory flow helpers", () => {
     expect(getLookupSecretEntries(node)).toEqual([
       { kind: "active", code: "ory-code-1" },
       { kind: "used", usedAtUnix: 1634197131 },
+      { kind: "used", usedAt: "2021-10-15T07:38:51Z" },
     ]);
   });
 
@@ -312,6 +341,12 @@ describe("Ory flow helpers", () => {
     expect(getNumber("")).toBeUndefined();
     expect(getNumber(null)).toBeUndefined();
     expect(getNumber(Infinity)).toBeUndefined();
+  });
+
+  it("stringifies primitive attribute values", () => {
+    expect(getString(42)).toBe("42");
+    expect(getString(true)).toBe("true");
+    expect(getString({ value: "nope" })).toBeUndefined();
   });
 
   it("filters safe text correctly using getSafeText", () => {
@@ -367,6 +402,15 @@ describe("Ory flow helpers", () => {
     ).toBe("Custom SSO");
     expect(
       getProviderName(inputNode({ name: "provider", value: "unrecognized-sso", label: undefined })),
+    ).toBe("Provider");
+    expect(
+      getProviderName(
+        inputNode({
+          name: "provider",
+          value: "unrecognized-sso",
+          label: { id: 1, text: "Continue with ", type: "info" },
+        }),
+      ),
     ).toBe("Provider");
   });
 });

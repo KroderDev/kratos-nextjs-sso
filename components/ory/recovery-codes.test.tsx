@@ -90,6 +90,7 @@ describe("RecoveryCodes", () => {
           { kind: "active", code: "active-code-1" },
           { kind: "active", code: "active-code-2" },
           { kind: "used", usedAt: "not-a-date" },
+          { kind: "used" },
         ]}
         id="recovery"
         pending={false}
@@ -97,9 +98,31 @@ describe("RecoveryCodes", () => {
     );
 
     expect(markup).toContain("2 active codes");
-    expect(markup).toContain("Used codes: 1");
+    expect(markup).toContain("Used codes: 2");
     expect(markup).toContain(">Used<");
     expect(markup).not.toContain("Used on");
+  });
+
+  it("renders fallback text and formats string used timestamps without active codes", () => {
+    const markup = renderToStaticMarkup(
+      <RecoveryCodes
+        entries={[{ kind: "used", usedAt: "2021-10-14T07:38:51Z" }]}
+        fallbackText="No active recovery codes"
+        id="recovery"
+        pending={false}
+      />,
+    );
+    const defaultMarkup = renderToStaticMarkup(
+      <RecoveryCodes
+        entries={[]}
+        id="recovery-empty"
+        pending={false}
+      />,
+    );
+
+    expect(markup).toContain("No active recovery codes");
+    expect(markup).toContain("Used on");
+    expect(defaultMarkup).toContain("Recovery codes are available");
   });
 
   it("copies all recovery codes and shows the copied state", async () => {

@@ -123,6 +123,34 @@ describe("SettingsNavigation", () => {
     });
   });
 
+  it("does not require browser globals when remembering an area on the server", () => {
+    const browserDocument = globalThis.document;
+    const browserWindow = globalThis.window;
+
+    try {
+      Object.defineProperty(globalThis, "document", {
+        configurable: true,
+        value: undefined,
+      });
+      Object.defineProperty(globalThis, "window", {
+        configurable: true,
+        value: undefined,
+      });
+
+      expect(() => rememberSettingsArea("security")).not.toThrow();
+      expect(() => rememberSettingsAction("security")).not.toThrow();
+    } finally {
+      Object.defineProperty(globalThis, "document", {
+        configurable: true,
+        value: browserDocument,
+      });
+      Object.defineProperty(globalThis, "window", {
+        configurable: true,
+        value: browserWindow,
+      });
+    }
+  });
+
   it("intercepts unmodified primary clicks and preserves modified navigation", () => {
     const onAreaChange = vi.fn();
     mountedContainer = document.createElement("div");
