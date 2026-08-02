@@ -31,6 +31,12 @@ export const metadata: Metadata = {
 };
 
 
+/**
+ * Defines the root document layout for the application.
+ *
+ * @param children - The page content rendered within the application providers
+ * @returns The localized document layout containing the provided page content
+ */
 export default async function RootLayout({
   children,
 }: Readonly<{

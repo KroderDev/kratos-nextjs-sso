@@ -56,12 +56,24 @@ const SETTINGS_AREAS = new Set<SettingsArea>(
   SETTINGS_AREA_DEFINITIONS.map((area) => area.id),
 );
 
+/**
+ * Determines whether a value identifies a recognized settings area.
+ *
+ * @param value - The value to validate as a settings area identifier
+ * @returns The corresponding settings area if recognized, `undefined` otherwise.
+ */
 export function getSettingsArea(value: unknown): SettingsArea | undefined {
   return typeof value === "string" && SETTINGS_AREAS.has(value as SettingsArea)
     ? (value as SettingsArea)
     : undefined;
 }
 
+/**
+ * Retrieves the definition for a settings area.
+ *
+ * @param area - The settings area identifier
+ * @returns The matching area definition, or the profile area definition when no match is found
+ */
 export function getSettingsAreaDefinition(area: SettingsArea) {
   return SETTINGS_AREA_DEFINITIONS.find((definition) => definition.id === area) ?? SETTINGS_AREA_DEFINITIONS[0];
 }

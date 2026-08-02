@@ -18,6 +18,13 @@ type RecoveryCodesProps = {
   confirmationAction?: ReactNode;
 };
 
+/**
+ * Formats a used recovery code's timestamp for display in UTC.
+ *
+ * @param entry - The used recovery code entry containing its usage timestamp
+ * @param locale - The locale used to format the date and time
+ * @returns The localized UTC date and time, or `undefined` when the timestamp is invalid or unavailable
+ */
 function formatUsedAt(entry: Extract<LookupSecretEntry, { kind: "used" }>, locale: string) {
   const timestamp =
     entry.usedAtUnix !== undefined ? entry.usedAtUnix * 1000 : Date.parse(entry.usedAt ?? "");
@@ -33,6 +40,17 @@ function formatUsedAt(entry: Extract<LookupSecretEntry, { kind: "used" }>, local
   }).format(new Date(timestamp));
 }
 
+/**
+ * Displays active and used recovery codes with localized status information and recovery actions.
+ *
+ * @param confirmationAction - Optional content rendered below the recovery codes.
+ * @param entries - Recovery-code entries containing active or used codes.
+ * @param fallbackText - Optional text shown when no active recovery codes are available.
+ * @param id - Identifier used to associate the section with its accessible heading.
+ * @param label - Optional descriptive text displayed above the recovery-code status.
+ * @param pending - Whether to display the pending recovery-code status and alert.
+ * @returns The recovery-code display.
+ */
 export function RecoveryCodes({
   confirmationAction,
   entries,

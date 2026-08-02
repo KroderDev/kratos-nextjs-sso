@@ -26,6 +26,11 @@ type SettingsWorkspaceProps = {
   locale?: string;
 };
 
+/**
+ * Renders the title and description for the selected settings area.
+ *
+ * @param area - The settings area whose translated heading content is displayed
+ */
 function SettingsAreaHeading({ area }: { area: SettingsArea }) {
   const { t } = useTranslation();
   const definition = getSettingsAreaDefinition(area);
@@ -61,6 +66,14 @@ function SettingsReturn() {
   );
 }
 
+/**
+ * Renders the settings workspace with area navigation, contextual headings, and the selected settings form.
+ *
+ * @param flow - The settings flow to render
+ * @param flowState - The current state of the settings flow
+ * @param initialArea - The settings area selected when no valid URL section is provided
+ * @param locale - The locale used for translated navigation content
+ */
 export function SettingsWorkspace({ flow, flowState, initialArea, locale }: SettingsWorkspaceProps) {
   const [activeArea, setActiveArea] = useState(initialArea);
 

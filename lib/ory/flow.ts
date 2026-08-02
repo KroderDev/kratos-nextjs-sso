@@ -122,10 +122,22 @@ export function getNumber(value: unknown) {
   return undefined;
 }
 
+/**
+ * Retrieves a node's attributes as a normalized record.
+ *
+ * @param node - The UI node whose attributes to retrieve
+ * @returns The node attributes as a record
+ */
 export function getNodeAttributes(node: UiNode) {
   return asRecord(node.attributes);
 }
 
+/**
+ * Identifies the supported lookup-secret action represented by a UI node.
+ *
+ * @param node - The UI node to inspect
+ * @returns The recognized lookup-secret action, or `undefined` when the node does not represent one
+ */
 export function getLookupSecretAction(node: UiNode): LookupSecretAction | undefined {
   const attributes = getNodeAttributes(node);
   const name = getString(attributes.name);
@@ -144,6 +156,11 @@ export function getLookupSecretAction(node: UiNode): LookupSecretAction | undefi
   return name as LookupSecretAction;
 }
 
+/**
+ * Determines whether a UI node contains the lookup-secret code data.
+ *
+ * @returns `true` if the node is the structured lookup-secret code node, `false` otherwise.
+ */
 export function isLookupSecretCodeNode(node: UiNode) {
   return (
     node.type === "text" &&
@@ -153,8 +170,9 @@ export function isLookupSecretCodeNode(node: UiNode) {
 }
 
 /**
- * Extracts the structured lookup-secret payload supplied by Kratos.
- * Used entries intentionally omit the original code and only expose usage metadata.
+ * Extracts active and used lookup-secret entries from a Kratos UI node.
+ *
+ * @returns The extracted entries, an empty array when the node has no valid secret data, or `undefined` when the node is not a lookup-secret code node.
  */
 export function getLookupSecretEntries(node: UiNode): LookupSecretEntry[] | undefined {
   if (!isLookupSecretCodeNode(node)) {
@@ -331,11 +349,9 @@ export function isCodeInput(node: UiNode) {
 }
 
 /**
- * Determines whether a UI node is a TOTP authenticator-code input.
+ * Identifies a UI node that accepts a TOTP authenticator code.
  *
- * Kratos uses `totp_code` for both the login challenge and settings
- * enrollment confirmation, while email verification uses the generic `code`
- * field handled by `isCodeInput` above.
+ * @returns `true` if the node is a text input named `totp_code`, `false` otherwise.
  */
 export function isTotpCodeInput(node: UiNode) {
   const attributes = getNodeAttributes(node);
@@ -345,6 +361,11 @@ export function isTotpCodeInput(node: UiNode) {
   return node.type === "input" && name === "totp_code" && type === "text";
 }
 
+/**
+ * Determines whether a UI node is a lookup-secret text input.
+ *
+ * @returns `true` if the node is a lookup-secret text input, `false` otherwise.
+ */
 export function isLookupSecretInput(node: UiNode) {
   const attributes = getNodeAttributes(node);
   return (
@@ -373,6 +394,11 @@ export function isProviderNode(node: UiNode) {
   );
 }
 
+/**
+ * Determines whether a UI node represents a hidden input.
+ *
+ * @returns `true` if the node is an input with a hidden type, `false` otherwise.
+ */
 export function isHiddenInputNode(node: UiNode) {
   const attributes = getNodeAttributes(node);
   return node.type === "input" && getString(attributes.type) === "hidden";

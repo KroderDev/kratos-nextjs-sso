@@ -9,10 +9,22 @@ const { privateKey, publicKey } = generateKeyPairSync("rsa", {
 const publicJwk = publicKey.export({ format: "jwk" });
 const tokens = new Map();
 
+/**
+ * Encodes a value as a base64url string.
+ * @param {*} value - The value to encode.
+ * @return {string} The base64url-encoded value.
+ */
 function base64Url(value) {
   return Buffer.from(value).toString("base64url");
 }
 
+/**
+ * Creates a signed OpenID Connect ID token for an authenticated subject.
+ * @param {string} email - The authenticated user's email address.
+ * @param {string} nonce - The nonce associated with the authorization request.
+ * @param {string} subject - The user's subject identifier.
+ * @return {string} The RS256-signed JWT containing the user's identity and authentication claims.
+ */
 function signIdToken({ email, nonce, subject }) {
   const issuedAt = Math.floor(Date.now() / 1000);
   const header = base64Url(JSON.stringify({ alg: "RS256", kid: "e2e", typ: "JWT" }));
@@ -35,11 +47,22 @@ function signIdToken({ email, nonce, subject }) {
   return `${unsigned}.${signer.sign(privateKey, "base64url")}`;
 }
 
+/**
+ * Sends a JSON response with the specified HTTP status.
+ * @param {import("http").ServerResponse} response - The HTTP response to complete.
+ * @param {*} body - The value to serialize as JSON.
+ * @param {number} [status=200] - The HTTP status code.
+ */
 function writeJson(response, body, status = 200) {
   response.writeHead(status, { "content-type": "application/json" });
   response.end(JSON.stringify(body));
 }
 
+/**
+ * Reads the request body as UTF-8 text.
+ * @param {import("http").IncomingMessage} request - The HTTP request whose body to read.
+ * @returns {Promise<string>} The request body.
+ */
 function readBody(request) {
   return new Promise((resolve) => {
     const chunks = [];

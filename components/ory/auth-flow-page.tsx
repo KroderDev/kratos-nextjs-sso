@@ -34,6 +34,17 @@ function hasRenderableFlowUi(flow: OryFlow | null | undefined): flow is OryFlow 
   );
 }
 
+/**
+ * Renders an authentication flow page with its metadata and form content.
+ *
+ * @param flow - The authentication flow to render.
+ * @param kind - The kind of authentication flow.
+ * @param eyebrow - The text displayed above the page title.
+ * @param title - The page title.
+ * @param description - The page description.
+ * @param footer - Optional content displayed below the page.
+ * @returns The rendered authentication flow page.
+ */
 export function AuthFlowPage({
   flow,
   kind,
