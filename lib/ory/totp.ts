@@ -31,6 +31,8 @@ export function generateTotpCode(secret: string, timestamp = Date.now()) {
   const counter = Math.floor(timestamp / 1000 / 30);
   const counterBuffer = Buffer.alloc(8);
   counterBuffer.writeBigUInt64BE(BigInt(counter));
+  // HMAC-SHA-1 is the RFC 6238 default and is required for Kratos compatibility.
+  // ast-grep-ignore: insecure-hash-typescript, avoid-crypto-sha1-typescript
   const digest = createHmac("sha1", decodeBase32(secret)).update(counterBuffer).digest();
   const offset = digest[digest.length - 1]! & 0x0f;
   const binary =

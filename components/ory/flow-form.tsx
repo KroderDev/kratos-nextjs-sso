@@ -120,6 +120,10 @@ function SettingsSectionCard({
   const showCardHeader = settingsArea !== "connections";
   const renderActionsInBody = settingsArea === "connections" || section.group === "lookup_secret";
   const handleActionStart = () => rememberSettingsAction(settingsArea);
+  const hiddenNodes = [
+    ...sharedNodes,
+    ...section.nodes.filter(isHiddenInputNode),
+  ];
 
   return (
     <form
@@ -129,7 +133,7 @@ function SettingsSectionCard({
       data-settings-form={section.group}
       id={formId}
       method={method}
-      onSubmitCapture={() => rememberSettingsAction(settingsArea)}
+      onSubmitCapture={handleActionStart}
     >
       <Card
         aria-label={!showCardHeader ? t(section.label) : undefined}
@@ -145,7 +149,7 @@ function SettingsSectionCard({
         ) : null}
         <CardContent className="flex flex-col gap-5">
           {renderNodes(
-            sharedNodes,
+            hiddenNodes,
             kind,
             `settings-${section.group}-shared`,
             lookupSecretPending,
@@ -222,10 +226,12 @@ function SettingsNodeSections({
     nodes: nodes.filter((node) => node.group === section.group),
   }));
   const sharedNodes = nodes.filter(
-    (node) => isHiddenInputNode(node),
+    (node) => isHiddenInputNode(node) && node.group === "default",
   );
   const ungroupedNodes = nodes.filter(
-    (node) => !KNOWN_SETTINGS_GROUPS.has(node.group) && !isHiddenInputNode(node),
+    (node) =>
+      !KNOWN_SETTINGS_GROUPS.has(node.group) &&
+      (!isHiddenInputNode(node) || node.group !== "default"),
   );
   const lookupSecretPending = nodes.some(
     (node) => getLookupSecretAction(node) === "lookup_secret_confirm",

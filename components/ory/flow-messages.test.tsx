@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { UiText } from "@ory/client-fetch";
 
 vi.mock("@/components/ui/toast", () => ({
@@ -9,6 +9,7 @@ vi.mock("@/components/ui/toast", () => ({
 }));
 
 import { toast } from "@/components/ui/toast";
+import { FLOW_SUCCESS_TOASTS_STORAGE_KEY } from "@/lib/ory/settings-state";
 
 import { announceFlowMessages, FlowMessages } from "./flow-messages";
 
@@ -49,8 +50,17 @@ describe("FlowMessages", () => {
 });
 
 describe("announceFlowMessages", () => {
+  const originalWindow = globalThis.window;
+
   beforeEach(() => {
     vi.mocked(toast.add).mockClear();
+  });
+
+  afterEach(() => {
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: originalWindow,
+    });
   });
 
   it("maps Ory message types to dismissable toast payloads", () => {
@@ -97,7 +107,6 @@ describe("announceFlowMessages", () => {
   });
 
   it("does not replay persisted success messages after a reload", () => {
-    const originalWindow = globalThis.window;
     const storedValues = new Map<string, string>();
     const storage = {
       getItem: (key: string) => storedValues.get(key) ?? null,
@@ -115,15 +124,9 @@ describe("announceFlowMessages", () => {
     announceFlowMessages({ announcedMessages: new Set(), locale: "en", messages, t: () => "Updated" });
 
     expect(toast.add).toHaveBeenCalledTimes(1);
-
-    Object.defineProperty(globalThis, "window", {
-      configurable: true,
-      value: originalWindow,
-    });
   });
 
   it("persists an informational message when the settings flow succeeds", () => {
-    const originalWindow = globalThis.window;
     const storedValues = new Map<string, string>();
     const storage = {
       getItem: (key: string) => storedValues.get(key) ?? null,
@@ -149,10 +152,9 @@ describe("announceFlowMessages", () => {
       title: "Updated",
       type: "success",
     });
-
-    Object.defineProperty(globalThis, "window", {
-      configurable: true,
-      value: originalWindow,
-    });
+    expect(storedValues.get(FLOW_SUCCESS_TOASTS_STORAGE_KEY)).toBe('["1-success"]');
+    expect(storedValues.get(FLOW_SUCCESS_TOASTS_STORAGE_KEY)).not.toContain(
+      "Your changes have been saved!",
+    );
   });
 });

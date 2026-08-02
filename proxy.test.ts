@@ -171,5 +171,15 @@ describe("proxy", () => {
     expect(state.middlewareCalls).toHaveLength(0);
     expect(nextResult.headers.get("set-cookie")).toContain("kratos_settings_area=security");
     expect(nextResult.headers.get("set-cookie")).toContain("Path=/dashboard/settings");
+    expect(nextResult.headers.get("set-cookie")).toContain("SameSite=Lax");
+  });
+
+  it("does not set a settings cookie for an unknown area", async () => {
+    const request = new NextRequest(
+      "http://localhost:3000/dashboard/settings?section=unknown",
+    );
+    const result = await proxy(request);
+
+    expect((result as NextResponse).headers.get("set-cookie")).toBeNull();
   });
 });

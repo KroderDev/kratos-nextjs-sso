@@ -1,5 +1,9 @@
+// @vitest-environment jsdom
+
+import { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   rememberSettingsAction,
@@ -8,6 +12,28 @@ import {
 } from "./settings-navigation";
 import { SETTINGS_AREA_DEFINITIONS } from "./settings-sections";
 import { FLOW_SUCCESS_TOASTS_STORAGE_KEY } from "@/lib/ory/settings-state";
+
+let mountedRoot: Root | undefined;
+let mountedContainer: HTMLDivElement | undefined;
+const originalDocument = globalThis.document;
+const originalWindow = globalThis.window;
+
+afterEach(() => {
+  if (mountedRoot) {
+    act(() => mountedRoot?.unmount());
+  }
+  mountedContainer?.remove();
+  mountedRoot = undefined;
+  mountedContainer = undefined;
+  Object.defineProperty(globalThis, "document", {
+    configurable: true,
+    value: originalDocument,
+  });
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: originalWindow,
+  });
+});
 
 describe("SettingsNavigation", () => {
   it("renders the desktop navigation and mobile tabs", () => {
@@ -95,5 +121,74 @@ describe("SettingsNavigation", () => {
       configurable: true,
       value: originalWindow,
     });
+  });
+
+  it("intercepts unmodified primary clicks and preserves modified navigation", () => {
+    const onAreaChange = vi.fn();
+    mountedContainer = document.createElement("div");
+    document.body.append(mountedContainer);
+    mountedRoot = createRoot(mountedContainer);
+
+    act(() => {
+      mountedRoot?.render(
+        <SettingsNavigation
+          activeArea="profile"
+          areas={SETTINGS_AREA_DEFINITIONS}
+          onAreaChange={onAreaChange}
+        />,
+      );
+    });
+
+    const securityLinks = mountedContainer.querySelectorAll<HTMLAnchorElement>(
+      'a[href="/dashboard/settings?section=security"]',
+    );
+    const securityLink = securityLinks[0];
+    const mobileSecurityLink = securityLinks[1];
+    expect(securityLink).not.toBeNull();
+    securityLink?.setAttribute("href", "#");
+
+    const dispatchClick = (target: HTMLAnchorElement | null, event: MouseEvent) => {
+      document.addEventListener("click", (clickEvent) => clickEvent.preventDefault(), {
+        once: true,
+      });
+      target?.dispatchEvent(event);
+    };
+
+    act(() => {
+      dispatchClick(securityLink, new MouseEvent("click", { bubbles: true, button: 0 }));
+    });
+    expect(onAreaChange).toHaveBeenCalledWith("security");
+
+    onAreaChange.mockClear();
+    mobileSecurityLink?.setAttribute("href", "#");
+    act(() => {
+      dispatchClick(mobileSecurityLink, new MouseEvent("click", { bubbles: true, button: 0 }));
+    });
+    expect(onAreaChange).toHaveBeenCalledWith("security");
+
+    onAreaChange.mockClear();
+    for (const modifier of ["metaKey", "ctrlKey", "shiftKey", "altKey"] as const) {
+      act(() => {
+        dispatchClick(
+          securityLink,
+          new MouseEvent("click", { bubbles: true, button: 0, [modifier]: true }),
+        );
+      });
+    }
+    expect(onAreaChange).not.toHaveBeenCalled();
+
+    onAreaChange.mockClear();
+    act(() => {
+      dispatchClick(securityLink, new MouseEvent("click", { bubbles: true, button: 1 }));
+    });
+    expect(onAreaChange).not.toHaveBeenCalled();
+
+    onAreaChange.mockClear();
+    const preventedClick = new MouseEvent("click", { bubbles: true, button: 0 });
+    Object.defineProperty(preventedClick, "defaultPrevented", { value: true });
+    act(() => {
+      dispatchClick(securityLink, preventedClick);
+    });
+    expect(onAreaChange).not.toHaveBeenCalled();
   });
 });

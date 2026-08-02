@@ -52,6 +52,9 @@ export function RecoveryCodes({
     (entry): entry is Extract<LookupSecretEntry, { kind: "used" }> => entry.kind === "used",
   );
   const title = t("dashboard.settings.recoveryCodes.title");
+  const availableLabelKey = activeCodes.length === 1
+    ? "dashboard.settings.recoveryCodes.availableLabelOne"
+    : "dashboard.settings.recoveryCodes.availableLabelOther";
 
   async function copyText(value: string, key: string) {
     setCopyFailed(false);
@@ -77,8 +80,11 @@ export function RecoveryCodes({
 
       link.href = url;
       link.download = "backup-recovery-codes.txt";
+      link.rel = "noopener";
+      document.body.append(link);
       link.click();
-      URL.revokeObjectURL(url);
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
       setDownloaded(true);
     } catch {
       setDownloaded(false);
@@ -99,7 +105,7 @@ export function RecoveryCodes({
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
         <span className="font-medium text-foreground">
-          {t("dashboard.settings.recoveryCodes.availableLabel", { count: activeCodes.length })}
+          {t(availableLabelKey, { count: activeCodes.length })}
         </span>
         {usedCodes.length > 0 ? (
           <span>
@@ -123,7 +129,7 @@ export function RecoveryCodes({
         <>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-primary">
-              {t("dashboard.settings.recoveryCodes.availableLabel", { count: activeCodes.length })}
+              {title}
             </p>
             <div className="flex flex-wrap gap-2">
               <Button

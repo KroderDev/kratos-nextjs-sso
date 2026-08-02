@@ -5,8 +5,7 @@ import type { MouseEvent } from "react";
 
 import {
   FLOW_SUCCESS_TOASTS_STORAGE_KEY,
-  SETTINGS_AREA_COOKIE,
-  SETTINGS_AREA_COOKIE_MAX_AGE,
+  formatSettingsAreaCookie,
 } from "@/lib/ory/settings-state";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n/client";
@@ -18,9 +17,8 @@ import {
 
 export function rememberSettingsArea(area: SettingsArea) {
   if (typeof document !== "undefined") {
-    document.cookie = `${SETTINGS_AREA_COOKIE}=${encodeURIComponent(area)}; Max-Age=${SETTINGS_AREA_COOKIE_MAX_AGE}; Path=/dashboard/settings; SameSite=Lax`;
+    document.cookie = formatSettingsAreaCookie(area);
   }
-
 }
 
 export function rememberSettingsAction(area: SettingsArea) {

@@ -1,6 +1,10 @@
+// @vitest-environment jsdom
+
 import { renderToStaticMarkup } from "react-dom/server";
+import { act } from "react";
 import * as React from "react";
-import { describe, expect, it, vi } from "vitest";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { UiNode } from "@ory/client-fetch";
 
 vi.mock("@/lib/ory/security", () => ({
@@ -26,6 +30,18 @@ vi.mock("next/script", () => ({
 }));
 
 import { OryNode } from "./ory-node";
+
+let mountedRoot: Root | undefined;
+let mountedContainer: HTMLDivElement | undefined;
+
+afterEach(() => {
+  if (mountedRoot) {
+    act(() => mountedRoot?.unmount());
+  }
+  mountedContainer?.remove();
+  mountedRoot = undefined;
+  mountedContainer = undefined;
+});
 
 function baseNode(
   type: string,
@@ -106,6 +122,56 @@ describe("OryNode submit/button rendering", () => {
 
     expect(markup).toContain('data-ory-destructive-trigger="totp_unlink"');
     expect(markup).toContain('data-slot="alert-dialog-trigger"');
+  });
+
+  it("renders a confirmation dialog for disabling recovery codes", () => {
+    const node = submitNode({
+      name: "lookup_secret_disable",
+      label: { id: 1, text: "Disable recovery codes", type: "info" },
+    });
+    node.group = "lookup_secret";
+    const markup = renderToStaticMarkup(
+      <OryNode
+        formId="settings-lookup_secret-form"
+        kind="settings"
+        node={node}
+      />,
+    );
+
+    expect(markup).toContain('data-ory-destructive-trigger="lookup_secret_disable"');
+    expect(markup).toContain('data-slot="alert-dialog-trigger"');
+  });
+
+  it("forwards the owning form to the recovery-code confirmation action", () => {
+    const node = submitNode({
+      name: "lookup_secret_disable",
+      label: { id: 1, text: "Disable recovery codes", type: "info" },
+    });
+    node.group = "lookup_secret";
+    mountedContainer = document.createElement("div");
+    document.body.append(mountedContainer);
+    mountedRoot = createRoot(mountedContainer);
+
+    act(() => {
+      mountedRoot?.render(
+        <OryNode
+          formId="settings-lookup_secret-form"
+          kind="settings"
+          node={node}
+        />,
+      );
+    });
+
+    const trigger = mountedContainer.querySelector<HTMLButtonElement>(
+      '[data-ory-destructive-trigger="lookup_secret_disable"]',
+    );
+    expect(trigger).not.toBeNull();
+
+    act(() => trigger?.click());
+
+    expect(
+      document.querySelector('button[type="submit"][form="settings-lookup_secret-form"]'),
+    ).not.toBeNull();
   });
 
   it("renders the button type attribute for button inputs", () => {
@@ -263,6 +329,19 @@ describe("OryNode code input", () => {
     expect(markup).toContain("Verification code");
   });
 
+  it("renders code input errors", () => {
+    const node = inputNode({
+      type: "text",
+      name: "code",
+      maxlength: 6,
+      label: { id: 1, text: "Verification code", type: "info" },
+    });
+    node.messages = [{ id: 2, text: "Invalid code", type: "error" }];
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain("Invalid code");
+  });
+
   it("renders a Kratos TOTP code as an OTP input", () => {
     const node = inputNode({
       group: "totp",
@@ -296,6 +375,20 @@ describe("OryNode code input", () => {
     expect(markup).toContain('autoComplete="one-time-code"');
     expect(markup).toContain("Recovery code");
     expect(markup).not.toContain('data-slot="input-otp"');
+  });
+
+  it("renders lookup-secret input errors", () => {
+    const node = inputNode({
+      group: "lookup_secret",
+      name: "lookup_secret",
+      type: "text",
+      label: { id: 1, text: "Recovery code", type: "info" },
+    });
+    node.group = "lookup_secret";
+    node.messages = [{ id: 2, text: "Invalid recovery code", type: "error" }];
+    const markup = renderToStaticMarkup(<OryNode kind="login" node={node} />);
+
+    expect(markup).toContain("Invalid recovery code");
   });
 });
 
@@ -394,7 +487,7 @@ describe("OryNode text", () => {
     );
 
     expect(markup).toContain('data-recovery-codes="true"');
-    expect(markup).toContain("1 active codes");
+    expect(markup).toContain("1 active code");
     expect(markup).toContain("Confirm your new codes");
     expect(markup).not.toContain('data-slot="dialog-trigger"');
     expect(markup).not.toContain("Secret was used at");

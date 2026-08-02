@@ -76,7 +76,7 @@ export function announceFlowMessages({
   (messages ?? []).forEach((message) => {
     const text = getMessageText(message, locale);
     const isSuccess = message.type === "success" || (flowState === "success" && message.type === "info");
-    const messageKey = `${message.id}-${isSuccess ? "success" : message.type}-${text}`;
+    const messageKey = `${message.id}-${isSuccess ? "success" : message.type}`;
 
     if (
       !text ||

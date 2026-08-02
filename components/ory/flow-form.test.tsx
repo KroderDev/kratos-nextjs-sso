@@ -265,7 +265,7 @@ describe("FlowForm", () => {
     );
 
     expect(markup).toContain('data-recovery-codes="true"');
-    expect(markup).toContain("1 active codes");
+    expect(markup).toContain("1 active code");
     expect(markup).toContain("Confirm your new codes");
     expect(markup).toContain("Confirm backup recovery codes");
     expect(markup).not.toContain('data-slot="dialog-trigger"');
@@ -334,6 +334,36 @@ describe("FlowForm", () => {
     const ids = [...markup.matchAll(/ id="([^"]+)"/g)].map((match) => match[1]);
 
     expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("keeps group-specific hidden inputs in their owning settings form", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      groupedNode("password", { name: "password", type: "password" }),
+      groupedNode("totp", { name: "method", type: "hidden", value: "totp" }),
+    ]);
+    const markup = renderToStaticMarkup(
+      <FlowForm flow={flow} kind="settings" separateProviders={false} settingsArea="security" />,
+    );
+
+    expect(markup).toContain('id="settings-totp-form-method"');
+    expect(markup).not.toContain('id="settings-password-form-method"');
+    expect((markup.match(/name="method"/g) ?? []).length).toBe(1);
+    expect((markup.match(/name="csrf_token"/g) ?? []).length).toBe(2);
+  });
+
+  it("keeps hidden inputs from unknown groups in their additional form", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      groupedNode("custom", { name: "custom_token", type: "hidden", value: "custom" }),
+    ]);
+    const markup = renderToStaticMarkup(
+      <FlowForm flow={flow} kind="settings" separateProviders={false} settingsArea="profile" />,
+    );
+
+    expect(markup).toContain('data-settings-form="other"');
+    expect(markup).toContain('name="custom_token"');
+    expect((markup.match(/name="custom_token"/g) ?? []).length).toBe(1);
   });
 
   it("renders the lookup-secret login field as an alphanumeric recovery-code input", () => {

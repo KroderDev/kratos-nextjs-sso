@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 import { rewriteOryResponseLocation } from "./lib/ory/url";
 import { getForwardedOrigin } from "./lib/ory/request";
-import { SETTINGS_AREA_COOKIE, SETTINGS_AREA_COOKIE_MAX_AGE } from "./lib/ory/settings-state";
+import { formatSettingsAreaCookie } from "./lib/ory/settings-state";
 import { getSettingsArea } from "./components/ory/settings-sections";
 import oryConfig, { appBaseUrl, isOryConfigured } from "./ory.config";
 
@@ -42,7 +42,7 @@ export async function proxy(request: NextRequest) {
     if (area) {
       response.headers.append(
         "Set-Cookie",
-        `${SETTINGS_AREA_COOKIE}=${area}; Max-Age=${SETTINGS_AREA_COOKIE_MAX_AGE}; Path=/dashboard/settings; SameSite=Lax`,
+        formatSettingsAreaCookie(area),
       );
     }
 
