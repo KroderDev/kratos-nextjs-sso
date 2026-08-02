@@ -1,8 +1,10 @@
 const allowedProtocols = new Set(["http:", "https:"]);
 
 /**
- * Parses the public OAuth authorization origins used by the CSP form-action
- * directive. Provider origins are build-time configuration, not secrets.
+ * Parses configured OAuth provider origins for use in a CSP `form-action` directive.
+ *
+ * @param value - A whitespace- or comma-separated list of provider URLs
+ * @returns Unique HTTP or HTTPS origins without credentials, paths, queries, or fragments
  */
 export function getOAuthOrigins(value: string | undefined) {
   const origins = new Set<string>();
@@ -35,6 +37,13 @@ export function getOAuthOrigins(value: string | undefined) {
   return [...origins];
 }
 
+/**
+ * Builds the space-separated CSP `form-action` source list.
+ *
+ * @param sdkOrigin - The optional SDK origin to include
+ * @param oauthOrigins - OAuth provider origins to include
+ * @returns The CSP `form-action` source list containing `'self'` and the provided origins
+ */
 export function getFormActionSources(
   sdkOrigin: string | undefined,
   oauthOrigins: string[],

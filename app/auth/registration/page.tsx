@@ -18,6 +18,12 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
   return { title: t("home.hero.createIdentity") };
 }
 
+/**
+ * Renders the localized registration page and its current Ory registration flow.
+ *
+ * @param searchParams - Request query parameters used to load the registration flow and preserve the language.
+ * @returns The registration page content, setup state, or flow-unavailable state.
+ */
 export default async function RegistrationPage({
   searchParams,
 }: OryPageParams) {

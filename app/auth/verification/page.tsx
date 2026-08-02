@@ -17,6 +17,13 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
   return { title: t("auth.verification.eyebrow") };
 }
 
+/**
+ * Renders the localized Ory verification page.
+ *
+ * Displays setup information when Ory is unavailable and otherwise loads the verification flow, redirecting to a fresh flow when the current one must be restarted.
+ *
+ * @param searchParams - Request search parameters used to load the verification flow and translations
+ */
 export default async function VerificationPage({
   searchParams,
 }: OryPageParams) {

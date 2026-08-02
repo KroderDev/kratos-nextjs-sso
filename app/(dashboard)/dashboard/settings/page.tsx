@@ -71,6 +71,13 @@ function SettingsAside({ t }: { t: (key: string) => string }) {
   );
 }
 
+/**
+ * Renders the localized account settings page.
+ *
+ * Displays setup guidance when Ory is not configured, redirects unauthenticated users to login, and renders the settings form or an unavailable state when the settings flow cannot be loaded.
+ *
+ * @param searchParams - URL parameters used to load translations and the settings flow
+ */
 export default async function SettingsPage({ searchParams }: OryPageParams) {
   const { t } = await getTranslations(searchParams);
   const params = await searchParams;
