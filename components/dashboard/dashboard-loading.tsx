@@ -9,6 +9,9 @@ type DashboardLoadingProps = {
   variant?: "overview" | "settings";
 };
 
+/**
+ * Renders skeleton placeholders for the dashboard overview content.
+ */
 function OverviewLoadingContent() {
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-16">
@@ -42,6 +45,9 @@ function OverviewLoadingContent() {
   );
 }
 
+/**
+ * Renders a loading skeleton for a settings card.
+ */
 function SettingsCardLoading() {
   return (
     <div className="overflow-hidden rounded-xl bg-card py-4 text-sm ring-1 ring-foreground/10">
@@ -66,6 +72,11 @@ function SettingsCardLoading() {
   );
 }
 
+/**
+ * Renders loading placeholders for the dashboard settings page.
+ *
+ * @returns The settings-page loading content
+ */
 function SettingsLoadingContent() {
   return (
     <div data-settings-loading="true">
@@ -123,6 +134,12 @@ function SettingsLoadingContent() {
   );
 }
 
+/**
+ * Displays a loading skeleton for a dashboard page.
+ *
+ * @param variant - Selects the overview or settings loading content.
+ * @returns The dashboard loading interface.
+ */
 export function DashboardLoading({ variant = "overview" }: DashboardLoadingProps = {}) {
   const { t } = useTranslation();
 
