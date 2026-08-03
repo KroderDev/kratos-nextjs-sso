@@ -7,7 +7,9 @@ const usePathname = vi.hoisted(() => vi.fn());
 
 vi.mock("next/navigation", () => ({ usePathname }));
 vi.mock("@/components/dashboard/dashboard-loading", () => ({
-  DashboardLoading: () => <div>dashboard loading</div>,
+  DashboardLoading: ({ variant }: { variant?: "overview" | "settings" }) => (
+    <div>{variant === "settings" ? "settings loading" : "dashboard loading"}</div>
+  ),
 }));
 vi.mock("./auth-shell", () => ({
   AuthContentLoading: () => <div>auth loading</div>,
@@ -21,6 +23,11 @@ describe("RouteLoading", () => {
   it("selects the dashboard loading state", () => {
     usePathname.mockReturnValue("/dashboard");
     expect(renderToStaticMarkup(<RouteLoading />)).toContain("dashboard loading");
+  });
+
+  it("selects the settings loading state", () => {
+    usePathname.mockReturnValue("/dashboard/settings");
+    expect(renderToStaticMarkup(<RouteLoading />)).toContain("settings loading");
   });
 
   it("selects the auth loading frame", () => {

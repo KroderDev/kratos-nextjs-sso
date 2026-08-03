@@ -180,7 +180,9 @@ export function NavigationFeedback() {
       ) : null}
       {dashboardPending ? (
         <div className="fixed inset-0 z-40 overflow-auto bg-background">
-          <DashboardLoading />
+          <DashboardLoading
+            variant={pendingTargetPathname === "/dashboard/settings" ? "settings" : "overview"}
+          />
         </div>
       ) : null}
       <div

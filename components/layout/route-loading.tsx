@@ -12,7 +12,11 @@ export function RouteLoading() {
   const pathname = usePathname();
 
   if (isDashboardRoute(pathname)) {
-    return <DashboardLoading />;
+    return (
+      <DashboardLoading
+        variant={pathname === "/dashboard/settings" ? "settings" : "overview"}
+      />
+    );
   }
 
   if (isAuthLayoutRoute(pathname)) {
