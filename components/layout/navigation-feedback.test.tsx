@@ -24,7 +24,9 @@ vi.mock("@/lib/routing", () => ({
   isDashboardRoute,
 }));
 vi.mock("@/components/dashboard/dashboard-loading", () => ({
-  DashboardLoading: () => <div>dashboard-loading</div>,
+  DashboardLoading: ({ variant }: { variant?: "overview" | "settings" }) => (
+    <div data-dashboard-loading-variant={variant}>dashboard-loading</div>
+  ),
 }));
 vi.mock("./auth-shell", () => ({
   AuthContentLoading: () => <div>auth-content-loading</div>,
@@ -35,6 +37,7 @@ describe("navigation feedback", () => {
   let mountedRoot: Root | undefined;
   let mountedContainer: HTMLDivElement | undefined;
   let localLink: HTMLAnchorElement | undefined;
+  let dashboardLink: HTMLAnchorElement | undefined;
 
   afterEach(() => {
     if (mountedRoot) {
@@ -42,9 +45,11 @@ describe("navigation feedback", () => {
     }
     mountedContainer?.remove();
     localLink?.remove();
+    dashboardLink?.remove();
     mountedRoot = undefined;
     mountedContainer = undefined;
     localLink = undefined;
+    dashboardLink = undefined;
   });
 
   describe("shouldClearPendingNavigation", () => {
@@ -110,6 +115,33 @@ describe("navigation feedback", () => {
 
       expect(mountedContainer.querySelector('[aria-busy="true"]')).toBeNull();
       expect(mountedContainer.textContent).not.toContain("dashboard-loading");
+    });
+
+    it("uses the settings skeleton for dashboard settings navigation", () => {
+      mountedContainer = document.createElement("div");
+      dashboardLink = document.createElement("a");
+      dashboardLink.href = "/dashboard/settings?section=security";
+      dashboardLink.addEventListener("click", (event) => event.preventDefault());
+      document.body.append(dashboardLink);
+      document.body.append(mountedContainer);
+      mountedRoot = createRoot(mountedContainer);
+
+      act(() => {
+        mountedRoot?.render(<NavigationFeedback />);
+      });
+
+      act(() => {
+        dashboardLink?.dispatchEvent(
+          new MouseEvent("click", { bubbles: true, button: 0, cancelable: true }),
+        );
+      });
+
+      expect(mountedContainer.querySelector('[aria-busy="true"]')).not.toBeNull();
+      expect(
+        mountedContainer.querySelector("[data-dashboard-loading-variant]")?.getAttribute(
+          "data-dashboard-loading-variant",
+        ),
+      ).toBe("settings");
     });
   });
 });
