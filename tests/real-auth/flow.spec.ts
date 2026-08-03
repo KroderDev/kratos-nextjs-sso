@@ -110,7 +110,11 @@ test("renders settings for an authenticated identity", async ({ page }) => {
   const securityControl = page.getByRole("link", { name: "Security", exact: true }).first();
 
   const areaSwitchRequests: string[] = [];
+  const documentRequests: string[] = [];
   const recordAreaSwitchRequest = (request: Request) => {
+    if (request.resourceType() === "document") {
+      documentRequests.push(request.url());
+    }
     if (request.url().includes("/self-service/settings")) {
       areaSwitchRequests.push(request.url());
     }
@@ -120,7 +124,13 @@ test("renders settings for an authenticated identity", async ({ page }) => {
   await expect(page).toHaveURL(/\/dashboard\/settings\?.*section=security/);
   await expect(page.getByRole("heading", { name: "Security" })).toBeVisible();
   page.off("request", recordAreaSwitchRequest);
+  expect(documentRequests).toEqual([]);
   expect(areaSwitchRequests).toEqual([]);
+  await expect(page.getByRole("status", { name: "Loading dashboard" })).toHaveCount(0);
+  await expect(page.getByRole("status", { name: "Loading next page" })).toHaveAttribute(
+    "aria-busy",
+    "false",
+  );
 
   await expect(page.getByRole("group", { name: "Password" })).toBeVisible();
   await expect(page.getByRole("group", { name: "Authenticator app" })).toBeVisible();

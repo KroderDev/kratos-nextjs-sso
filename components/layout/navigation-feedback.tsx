@@ -29,11 +29,18 @@ export function shouldClearPendingNavigation(
   );
 }
 
+/**
+ * Determines whether an anchor represents a navigable same-origin destination.
+ *
+ * @param anchor - The anchor element to evaluate
+ * @returns `true` if the anchor targets a different same-origin path or query, `false` otherwise.
+ */
 function isNavigableLink(anchor: HTMLAnchorElement) {
   if (
     anchor.target === "_blank" ||
     anchor.hasAttribute("download") ||
-    anchor.getAttribute("aria-disabled") === "true"
+    anchor.getAttribute("aria-disabled") === "true" ||
+    anchor.dataset.localNavigation === "true"
   ) {
     return false;
   }
@@ -47,6 +54,12 @@ function isNavigableLink(anchor: HTMLAnchorElement) {
   );
 }
 
+/**
+ * Displays navigation feedback for pending route and document navigations.
+ *
+ * Shows a progress indicator and route-specific loading overlays while navigation
+ * is pending, and clears the pending state when navigation completes or times out.
+ */
 export function NavigationFeedback() {
   const { t } = useTranslation();
   const pathname = usePathname();
@@ -179,7 +192,9 @@ export function NavigationFeedback() {
       ) : null}
       {dashboardPending ? (
         <div className="fixed inset-0 z-40 overflow-auto bg-background">
-          <DashboardLoading />
+          <DashboardLoading
+            variant={pendingTargetPathname === "/dashboard/settings" ? "settings" : "overview"}
+          />
         </div>
       ) : null}
       <div

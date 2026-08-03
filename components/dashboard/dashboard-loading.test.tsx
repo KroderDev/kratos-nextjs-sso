@@ -16,4 +16,14 @@ describe("DashboardLoading", () => {
     expect(markup).toContain('data-slot="skeleton"');
     expect((markup.match(/data-slot="skeleton"/g) ?? []).length).toBeGreaterThanOrEqual(15);
   });
+
+  it("matches the responsive settings workspace structure", () => {
+    const markup = renderToStaticMarkup(<DashboardLoading variant="settings" />);
+
+    expect(markup).toContain('data-settings-loading="true"');
+    expect(markup).toContain("lg:grid-cols-[13rem_minmax(0,1fr)]");
+    expect(markup).toContain("hidden flex-col gap-1 lg:flex");
+    expect(markup).toContain("lg:hidden");
+    expect((markup.match(/data-slot="skeleton"/g) ?? []).length).toBeGreaterThanOrEqual(25);
+  });
 });
