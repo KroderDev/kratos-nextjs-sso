@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { LogOut, Settings2 } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,13 +17,32 @@ import {
 import { useTranslation } from "@/lib/i18n/client";
 
 type AccountMenuProps = {
+  avatarUrl?: string;
   email: string;
   initials: string;
   label: string;
   logoutUrl: string;
 };
 
+function AccountAvatar({
+  avatarUrl,
+  className,
+  initials,
+}: {
+  avatarUrl?: string;
+  className?: string;
+  initials: string;
+}) {
+  return (
+    <Avatar className={className}>
+      {avatarUrl ? <AvatarImage alt="" src={avatarUrl} /> : null}
+      <AvatarFallback>{initials}</AvatarFallback>
+    </Avatar>
+  );
+}
+
 export function AccountMenu({
+  avatarUrl,
   email,
   initials,
   label,
@@ -39,16 +58,12 @@ export function AccountMenu({
           <Button className="size-9 rounded-full p-1 hover:bg-muted" size="icon-lg" variant="ghost" />
         }
       >
-        <Avatar className="size-full">
-          <AvatarFallback>{initials}</AvatarFallback>
-        </Avatar>
+        <AccountAvatar avatarUrl={avatarUrl} className="size-full" initials={initials} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuGroup>
           <DropdownMenuLabel className="flex items-center gap-3">
-            <Avatar>
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
+            <AccountAvatar avatarUrl={avatarUrl} initials={initials} />
             <span className="flex min-w-0 flex-col gap-1">
               <span className="truncate text-foreground">{label}</span>
               <span className="truncate font-normal text-muted-foreground">{email}</span>
@@ -70,4 +85,3 @@ export function AccountMenu({
     </DropdownMenu>
   );
 }
-

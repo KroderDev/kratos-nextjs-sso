@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
+  getIdentityAvatarUrl,
   getIdentityEmail,
   getIdentityInitials,
   getIdentityName,
@@ -90,6 +91,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     <DashboardShell
       activeNav="overview"
       account={{
+        avatarUrl: getIdentityAvatarUrl(identity),
         email,
         initials: getIdentityInitials(identity),
         label: name,
@@ -228,4 +230,3 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     </DashboardShell>
   );
 }
-

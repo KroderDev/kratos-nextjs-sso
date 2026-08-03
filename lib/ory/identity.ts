@@ -1,7 +1,7 @@
 import type { Identity } from "@ory/client-fetch";
 
-function getTraitValue(traits: unknown, path: string) {
-  let current: unknown = traits;
+function getStringValue(value: unknown, path: string) {
+  let current: unknown = value;
 
   for (const segment of path.split(".")) {
     if (typeof current !== "object" || current === null) {
@@ -16,23 +16,49 @@ function getTraitValue(traits: unknown, path: string) {
 
 export function getIdentityEmail(identity: Identity) {
   return (
-    getTraitValue(identity.traits, "email") ??
-    getTraitValue(identity.traits, "username") ??
+    getStringValue(identity.traits, "email") ??
+    getStringValue(identity.traits, "username") ??
     "Identity member"
   );
 }
 
 export function getIdentityName(identity: Identity) {
-  const first = getTraitValue(identity.traits, "name.first");
-  const last = getTraitValue(identity.traits, "name.last");
+  const first = getStringValue(identity.traits, "name.first");
+  const last = getStringValue(identity.traits, "name.last");
   const fullName = [first, last].filter(Boolean).join(" ");
 
   return (
     fullName ||
-    getTraitValue(identity.traits, "name") ||
-    getTraitValue(identity.traits, "display_name") ||
+    getStringValue(identity.traits, "name") ||
+    getStringValue(identity.traits, "display_name") ||
     getIdentityEmail(identity)
   );
+}
+
+function getSafeAvatarUrl(value: string | undefined) {
+  if (!value) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(value);
+
+    if (
+      (url.protocol !== "http:" && url.protocol !== "https:") ||
+      url.username ||
+      url.password
+    ) {
+      return undefined;
+    }
+
+    return value;
+  } catch {
+    return undefined;
+  }
+}
+
+export function getIdentityAvatarUrl(identity: Identity) {
+  return getSafeAvatarUrl(getStringValue(identity.metadata_public, "avatar_url"));
 }
 
 export function getIdentityInitials(identity: Identity) {

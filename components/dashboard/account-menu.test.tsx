@@ -2,6 +2,22 @@ import { renderToStaticMarkup } from "react-dom/server";
 import * as React from "react";
 import { describe, expect, it, vi } from "vitest";
 
+vi.mock("@base-ui/react/avatar", () => ({
+  Avatar: {
+    Root: ({ className, children, ...props }: React.HTMLAttributes<HTMLElement>) => (
+      <span data-slot="avatar" className={className} {...props}>
+        {children}
+      </span>
+    ),
+    Image: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
+      <span data-slot="avatar-image" className={className} {...props} />
+    ),
+    Fallback: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
+      <span data-slot="avatar-fallback" className={className} {...props} />
+    ),
+  },
+}));
+
 import { AccountMenu } from "./account-menu";
 
 vi.mock("@/components/ui/dropdown-menu", () => {
@@ -57,5 +73,21 @@ describe("AccountMenu", () => {
     expect(markup).toContain('href="/self-service/logout/browser?token=abc"');
     expect(markup).toContain("Settings");
     expect(markup).toContain("Sign out");
+  });
+
+  it("renders a public metadata avatar alongside its fallback", () => {
+    const markup = renderToStaticMarkup(
+      <AccountMenu
+        avatarUrl="https://example.com/ada.png"
+        email="ada@example.com"
+        initials="AW"
+        label="Ada Lovelace"
+        logoutUrl="/self-service/logout/browser"
+      />,
+    );
+
+    expect(markup).toContain('data-slot="avatar-image"');
+    expect(markup).toContain('src="https://example.com/ada.png"');
+    expect(markup).toContain(">AW<");
   });
 });
