@@ -33,7 +33,8 @@ function isNavigableLink(anchor: HTMLAnchorElement) {
   if (
     anchor.target === "_blank" ||
     anchor.hasAttribute("download") ||
-    anchor.getAttribute("aria-disabled") === "true"
+    anchor.getAttribute("aria-disabled") === "true" ||
+    anchor.dataset.localNavigation === "true"
   ) {
     return false;
   }

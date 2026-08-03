@@ -1,5 +1,9 @@
+// @vitest-environment jsdom
+
+import { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { NavigationFeedback, shouldClearPendingNavigation } from "./navigation-feedback";
 
@@ -28,6 +32,21 @@ vi.mock("./auth-shell", () => ({
 }));
 
 describe("navigation feedback", () => {
+  let mountedRoot: Root | undefined;
+  let mountedContainer: HTMLDivElement | undefined;
+  let localLink: HTMLAnchorElement | undefined;
+
+  afterEach(() => {
+    if (mountedRoot) {
+      act(() => mountedRoot?.unmount());
+    }
+    mountedContainer?.remove();
+    localLink?.remove();
+    mountedRoot = undefined;
+    mountedContainer = undefined;
+    localLink = undefined;
+  });
+
   describe("shouldClearPendingNavigation", () => {
     it("clears ordinary route navigation once the target pathname is active", () => {
       expect(shouldClearPendingNavigation("route", "/settings", "/settings")).toBe(true);
@@ -67,6 +86,30 @@ describe("navigation feedback", () => {
       const markup = renderToStaticMarkup(<NavigationFeedback />);
 
       expect(markup).toContain("common.navigation.loadingNextPage");
+    });
+
+    it("does not show route feedback for local navigation links", () => {
+      mountedContainer = document.createElement("div");
+      localLink = document.createElement("a");
+      localLink.dataset.localNavigation = "true";
+      localLink.href = "/dashboard/settings?section=security";
+      localLink.addEventListener("click", (event) => event.preventDefault());
+      document.body.append(localLink);
+      document.body.append(mountedContainer);
+      mountedRoot = createRoot(mountedContainer);
+
+      act(() => {
+        mountedRoot?.render(<NavigationFeedback />);
+      });
+
+      act(() => {
+        localLink?.dispatchEvent(
+          new MouseEvent("click", { bubbles: true, button: 0, cancelable: true }),
+        );
+      });
+
+      expect(mountedContainer.querySelector('[aria-busy="true"]')).toBeNull();
+      expect(mountedContainer.textContent).not.toContain("dashboard-loading");
     });
   });
 });

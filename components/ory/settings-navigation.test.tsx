@@ -48,6 +48,7 @@ describe("SettingsNavigation", () => {
     expect(markup).toContain('aria-current="page"');
     expect(markup).toContain('aria-label="Choose a settings area"');
     expect(markup).toContain(">Security<");
+    expect(markup).not.toContain("data-local-navigation");
   });
 
   it("keeps navigable links inside the client workspace", () => {
@@ -61,6 +62,7 @@ describe("SettingsNavigation", () => {
 
     expect(markup).toContain('href="/dashboard/settings?section=security"');
     expect(markup).toContain('aria-current="page"');
+    expect(markup.match(/data-local-navigation="true"/g)).toHaveLength(6);
   });
 
   it("stores the selected area in a short-lived settings cookie", () => {

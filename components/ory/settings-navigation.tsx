@@ -142,6 +142,7 @@ export function SettingsNavigation({
                   ? "bg-foreground text-background"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
+              data-local-navigation={onAreaChange ? "true" : undefined}
               href={getSettingsAreaHref(area.id, flowId, locale)}
               key={area.id}
               onClick={(event) => selectArea(area.id, event)}
@@ -168,6 +169,7 @@ export function SettingsNavigation({
                   "relative inline-flex h-6 min-w-max flex-none items-center rounded-none border-0 bg-transparent px-1 text-sm text-foreground/60 transition-colors after:absolute after:bottom-0 after:inset-x-0 after:h-px after:bg-foreground after:opacity-0 after:transition-opacity",
                   active ? "text-foreground after:opacity-100" : "hover:text-foreground",
                 )}
+                data-local-navigation={onAreaChange ? "true" : undefined}
                 href={getSettingsAreaHref(area.id, flowId, locale)}
                 key={area.id}
                 onClick={(event) => selectArea(area.id, event)}
