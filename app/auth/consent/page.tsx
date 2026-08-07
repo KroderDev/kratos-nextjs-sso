@@ -19,11 +19,23 @@ type ConsentPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+/**
+ * Generates the localized title for the consent page.
+ *
+ * @param searchParams - Request parameters used to determine the page locale.
+ * @returns The localized consent page metadata.
+ */
 export async function generateMetadata({ searchParams }: ConsentPageProps) {
   const { t } = await getTranslations(searchParams);
   return { title: t("auth.consent.title", { client: t("auth.consent.defaultClient") }) };
 }
 
+/**
+ * Renders the localized consent page for an Ory authorization handoff.
+ *
+ * @param searchParams - Request parameters containing the consent handoff data
+ * @returns The consent page, or redirects to the authentication error page for an invalid handoff
+ */
 export default async function ConsentPage({ searchParams }: ConsentPageProps) {
   const { t } = await getTranslations(searchParams);
   const params = await searchParams;

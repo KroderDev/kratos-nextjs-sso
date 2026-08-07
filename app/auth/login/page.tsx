@@ -22,9 +22,9 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
 }
 
 /**
- * Renders the localized login page with setup, authentication, or flow-unavailable state.
+ * Renders the localized login page with setup, authentication, or unavailable-flow state.
  *
- * @param searchParams - Request parameters used to load translations and retrieve the login flow.
+ * @param searchParams - Request parameters used to load translations and determine the login flow.
  */
 export default async function LoginPage({ searchParams }: OryPageParams) {
   const { t } = await getTranslations(searchParams);

@@ -26,6 +26,13 @@ const maxClientNameLength = 256;
 const maxScopeValueLength = 2048;
 const maxScopeCount = 64;
 
+/**
+ * Extracts a query parameter when it has exactly one string value.
+ *
+ * @param params - The query parameters to inspect
+ * @param name - The parameter name
+ * @returns The parameter value, or `undefined` when it is missing or has multiple values
+ */
 function singleParam(params: FlowSearchParams, name: string) {
   const value = params[name];
   if (typeof value === "string") {
@@ -34,6 +41,12 @@ function singleParam(params: FlowSearchParams, name: string) {
   return Array.isArray(value) && value.length === 1 ? value[0] : undefined;
 }
 
+/**
+ * Extracts the supported provider flow from query parameters.
+ *
+ * @param params - Query parameters containing the provider flow
+ * @returns The provider flow value, or `undefined` when the parameter is missing or unsupported
+ */
 function providerFlow(params: FlowSearchParams): ProviderFlowValue | undefined {
   const value = singleParam(params, "flow");
   return value && providerFlows.has(value as ProviderFlowValue)
@@ -41,6 +54,12 @@ function providerFlow(params: FlowSearchParams): ProviderFlowValue | undefined {
     : undefined;
 }
 
+/**
+ * Determines whether a value is a valid opaque identifier.
+ *
+ * @param value - The value to validate
+ * @returns `true` if the value is nonempty, within the allowed length, and contains only letters, numbers, underscores, or hyphens; `false` otherwise.
+ */
 function isOpaqueValue(value: string | undefined): value is string {
   return Boolean(
     value &&
@@ -49,6 +68,11 @@ function isOpaqueValue(value: string | undefined): value is string {
   );
 }
 
+/**
+ * Extracts the origin from the configured Ory SDK URL.
+ *
+ * @returns The URL origin, or `undefined` when the configured URL is invalid.
+ */
 function providerOrigin() {
   try {
     return new URL(orySdkUrl).origin;
@@ -57,6 +81,13 @@ function providerOrigin() {
   }
 }
 
+/**
+ * Validates a provider callback URL for the specified flow.
+ *
+ * @param value - The callback URL to validate
+ * @param flow - The provider flow whose callback path must be used
+ * @returns The parsed callback URL when valid, otherwise `undefined`
+ */
 function providerCallback(value: string | undefined, flow: ProviderFlow) {
   if (!value || value.length > 2048) {
     return undefined;
@@ -80,6 +111,12 @@ function providerCallback(value: string | undefined, flow: ProviderFlow) {
   }
 }
 
+/**
+ * Parses a whitespace-separated scope parameter into individual scopes.
+ *
+ * @param value - The scope parameter value
+ * @returns The parsed scopes, or an empty array if the value exceeds validation limits
+ */
 function scopesFromParam(value: string | undefined) {
   if (!value || value.length > maxScopeValueLength) {
     return [];
@@ -95,11 +132,22 @@ function scopesFromParam(value: string | undefined) {
   return scopes;
 }
 
+/**
+ * Extracts a supported locale from the flow parameters.
+ *
+ * @returns `"en"` or `"es"` when the `lang` parameter specifies a supported locale; `undefined` otherwise.
+ */
 function localeFromParams(params: FlowSearchParams): LocaleParam | undefined {
   const locale = singleParam(params, "lang");
   return locale === "en" || locale === "es" ? locale : undefined;
 }
 
+/**
+ * Builds the internal consent URL for a provider handoff.
+ *
+ * @param handoff - Consent handoff data to encode in the URL
+ * @returns An absolute URL when an application base URL is configured; otherwise, a path-relative URL
+ */
 function consentReturnTo(handoff: ConsentHandoff) {
   const base = appBaseUrl || "https://sso.invalid";
   const internal = new URL("/auth/consent", base);
@@ -124,6 +172,12 @@ function consentReturnTo(handoff: ConsentHandoff) {
     : `${internal.pathname}${internal.search}`;
 }
 
+/**
+ * Parses and validates provider login or consent handoff parameters.
+ *
+ * @param params - Query parameters containing the provider handoff data
+ * @returns Normalized consent handoff data, or `null` for invalid or unsupported parameters
+ */
 function parseHandoff(params: FlowSearchParams): ConsentHandoff | null {
   const flow = providerFlow(params);
   if (flow !== "login" && flow !== "consent") {
@@ -166,14 +220,21 @@ function parseHandoff(params: FlowSearchParams): ConsentHandoff | null {
   };
 }
 
+/**
+ * Determines whether the parameters contain a supported provider handoff flow.
+ *
+ * @param params - The flow query parameters to inspect
+ * @returns `true` if the parameters contain a supported provider flow, `false` otherwise.
+ */
 export function isProviderHandoff(params: FlowSearchParams) {
   return Boolean(providerFlow(params));
 }
 
 /**
- * Converts the provider's opaque handoff into a fresh Kratos browser-flow
- * request. The provider callback is carried inside return_to so Kratos can
- * return the browser with the transaction proof after authentication.
+ * Converts provider handoff parameters into a clean Kratos browser-flow request.
+ *
+ * @param params - Provider or non-provider flow parameters
+ * @returns The transformed flow parameters, the original parameters for non-provider requests, or `null` for an invalid provider handoff
  */
 export function providerLoginParams(params: FlowSearchParams): FlowSearchParams | null {
   if (!isProviderHandoff(params)) {
@@ -203,8 +264,10 @@ export function providerLoginParams(params: FlowSearchParams): FlowSearchParams 
 }
 
 /**
- * Parses the internal consent handoff after Kratos has authenticated the
- * browser. The provider callback remains origin- and path-bound.
+ * Parses and validates the consent handoff after browser authentication.
+ *
+ * @param params - Query parameters containing the consent handoff data
+ * @returns The normalized consent handoff, or `null` when the parameters are invalid
  */
 export function consentHandoff(params: FlowSearchParams): ConsentHandoff | null {
   const transaction = singleParam(params, "transaction");
