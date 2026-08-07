@@ -31,6 +31,21 @@ describe("provider handoff", () => {
     });
   });
 
+  it("accepts matching provider credentials nested in return_to", () => {
+    const result = providerLoginParams({
+      flow: "login",
+      transaction: "transaction-id",
+      csrf: "csrf-token",
+      return_to:
+        "https://auth.example.com/login/callback?csrf=csrf-token&flow=login&transaction=transaction-id",
+    });
+
+    expect(result).toEqual({
+      return_to:
+        "https://auth.example.com/login/callback?transaction=transaction-id&csrf=csrf-token",
+    });
+  });
+
   it("preserves consent state in an internal callback after authentication", () => {
     const result = providerLoginParams({
       flow: "consent",
@@ -77,6 +92,17 @@ describe("provider handoff", () => {
     ).toBeNull();
   });
 
+  it("normalizes matching nested consent credentials", () => {
+    const result = consentHandoff({
+      provider_return_to:
+        "https://auth.example.com/consent?csrf=csrf-token&flow=consent&transaction=transaction-id",
+      transaction: "transaction-id",
+      csrf: "csrf-token",
+    });
+
+    expect(result?.providerReturnTo).toBe("https://auth.example.com/consent");
+  });
+
   it("rejects malformed provider handoffs", () => {
     expect(
       providerLoginParams({
@@ -98,6 +124,14 @@ describe("provider handoff", () => {
 
     expect(
       providerLoginParams({ ...base, return_to: "https://auth.example.com/login/callback?next=/x" }),
+    ).toBeNull();
+
+    expect(
+      providerLoginParams({
+        ...base,
+        return_to:
+          "https://auth.example.com/login/callback?csrf=other-token&flow=login&transaction=transaction-id",
+      }),
     ).toBeNull();
 
     expect(

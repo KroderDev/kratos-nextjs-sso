@@ -86,9 +86,14 @@ function providerOrigin() {
  *
  * @param value - The callback URL to validate
  * @param flow - The provider flow whose callback path must be used
+ * @param expected - The outer handoff credentials that must match any nested callback values
  * @returns The parsed callback URL when valid, otherwise `undefined`
  */
-function providerCallback(value: string | undefined, flow: ProviderFlow) {
+function providerCallback(
+  value: string | undefined,
+  flow: ProviderFlow,
+  expected: { transaction: string; csrf: string },
+) {
   if (!value || value.length > 2048) {
     return undefined;
   }
@@ -99,12 +104,31 @@ function providerCallback(value: string | undefined, flow: ProviderFlow) {
       parsed.origin !== providerOrigin() ||
       parsed.username ||
       parsed.password ||
-      parsed.search ||
       parsed.hash ||
       parsed.pathname !== callbackPaths[flow]
     ) {
       return undefined;
     }
+
+    const queryKeys = [...parsed.searchParams.keys()];
+    if (queryKeys.length > 0) {
+      const nestedTransaction = parsed.searchParams.get("transaction") ?? undefined;
+      const nestedCSRF = parsed.searchParams.get("csrf") ?? undefined;
+      if (
+        queryKeys.length !== 3 ||
+        new Set(queryKeys).size !== 3 ||
+        !queryKeys.every((key) => ["csrf", "flow", "transaction"].includes(key)) ||
+        parsed.searchParams.get("flow") !== flow ||
+        !isOpaqueValue(nestedTransaction) ||
+        !isOpaqueValue(nestedCSRF) ||
+        nestedTransaction !== expected.transaction ||
+        nestedCSRF !== expected.csrf
+      ) {
+        return undefined;
+      }
+      parsed.search = "";
+    }
+
     return parsed;
   } catch {
     return undefined;
@@ -190,7 +214,10 @@ function parseHandoff(params: FlowSearchParams): ConsentHandoff | null {
     return null;
   }
 
-  const returnTo = providerCallback(singleParam(params, "return_to"), flow);
+  const returnTo = providerCallback(singleParam(params, "return_to"), flow, {
+    csrf,
+    transaction,
+  });
   if (!returnTo) {
     return null;
   }
@@ -279,6 +306,7 @@ export function consentHandoff(params: FlowSearchParams): ConsentHandoff | null 
   const providerReturnTo = providerCallback(
     singleParam(params, "provider_return_to"),
     "consent",
+    { csrf, transaction },
   );
   if (!providerReturnTo) {
     return null;
