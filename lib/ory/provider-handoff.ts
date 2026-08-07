@@ -167,6 +167,27 @@ function localeFromParams(params: FlowSearchParams): LocaleParam | undefined {
 }
 
 /**
+ * Builds the internal login continue URL for a provider handoff.
+ *
+ * @param handoff - Login handoff data to encode in the URL
+ * @returns An absolute URL when an application base URL is configured; otherwise, a path-relative URL
+ */
+function loginContinueParams(handoff: ConsentHandoff) {
+  const base = appBaseUrl || "https://sso.invalid";
+  const internal = new URL("/auth/login/continue", base);
+  internal.searchParams.set("transaction", handoff.transaction);
+  internal.searchParams.set("csrf", handoff.csrf);
+  internal.searchParams.set("provider_callback", handoff.providerReturnTo);
+  if (handoff.locale) {
+    internal.searchParams.set("lang", handoff.locale);
+  }
+
+  return appBaseUrl
+    ? internal.toString()
+    : `${internal.pathname}${internal.search}`;
+}
+
+/**
  * Builds the internal consent URL for a provider handoff.
  *
  * @param handoff - Consent handoff data to encode in the URL
@@ -279,11 +300,7 @@ export function providerLoginParams(params: FlowSearchParams): FlowSearchParams 
   }
 
   if (providerFlow(params) === "login") {
-    const callback = new URL(handoff.providerReturnTo);
-    callback.searchParams.set("transaction", handoff.transaction);
-    callback.searchParams.set("csrf", handoff.csrf);
-    clean.aal = "aal2";
-    clean.return_to = callback.toString();
+    clean.return_to = loginContinueParams(handoff);
   } else {
     clean.return_to = consentReturnTo(handoff);
   }
