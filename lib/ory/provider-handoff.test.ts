@@ -25,6 +25,7 @@ describe("provider handoff", () => {
 
     expect(isProviderHandoff(params)).toBe(true);
     expect(result).toEqual({
+      aal: "aal2",
       lang: "es",
       return_to:
         "https://auth.example.com/login/callback?transaction=transaction-id&csrf=csrf-token",
@@ -41,6 +42,7 @@ describe("provider handoff", () => {
     });
 
     expect(result).toEqual({
+      aal: "aal2",
       return_to:
         "https://auth.example.com/login/callback?transaction=transaction-id&csrf=csrf-token",
     });
