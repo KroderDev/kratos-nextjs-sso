@@ -180,16 +180,18 @@ the flow, and the original nested query boundaries cannot be recovered safely.
 The Mida Hydra login-consent provider uses `flow=login` and `flow=consent` to
 identify its browser handoff. Ory's Next.js SDK uses the same parameter for a
 Kratos flow ID, so [`app/auth/login`](../app/auth/login/page.tsx) recognizes
-only those provider values, validates the fixed `auth` origin and callback
-path, and starts a fresh Kratos browser flow without forwarding the provider
-flow marker as an Ory flow ID.
+only those provider values, validates the provider origin and the fixed
+callback path, and starts a fresh Kratos browser flow without forwarding the
+provider flow marker as an Ory flow ID. The validation rules are implemented
+in [`lib/ory/provider-handoff.ts`](../lib/ory/provider-handoff.ts).
 
 Login carries the opaque transaction and CSRF values inside the provider
 callback. Consent carries them through the authenticated internal
-`/auth/consent` route, which submits only the provider's fixed `/consent`
-endpoint. The provider origin is derived from `NEXT_PUBLIC_ORY_SDK_URL`; an
-untrusted `return_to`, callback path, transaction, or CSRF value rejects the
-handoff instead of becoming a redirect or form target.
+[`/auth/consent`](../app/auth/consent/page.tsx) route, which submits only to
+the provider's fixed `/consent` endpoint. The provider origin is derived from
+`NEXT_PUBLIC_ORY_SDK_URL`. An untrusted `return_to`, callback path,
+transaction, or CSRF value rejects the handoff instead of becoming a redirect
+or form target.
 
 ## Multi-Factor Authentication
 

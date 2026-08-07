@@ -87,5 +87,35 @@ describe("provider handoff", () => {
     expect(providerLoginParams({ flow: "login" })).toBeNull();
     expect(providerLoginParams({ flow: "logout" })).toBeNull();
     expect(isProviderHandoff({ flow: "some-kratos-flow-id" })).toBe(false);
+
+    const base = {
+      flow: "login",
+      transaction: "transaction-id",
+      csrf: "csrf-token",
+    };
+
+    expect(
+      providerLoginParams({ ...base, return_to: "https://auth.example.com/login/callback?next=/x" }),
+    ).toBeNull();
+
+    expect(
+      providerLoginParams({ ...base, return_to: "https://auth.example.com/login/callback#x" }),
+    ).toBeNull();
+
+    expect(
+      providerLoginParams({ ...base, return_to: "https://u:p@auth.example.com/login/callback" }),
+    ).toBeNull();
+
+    expect(
+      providerLoginParams({ ...base, return_to: "https://auth.example.com/consent" }),
+    ).toBeNull();
+
+    expect(
+      providerLoginParams({
+        ...base,
+        return_to: "https://auth.example.com/login/callback",
+        client_name: "Graf\x00ana",
+      }),
+    ).toBeNull();
   });
 });

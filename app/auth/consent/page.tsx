@@ -1,3 +1,4 @@
+import { getServerSession } from "@ory/nextjs/app";
 import { redirect } from "next/navigation";
 
 import { AuthContent } from "@/components/layout/auth-shell";
@@ -45,6 +46,19 @@ export default async function ConsentPage({ searchParams }: ConsentPageProps) {
     redirect("/auth/error?reason=invalid_request");
   }
 
+  const session = await getServerSession();
+  if (!session) {
+    const consentSearch = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (typeof value === "string") {
+        consentSearch.set(key, value);
+      }
+    }
+    const consentQs = consentSearch.toString();
+    const consentPath = consentQs ? `/auth/consent?${consentQs}` : "/auth/consent";
+    redirect(`/auth/login?return_to=${encodeURIComponent(consentPath)}`);
+  }
+
   const clientName = handoff.clientName || t("auth.consent.defaultClient");
 
   return (
@@ -81,16 +95,14 @@ export default async function ConsentPage({ searchParams }: ConsentPageProps) {
               {t("auth.consent.allow")}
             </Button>
           </form>
-          {!handoff.skipConsent ? (
-            <form action={handoff.providerReturnTo} method="post">
-              <input name="transaction" type="hidden" value={handoff.transaction} />
-              <input name="csrf" type="hidden" value={handoff.csrf} />
-              <input name="decision" type="hidden" value="deny" />
-              <Button className="w-full sm:w-auto" type="submit" variant="outline">
-                {t("auth.consent.deny")}
-              </Button>
-            </form>
-          ) : null}
+          <form action={handoff.providerReturnTo} method="post">
+            <input name="transaction" type="hidden" value={handoff.transaction} />
+            <input name="csrf" type="hidden" value={handoff.csrf} />
+            <input name="decision" type="hidden" value="deny" />
+            <Button className="w-full sm:w-auto" type="submit" variant="outline">
+              {t("auth.consent.deny")}
+            </Button>
+          </form>
         </CardFooter>
       </Card>
     </AuthContent>
