@@ -24,11 +24,18 @@ describe("provider handoff", () => {
     const result = providerLoginParams(params);
 
     expect(isProviderHandoff(params)).toBe(true);
+    const returnTo = new URL(String(result?.return_to));
+    expect(returnTo.pathname).toBe("/auth/login/continue");
+    expect(returnTo.searchParams.get("transaction")).toBe("transaction-id");
+    expect(returnTo.searchParams.get("csrf")).toBe("csrf-token");
+    expect(returnTo.searchParams.get("provider_callback")).toBe(
+      "https://auth.example.com/login/callback",
+    );
+    expect(returnTo.searchParams.get("lang")).toBe("es");
     expect(result).toEqual({
-      aal: "aal2",
       lang: "es",
       return_to:
-        "https://auth.example.com/login/callback?transaction=transaction-id&csrf=csrf-token",
+        "https://sso.example.com/auth/login/continue?transaction=transaction-id&csrf=csrf-token&provider_callback=https%3A%2F%2Fauth.example.com%2Flogin%2Fcallback&lang=es",
     });
   });
 
@@ -41,11 +48,11 @@ describe("provider handoff", () => {
         "https://auth.example.com/login/callback?csrf=csrf-token&flow=login&transaction=transaction-id",
     });
 
-    expect(result).toEqual({
-      aal: "aal2",
-      return_to:
-        "https://auth.example.com/login/callback?transaction=transaction-id&csrf=csrf-token",
-    });
+    const returnTo = new URL(String(result?.return_to));
+    expect(returnTo.pathname).toBe("/auth/login/continue");
+    expect(returnTo.searchParams.get("provider_callback")).toBe(
+      "https://auth.example.com/login/callback",
+    );
   });
 
   it("preserves consent state in an internal callback after authentication", () => {
@@ -318,5 +325,28 @@ describe("provider handoff", () => {
     });
 
     expect(result?.return_to).toMatch(/^\/auth\/consent\?/);
+  });
+
+  it("falls back to relative login continue URL when appBaseUrl is not set", async () => {
+    vi.resetModules();
+    vi.doMock("@/ory.config", () => ({
+      appBaseUrl: "",
+      orySdkUrl: "https://auth.example.com",
+    }));
+    const mod = await import("./provider-handoff");
+
+    const result = mod.providerLoginParams({
+      flow: "login",
+      transaction: "transaction-id",
+      csrf: "csrf-token",
+      return_to: "https://auth.example.com/login/callback",
+    });
+
+    expect(result?.return_to).toMatch(/^\/auth\/login\/continue\?/);
+    const returnTo = result?.return_to as string;
+    expect(returnTo).not.toContain("https://");
+    expect(returnTo).toContain("transaction=transaction-id");
+    expect(returnTo).toContain("csrf=csrf-token");
+    expect(returnTo).toContain("provider_callback=https%3A%2F%2Fauth.example.com%2Flogin%2Fcallback");
   });
 });
