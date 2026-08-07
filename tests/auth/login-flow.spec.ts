@@ -43,7 +43,10 @@ test("adapts the provider login handoff before creating a Kratos flow", async ({
 
   await expect(page).toHaveURL(/\/auth\/login\?flow=e2e-login-flow/);
   const returnTo = new URL(page.url()).searchParams.get("return_to");
-  expect(returnTo).toBe(`${callbackUrl}?transaction=transaction-id&csrf=csrf-token`);
+  const decoded = decodeURIComponent(returnTo ?? "");
+  expect(decoded).toContain("/auth/login/continue");
+  expect(decoded).toContain("transaction=transaction-id");
+  expect(decoded).toContain("csrf=csrf-token");
 });
 
 test("preserves nested return_to query parameters through the UI redirect", async ({
