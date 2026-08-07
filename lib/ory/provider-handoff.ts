@@ -282,6 +282,7 @@ export function providerLoginParams(params: FlowSearchParams): FlowSearchParams 
     const callback = new URL(handoff.providerReturnTo);
     callback.searchParams.set("transaction", handoff.transaction);
     callback.searchParams.set("csrf", handoff.csrf);
+    clean.aal = "aal2";
     clean.return_to = callback.toString();
   } else {
     clean.return_to = consentReturnTo(handoff);
