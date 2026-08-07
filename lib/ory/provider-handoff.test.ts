@@ -326,4 +326,27 @@ describe("provider handoff", () => {
 
     expect(result?.return_to).toMatch(/^\/auth\/consent\?/);
   });
+
+  it("falls back to relative login continue URL when appBaseUrl is not set", async () => {
+    vi.resetModules();
+    vi.doMock("@/ory.config", () => ({
+      appBaseUrl: "",
+      orySdkUrl: "https://auth.example.com",
+    }));
+    const mod = await import("./provider-handoff");
+
+    const result = mod.providerLoginParams({
+      flow: "login",
+      transaction: "transaction-id",
+      csrf: "csrf-token",
+      return_to: "https://auth.example.com/login/callback",
+    });
+
+    expect(result?.return_to).toMatch(/^\/auth\/login\/continue\?/);
+    const returnTo = result?.return_to as string;
+    expect(returnTo).not.toContain("https://");
+    expect(returnTo).toContain("transaction=transaction-id");
+    expect(returnTo).toContain("csrf=csrf-token");
+    expect(returnTo).toContain("provider_callback=https%3A%2F%2Fauth.example.com%2Flogin%2Fcallback");
+  });
 });
