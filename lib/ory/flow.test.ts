@@ -13,8 +13,10 @@ import {
   getProviderName,
   getSafeText,
   getString,
+  hasPasswordLogin,
   isChecked,
   isCodeInput,
+  isSocialOnlyLogin,
   isTotpCodeInput,
   isLookupSecretInput,
   isProviderNode,
@@ -412,5 +414,81 @@ describe("Ory flow helpers", () => {
         }),
       ),
     ).toBe("Provider");
+  });
+
+  describe("hasPasswordLogin", () => {
+    it("detects nodes with the password group", () => {
+      const nodes = [
+        { ...inputNode(), group: "default" },
+        { ...inputNode({ name: "password", type: "password" }), group: "password" },
+      ] as UiNode[];
+      expect(hasPasswordLogin(nodes)).toBe(true);
+    });
+
+    it("detects nodes with the code (passwordless) group", () => {
+      const nodes = [
+        { ...inputNode(), group: "default" },
+        { ...inputNode({ name: "code", type: "text" }), group: "code" },
+      ] as UiNode[];
+      expect(hasPasswordLogin(nodes)).toBe(true);
+    });
+
+    it("returns false when no password or code group nodes exist", () => {
+      const nodes = [
+        { ...inputNode(), group: "default" },
+        { ...inputNode(), group: "oidc" },
+      ] as UiNode[];
+      expect(hasPasswordLogin(nodes)).toBe(false);
+    });
+
+    it("returns false for an empty node array", () => {
+      expect(hasPasswordLogin([])).toBe(false);
+    });
+  });
+
+  describe("isSocialOnlyLogin", () => {
+    function makeProviderNode() {
+      const node = inputNode({
+        name: "provider",
+        type: "submit",
+        value: "github-provider",
+      });
+      node.group = "oidc";
+      return node;
+    }
+
+    it("returns true when providers exist but no password/code login", () => {
+      const nodes = [
+        { ...inputNode(), group: "default" },
+        makeProviderNode(),
+      ] as UiNode[];
+      const providerNodes = nodes.filter(isProviderNode);
+      expect(isSocialOnlyLogin(nodes, providerNodes)).toBe(true);
+    });
+
+    it("returns false when both providers and password login exist (mixed mode)", () => {
+      const nodes = [
+        { ...inputNode(), group: "default" },
+        { ...inputNode({ name: "password", type: "password" }), group: "password" },
+        makeProviderNode(),
+      ] as UiNode[];
+      const providerNodes = nodes.filter(isProviderNode);
+      expect(isSocialOnlyLogin(nodes, providerNodes)).toBe(false);
+    });
+
+    it("returns false when no providers are present (password-only)", () => {
+      const nodes = [
+        { ...inputNode(), group: "default" },
+        { ...inputNode({ name: "password", type: "password" }), group: "password" },
+      ] as UiNode[];
+      const providerNodes = nodes.filter(isProviderNode);
+      expect(isSocialOnlyLogin(nodes, providerNodes)).toBe(false);
+    });
+
+    it("returns false when neither providers nor password are present (empty state)", () => {
+      const nodes = [{ ...inputNode(), group: "default" }] as UiNode[];
+      const providerNodes = nodes.filter(isProviderNode);
+      expect(isSocialOnlyLogin(nodes, providerNodes)).toBe(false);
+    });
   });
 });

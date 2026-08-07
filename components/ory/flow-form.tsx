@@ -6,9 +6,11 @@ import {
   getLookupSecretEntries,
   getNodeAttributes,
   getString,
+  hasPasswordLogin,
   isHiddenInputNode,
   isLookupSecretCodeNode,
   isProviderNode,
+  isSocialOnlyLogin,
 } from "@/lib/ory/flow";
 import Script from "next/script";
 
@@ -367,12 +369,14 @@ export function FlowForm({
   const nodes = flow.ui.nodes;
   const providerNodes = separateProviders ? nodes.filter(isProviderNode) : [];
   const formNodes = separateProviders ? nodes.filter((node) => !isProviderNode(node)) : nodes;
+  const visibleFormNodes = formNodes.filter((node) => !isHiddenInputNode(node));
   const compactProviders = providerNodes.length >= 3;
   const providerGridClass = compactProviders
     ? "grid-cols-3"
     : providerNodes.length === 2
       ? "grid-cols-1 sm:grid-cols-2"
       : "grid-cols-1";
+  const socialOnly = separateProviders && isSocialOnlyLogin(nodes, providerNodes);
 
   const form =
     kind === "settings" ? (
@@ -390,8 +394,15 @@ export function FlowForm({
     ) : (
       <form action={flow.ui.action} className="flex flex-col gap-6" method={method}>
         <FlowMessages messages={flow.ui.messages} />
-        <div className="flex flex-col gap-5">{renderNodes(formNodes, kind, "form")}</div>
-        {providerNodes.length > 0 && formNodes.length > 0 ? (
+        {renderNodes(
+          formNodes.filter((node) => isHiddenInputNode(node)),
+          kind,
+          "form-hidden",
+        )}
+        {visibleFormNodes.length > 0 ? (
+          <div className="flex flex-col gap-5">{renderNodes(visibleFormNodes, kind, "form")}</div>
+        ) : null}
+        {!socialOnly && providerNodes.length > 0 && hasPasswordLogin(nodes) ? (
           <div
             aria-label={t(compactProviders ? "ory.nodes.emailDividerCompact" : "ory.nodes.emailDivider")}
             className="flex items-center gap-3 py-1 text-xs font-medium text-muted-foreground"
@@ -405,7 +416,10 @@ export function FlowForm({
           </div>
         ) : null}
         {providerNodes.length > 0 ? (
-          <section aria-label={t("ory.nodes.socialLogin")} className={`grid gap-3 ${providerGridClass}`}>
+          <section
+            aria-label={t("ory.nodes.socialLogin")}
+            className={socialOnly ? "flex flex-col items-center gap-3 pt-1" : `grid gap-3 ${providerGridClass}`}
+          >
             {providerNodes.map((node, index) => (
               <OryNode
                 compactProvider={compactProviders}

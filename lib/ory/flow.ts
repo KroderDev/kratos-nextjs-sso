@@ -413,3 +413,24 @@ export function isHiddenInputNode(node: UiNode) {
 export function isChecked(value: unknown) {
   return value === true || value === "true" || value === "on" || value === "1";
 }
+
+/**
+ * Determines whether a UI node collection includes password or code-based login methods.
+ *
+ * @param nodes - The flow nodes to inspect
+ * @returns `true` when at least one node belongs to the `password` or `code` group, `false` otherwise
+ */
+export function hasPasswordLogin(nodes: UiNode[]) {
+  return nodes.some((node) => node.group === "password" || node.group === "code");
+}
+
+/**
+ * Determines whether a login flow is social-provider-only (no password/code login methods).
+ *
+ * @param nodes - All flow nodes
+ * @param providerNodes - The subset of nodes that are social login providers
+ * @returns `true` when social providers are present and no password/code login methods exist
+ */
+export function isSocialOnlyLogin(nodes: UiNode[], providerNodes: UiNode[]) {
+  return providerNodes.length > 0 && !hasPasswordLogin(nodes);
+}

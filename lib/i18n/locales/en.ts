@@ -73,6 +73,7 @@ export const en = {
       title: "Welcome back",
       eyebrow: "Sign in",
       description: "Sign in with your email address or a connected account.",
+      descriptionSocialOnly: "Sign in with a connected account.",
       footer: {
         needIdentity: "Don't have an account?",
         createOne: "Create an account",

@@ -3,7 +3,52 @@ import { createServer } from "node:http";
 const port = Number(process.env.PORT ?? 4010);
 const flowId = "e2e-login-flow";
 const registrationDisabled = process.env.MOCK_KRATOS_REGISTRATION === "disabled";
+const socialOnly = process.env.MOCK_KRATOS_SOCIAL_ONLY === "true";
 const requests = [];
+
+const DEFAULT_NODES = socialOnly
+  ? [
+      {
+        type: "input",
+        group: "default",
+        attributes: {
+          name: "csrf_token",
+          type: "hidden",
+          required: true,
+          value: "e2e-csrf-token",
+          node_type: "input",
+        },
+        messages: [],
+        meta: {},
+      },
+      {
+        type: "input",
+        group: "oidc",
+        attributes: {
+          name: "provider",
+          type: "submit",
+          value: "google-provider",
+          node_type: "input",
+          label: { id: 1, text: "Sign in with Google", type: "info" },
+        },
+        messages: [],
+        meta: {},
+      },
+      {
+        type: "input",
+        group: "oidc",
+        attributes: {
+          name: "provider",
+          type: "submit",
+          value: "github-provider",
+          node_type: "input",
+          label: { id: 2, text: "Sign in with GitHub", type: "info" },
+        },
+        messages: [],
+        meta: {},
+      },
+    ]
+  : [];
 
 const flow = {
   id: flowId,
@@ -13,7 +58,7 @@ const flow = {
   ui: {
     action: `http://127.0.0.1:${port}/self-service/login`,
     method: "POST",
-    nodes: [],
+    nodes: DEFAULT_NODES,
     messages: [],
   },
 };
