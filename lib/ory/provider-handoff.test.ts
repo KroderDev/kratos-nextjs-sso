@@ -40,6 +40,7 @@ describe("provider handoff", () => {
       client_name: "Grafana",
       scope: "openid profile email",
       skip_consent: "true",
+      lang: "es",
     });
 
     expect(result?.flow).toBeUndefined();
@@ -53,6 +54,7 @@ describe("provider handoff", () => {
     expect(returnTo.searchParams.get("csrf")).toBe("csrf-token");
     expect(returnTo.searchParams.get("scope")).toBe("openid profile email");
     expect(returnTo.searchParams.get("skip_consent")).toBe("true");
+    expect(returnTo.searchParams.get("lang")).toBe("es");
   });
 
   it("parses a consent callback without trusting a different origin", () => {
@@ -117,5 +119,168 @@ describe("provider handoff", () => {
         client_name: "Graf\x00ana",
       }),
     ).toBeNull();
+
+    expect(
+      providerLoginParams({
+        ...base,
+        return_to: "https://auth.example.com/login/callback",
+        client_name: "a".repeat(257),
+      }),
+    ).toBeNull();
+
+    expect(
+      providerLoginParams({ ...base, return_to: "https://auth.example.com/" + "x".repeat(2036) }),
+    ).toBeNull();
+
+    expect(
+      providerLoginParams({ ...base, return_to: "://unparseable" }),
+    ).toBeNull();
+  });
+
+  it("passes through non-handoff params unchanged", () => {
+    const params = { flow: "some-kratos-flow-id", lang: "en" };
+    expect(providerLoginParams(params)).toBe(params);
+  });
+
+  it("rejects consent handoff with invalid opaque values", () => {
+    expect(consentHandoff({})).toBeNull();
+
+    expect(
+      consentHandoff({
+        provider_return_to: "https://auth.example.com/consent",
+        transaction: "!invalid!",
+        csrf: "csrf-token",
+      }),
+    ).toBeNull();
+
+    expect(
+      consentHandoff({
+        provider_return_to: "https://auth.example.com/consent",
+        transaction: "",
+        csrf: "csrf-token",
+      }),
+    ).toBeNull();
+  });
+
+  it("rejects consent handoff with dangerous client name or scope", () => {
+    const base = {
+      provider_return_to: "https://auth.example.com/consent",
+      transaction: "transaction-id",
+      csrf: "csrf-token",
+    };
+
+    expect(
+      consentHandoff({ ...base, client_name: "\x00Bad" }),
+    ).toBeNull();
+
+    expect(
+      consentHandoff({ ...base, client_name: "a".repeat(257) }),
+    ).toBeNull();
+
+    expect(
+      consentHandoff({ ...base, scope: "a".repeat(2049) }),
+    ).toBeNull();
+
+    expect(
+      consentHandoff({ ...base, scope: "openid profile \x7Fbad" }),
+    ).toBeNull();
+  });
+
+  it("parses consent handoff without optional fields", () => {
+    const params = {
+      provider_return_to: "https://auth.example.com/consent",
+      transaction: "transaction-id",
+      csrf: "csrf-token",
+    };
+
+    const result = consentHandoff(params);
+    expect(result).not.toBeNull();
+    expect(result?.clientName).toBe("");
+    expect(result?.scopes).toEqual([]);
+    expect(result?.skipConsent).toBe(false);
+    expect(result?.locale).toBeUndefined();
+  });
+
+  it("rejects consent login handoff with bad scope", () => {
+    expect(
+      providerLoginParams({
+        flow: "consent",
+        transaction: "transaction-id",
+        csrf: "csrf-token",
+        return_to: "https://auth.example.com/consent",
+        scope: "a".repeat(2049),
+      }),
+    ).toBeNull();
+  });
+
+  it("covers provider origin catch when SDK URL is invalid", async () => {
+    vi.resetModules();
+    vi.doMock("@/ory.config", () => ({
+      appBaseUrl: "https://sso.example.com",
+      orySdkUrl: "",
+    }));
+    const mod = await import("./provider-handoff");
+
+    expect(
+      mod.providerLoginParams({
+        flow: "login",
+        transaction: "transaction-id",
+        csrf: "csrf-token",
+        return_to: "https://auth.example.com/login/callback",
+      }),
+    ).toBeNull();
+  });
+
+  it("handles single-element array query params", () => {
+    const result = providerLoginParams({
+      flow: ["login"],
+      transaction: "transaction-id",
+      csrf: "csrf-token",
+      return_to: "https://auth.example.com/login/callback",
+    });
+
+    expect(result).not.toBeNull();
+    expect(result?.return_to).toContain("transaction-id");
+  });
+
+  it("rejects multi-element array query params by treating them as non-handoff", () => {
+    const params: Record<string, string | string[]> = {
+      flow: ["login", "consent"],
+      transaction: "transaction-id",
+      csrf: "csrf-token",
+      return_to: "https://auth.example.com/login/callback",
+    };
+
+    expect(providerLoginParams(params)).toBe(params);
+  });
+
+  it("handles login handoff without locale", () => {
+    const result = providerLoginParams({
+      flow: "login",
+      transaction: "transaction-id",
+      csrf: "csrf-token",
+      return_to: "https://auth.example.com/login/callback",
+    });
+
+    expect(result).not.toBeNull();
+    expect(result?.lang).toBeUndefined();
+  });
+
+  it("falls back to relative consent URL when appBaseUrl is not set", async () => {
+    vi.resetModules();
+    vi.doMock("@/ory.config", () => ({
+      appBaseUrl: "",
+      orySdkUrl: "https://auth.example.com",
+    }));
+    const mod = await import("./provider-handoff");
+
+    const result = mod.providerLoginParams({
+      flow: "consent",
+      transaction: "transaction-id",
+      csrf: "csrf-token",
+      return_to: "https://auth.example.com/consent",
+    });
+
+    expect(result?.return_to).toMatch(/^\/auth\/consent\?/);
   });
 });
