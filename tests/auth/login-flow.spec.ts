@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 
 const kratosBaseUrl = `http://127.0.0.1:${process.env.PLAYWRIGHT_KRATOS_PORT ?? "4010"}`;
 
+test.describe.configure({ mode: "serial" });
+
 test("loads a browser login flow with the browser cookie", async ({
   page,
   request,
@@ -24,6 +26,23 @@ test("loads a browser login flow with the browser cookie", async ({
 
   expect(flowRequests).toHaveLength(1);
   expect(flowRequests[0]?.cookie).toContain("csrf_token=e2e-flow-cookie");
+});
+
+test("preserves nested return_to query parameters through the UI redirect", async ({
+  page,
+}) => {
+  const callbackUrl = new URL("https://provider.example/login/callback");
+  callbackUrl.searchParams.set("csrf", "csrf-token");
+  callbackUrl.searchParams.set("transaction", "transaction-id");
+  callbackUrl.searchParams.set("flow", "login");
+
+  await page.goto(
+    `/self-service/login/browser?return_to=${encodeURIComponent(callbackUrl.toString())}`,
+  );
+
+  expect(new URL(page.url()).searchParams.get("return_to")).toBe(
+    callbackUrl.toString(),
+  );
 });
 
 test("hides password recovery link when no password login methods are available in the flow", async ({

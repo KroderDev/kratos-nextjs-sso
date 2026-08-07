@@ -36,12 +36,15 @@ describe("Ory URL rewriting", () => {
   });
 
   it("rewrites nested flow values without changing primitive non-string values", () => {
+    const callbackUrl =
+      "https://provider.example/login/callback?csrf=csrf-token&transaction=transaction-id&flow=login";
     const flow = {
       ui: {
         action: "https://ory.example.com/self-service/login",
         nodes: [{ attributes: { href: "https://ory.example.com/login", count: 42, active: true } }],
       },
       id: "flow-id",
+      return_to: callbackUrl,
       count: 10,
       active: false,
       tags: ["tag1", "https://ory.example.com/login"],
@@ -53,6 +56,7 @@ describe("Ory URL rewriting", () => {
         nodes: [{ attributes: { href: "https://auth.example.com/auth/login", count: 42, active: true } }],
       },
       id: "flow-id",
+      return_to: callbackUrl,
       count: 10,
       active: false,
       tags: ["tag1", "https://auth.example.com/auth/login"],
@@ -76,6 +80,23 @@ describe("Ory URL rewriting", () => {
     expect(response.headers.get("location")).toBe(
       "https://auth.example.com/auth/login?flow=123",
     );
+  });
+
+  it("preserves nested return_to query parameters when rewriting a location", () => {
+    const callbackUrl =
+      "https://provider.example/login/callback?csrf=csrf-token&transaction=transaction-id&flow=login";
+    const location = new URL("https://ory.example.com/login");
+    location.searchParams.set("return_to", callbackUrl);
+    const response = new Response(null, {
+      headers: { location: location.toString() },
+      status: 303,
+    });
+
+    rewriteOryResponseLocation(response, "https://auth.example.com");
+
+    expect(
+      new URL(response.headers.get("location") ?? "").searchParams.get("return_to"),
+    ).toBe(callbackUrl);
   });
 
   it("returns unmodified response when location header is missing", () => {

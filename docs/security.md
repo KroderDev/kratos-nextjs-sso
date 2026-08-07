@@ -155,6 +155,26 @@ The session check only runs when Ory is configured (`isOryConfigured` is
 `true`). In unconfigured environments (local development without an Ory
 project, E2E smoke tests), the dashboard renders without authentication.
 
+### Nested `return_to` URLs
+
+`return_to` is an opaque URL value. When a consent provider includes callback
+parameters inside it, the provider must build the outer URL with
+`URLSearchParams` (or equivalent standards-compliant URL APIs). For example:
+
+```ts
+const callback = new URL("https://provider.example/login/callback");
+callback.searchParams.set("csrf", csrf);
+callback.searchParams.set("transaction", transaction);
+callback.searchParams.set("flow", "login");
+
+const login = new URL("https://app.example/auth/login");
+login.searchParams.set("return_to", callback.toString());
+```
+
+Do not concatenate the callback URL into the outer query string. Unescaped
+ampersands are parsed as outer parameters before Next.js or Kratos can process
+the flow, and the original nested query boundaries cannot be recovered safely.
+
 ## Multi-Factor Authentication
 
 Kratos owns TOTP and backup recovery-code validation. The UI only renders the

@@ -3,6 +3,8 @@ export type FlowSearchParams = Record<string, string | string[] | undefined>;
 /**
  * Builds a flow route without the stale flow identifier while preserving
  * explicitly approved public parameters such as language and return_to.
+ * URLSearchParams is intentional here: return_to is an opaque URL value, so
+ * nested query separators must be encoded as part of the value.
  *
  * @param path - The application route that should receive the fresh flow
  * @param params - The current route search parameters
@@ -12,7 +14,7 @@ export type FlowSearchParams = Record<string, string | string[] | undefined>;
 export function buildCleanFlowUrl(
   path: string,
   params: FlowSearchParams,
-  keys: string[],
+  keys: readonly string[],
 ) {
   const searchParams = new URLSearchParams();
 

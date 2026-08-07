@@ -29,6 +29,7 @@ import {
 } from "@/lib/ory/identity";
 import { appBaseUrl, isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
+import { buildCleanFlowUrl } from "@/lib/ory/params";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +80,13 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const session = await getServerSession();
 
   if (!session?.identity) {
-    redirect("/auth/login?return_to=/dashboard");
+    redirect(
+      buildCleanFlowUrl(
+        "/auth/login",
+        { return_to: "/dashboard" },
+        ["return_to"],
+      ),
+    );
   }
 
   const identity = session.identity;

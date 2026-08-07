@@ -115,7 +115,13 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
   const session = await getServerSession();
 
   if (!session?.identity) {
-    redirect(`/auth/login?${new URLSearchParams({ return_to: "/dashboard/settings" }).toString()}`);
+    redirect(
+      buildCleanFlowUrl(
+        "/auth/login",
+        { return_to: "/dashboard/settings" },
+        ["return_to"],
+      ),
+    );
   }
 
   const identity = session.identity;

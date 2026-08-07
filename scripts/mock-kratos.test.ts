@@ -106,6 +106,23 @@ describe("mock-kratos e2e test server", () => {
     });
   });
 
+  it("preserves nested return_to query parameters in the browser redirect", async () => {
+    const handler = await loadHandler();
+    const callbackUrl =
+      "https://provider.example/login/callback?csrf=csrf-token&transaction=transaction-id&flow=login";
+    const exchange = createExchange(
+      `/self-service/login/browser?return_to=${encodeURIComponent(callbackUrl)}`,
+    );
+
+    handler(exchange.request, exchange.response);
+
+    const location = new URL(
+      exchange.getHeaders()?.location ?? "",
+      "http://127.0.0.1:4010",
+    );
+    expect(location.searchParams.get("return_to")).toBe(callbackUrl);
+  });
+
   it("returns the login flow JSON when the CSRF cookie and flow id both match", async () => {
     const handler = await loadHandler();
     const exchange = createExchange(

@@ -21,4 +21,19 @@ describe("buildCleanFlowUrl", () => {
       "/auth/login",
     );
   });
+
+  it("encodes nested return_to query parameters as one opaque value", () => {
+    const callbackUrl =
+      "https://provider.example/login/callback?csrf=csrf-token&transaction=transaction-id&flow=login";
+    const cleanUrl = buildCleanFlowUrl(
+      "/auth/login",
+      { return_to: callbackUrl },
+      ["return_to"],
+    );
+
+    expect(cleanUrl).toContain("%26transaction%3Dtransaction-id");
+    expect(
+      new URL(cleanUrl, "https://app.example").searchParams.get("return_to"),
+    ).toBe(callbackUrl);
+  });
 });
