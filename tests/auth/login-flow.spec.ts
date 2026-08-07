@@ -28,6 +28,24 @@ test("loads a browser login flow with the browser cookie", async ({
   expect(flowRequests[0]?.cookie).toContain("csrf_token=e2e-flow-cookie");
 });
 
+test("adapts the provider login handoff before creating a Kratos flow", async ({
+  page,
+}) => {
+  const callbackUrl = new URL(`${kratosBaseUrl}/login/callback`);
+  const handoff = new URLSearchParams({
+    flow: "login",
+    transaction: "transaction-id",
+    csrf: "csrf-token",
+    return_to: callbackUrl.toString(),
+  });
+
+  await page.goto(`/auth/login?${handoff.toString()}`);
+
+  await expect(page).toHaveURL(/\/auth\/login\?flow=e2e-login-flow/);
+  const returnTo = new URL(page.url()).searchParams.get("return_to");
+  expect(returnTo).toBe(`${callbackUrl}?transaction=transaction-id&csrf=csrf-token`);
+});
+
 test("preserves nested return_to query parameters through the UI redirect", async ({
   page,
 }) => {

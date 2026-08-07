@@ -80,6 +80,17 @@ export const en = {
         recoverAccess: "Forgot your password?",
       },
     },
+    consent: {
+      title: "Continue to {client}",
+      eyebrow: "Application access",
+      description: "Review the access requested by {client}.",
+      defaultClient: "the application",
+      permissionsTitle: "Requested permissions",
+      permissionsDescription: "This application will receive the permissions below.",
+      basicAccess: "Basic account access",
+      allow: "Allow access",
+      deny: "Deny",
+    },
     registration: {
       title: "Create your account",
       eyebrow: "Sign up",

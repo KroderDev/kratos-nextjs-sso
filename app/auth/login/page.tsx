@@ -10,6 +10,7 @@ import { rewriteOryFlow } from "@/lib/ory/url";
 import { isOryConfigured, isRegistrationEnabled } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 import { getLoginFlowWithRequestHeaders } from "@/lib/ory/login";
+import { isProviderHandoff, providerLoginParams } from "@/lib/ory/provider-handoff";
 import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
 import { buildCleanFlowUrl } from "@/lib/ory/params";
 
@@ -21,13 +22,18 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
 }
 
 /**
- * Renders the localized login page with setup, authentication, or flow-unavailable state.
+ * Renders the localized login page with setup, authentication, or unavailable-flow state.
  *
- * @param searchParams - Request parameters used to load translations and retrieve the login flow.
+ * @param searchParams - Request parameters used to load translations and determine the login flow.
  */
 export default async function LoginPage({ searchParams }: OryPageParams) {
   const { t } = await getTranslations(searchParams);
   const params = await searchParams;
+  const flowParams = providerLoginParams(params);
+
+  if (!flowParams && isProviderHandoff(params)) {
+    redirect("/auth/error?reason=invalid_request");
+  }
 
   if (!isOryConfigured) {
     return (
@@ -51,17 +57,19 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
 
   let flow = null;
   try {
-    flow = rewriteOryFlow(await getLoginFlowWithRequestHeaders(params)) || null;
+    flow = rewriteOryFlow(await getLoginFlowWithRequestHeaders(flowParams ?? params)) || null;
   } catch (e) {
-    if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "login")) {
-      redirect(buildCleanFlowUrl("/auth/login", params, ["return_to", "lang"]));
+    if (typeof flowParams?.flow === "string" && isOryFlowRestartRedirect(e, "login")) {
+      redirect(buildCleanFlowUrl("/auth/login", flowParams, ["return_to", "lang"]));
     }
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders
   }
 
   const returnToParam =
-    typeof params.return_to === "string" ? `return_to=${encodeURIComponent(params.return_to)}` : null;
+    typeof flowParams?.return_to === "string"
+      ? `return_to=${encodeURIComponent(flowParams.return_to)}`
+      : null;
   const registrationHref = returnToParam
     ? `/auth/registration?${returnToParam}`
     : "/auth/registration";
