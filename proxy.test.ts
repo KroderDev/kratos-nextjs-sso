@@ -17,6 +17,7 @@ vi.mock("@ory/nextjs/middleware", () => ({
 }));
 
 vi.mock("./lib/ory/url", () => ({
+  restoreOryProviderCallback: vi.fn((value: string) => value),
   rewriteOryResponseLocation: vi.fn(
     (response: Response, fallbackOrigin: string) => {
       state.rewriteCalls.push({ response, fallbackOrigin });
@@ -33,6 +34,7 @@ vi.mock("./ory.config", () => ({
   get isOryConfigured() {
     return state.isOryConfigured;
   },
+  orySdkUrl: "https://ory.example.com",
 }));
 
 import { rewriteOryResponseLocation } from "./lib/ory/url";

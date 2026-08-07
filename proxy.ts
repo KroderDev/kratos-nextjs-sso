@@ -2,11 +2,14 @@ import { createOryMiddleware } from "@ory/nextjs/middleware";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { rewriteOryResponseLocation } from "./lib/ory/url";
+import {
+  restoreOryProviderCallback,
+  rewriteOryResponseLocation,
+} from "./lib/ory/url";
 import { getForwardedOrigin } from "./lib/ory/request";
 import { formatSettingsAreaCookie } from "./lib/ory/settings-state";
 import { getSettingsArea } from "./components/ory/settings-sections";
-import oryConfig, { appBaseUrl, isOryConfigured } from "./ory.config";
+import oryConfig, { appBaseUrl, isOryConfigured, orySdkUrl } from "./ory.config";
 
 const oryMiddleware = createOryMiddleware({
   project: oryConfig.project,
@@ -49,6 +52,17 @@ export async function proxy(request: NextRequest) {
   }
 
   const response = await oryMiddleware(request);
+  const location = response.headers.get("location");
+  if (location) {
+    const restoredLocation = restoreOryProviderCallback(
+      location,
+      requestOrigin,
+      orySdkUrl,
+    );
+    if (restoredLocation !== location) {
+      response.headers.set("location", restoredLocation);
+    }
+  }
 
   return rewriteOryResponseLocation(response, requestOrigin);
 }

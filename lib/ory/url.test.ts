@@ -10,6 +10,7 @@ import {
   rewriteOryFlow,
   rewriteOryResponseLocation,
   rewriteOryUrl,
+  restoreOryProviderCallback,
 } from "./url";
 
 describe("Ory URL rewriting", () => {
@@ -33,6 +34,32 @@ describe("Ory URL rewriting", () => {
       "https://attacker.example/login",
     );
     expect(rewriteOryUrl("not a URL")).toBe("not a URL");
+  });
+
+  it("restores provider callbacks without rewriting internal application routes", () => {
+    expect(
+      restoreOryProviderCallback(
+        "https://auth.example.com/auth/login/callback?transaction=opaque&csrf=token",
+        "https://auth.example.com",
+        "https://ory.example.com",
+      ),
+    ).toBe(
+      "https://ory.example.com/login/callback?transaction=opaque&csrf=token",
+    );
+    expect(
+      restoreOryProviderCallback(
+        "https://auth.example.com/consent?transaction=opaque&csrf=token",
+        "https://auth.example.com",
+        "https://ory.example.com",
+      ),
+    ).toBe("https://ory.example.com/consent?transaction=opaque&csrf=token");
+    expect(
+      restoreOryProviderCallback(
+        "https://auth.example.com/auth/consent?transaction=opaque&csrf=token",
+        "https://auth.example.com",
+        "https://ory.example.com",
+      ),
+    ).toBe("https://auth.example.com/auth/consent?transaction=opaque&csrf=token");
   });
 
   it("rewrites nested flow values without changing primitive non-string values", () => {

@@ -14,6 +14,12 @@ const uiPathMap: Record<string, string> = {
   "/verification": "/auth/verification",
   "/settings": "/dashboard/settings",
 };
+const providerCallbackPathMap: Record<string, string> = {
+  "/auth/login/callback": "/login/callback",
+  "/login/callback": "/login/callback",
+  "/consent": "/consent",
+  "/logout": "/logout",
+};
 
 function isLocalSdkUrl() {
   try {
@@ -77,6 +83,47 @@ export function rewriteOryUrl(value: string, fallbackOrigin?: string) {
   url.pathname = uiPathMap[url.pathname] ?? url.pathname;
 
   return url.toString();
+}
+
+/**
+ * Restores provider callbacks that the Ory proxy rewrites to the application origin.
+ *
+ * @param value - The response location returned by the Ory proxy
+ * @param applicationOrigin - The public SSO application origin
+ * @param providerOrigin - The public Ory provider origin
+ * @returns The provider callback URL when recognized, otherwise the original value
+ */
+export function restoreOryProviderCallback(
+  value: string,
+  applicationOrigin: string,
+  providerOrigin: string,
+) {
+  let location: URL;
+  let application: URL;
+  let provider: URL;
+
+  try {
+    location = new URL(value);
+    application = new URL(applicationOrigin);
+    provider = new URL(providerOrigin);
+  } catch {
+    return value;
+  }
+
+  if (location.origin !== application.origin) {
+    return value;
+  }
+
+  const callbackPath = providerCallbackPathMap[location.pathname];
+  if (!callbackPath) {
+    return value;
+  }
+
+  const restored = new URL(provider.origin);
+  restored.pathname = callbackPath;
+  restored.search = location.search;
+  restored.hash = location.hash;
+  return restored.toString();
 }
 
 function rewriteValue(value: unknown, fallbackOrigin?: string): unknown {
