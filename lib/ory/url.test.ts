@@ -36,6 +36,26 @@ describe("Ory URL rewriting", () => {
     expect(rewriteOryUrl("not a URL")).toBe("not a URL");
   });
 
+  it("returns provider callback value unchanged for invalid URLs", () => {
+    expect(
+      restoreOryProviderCallback(
+        "not a valid url",
+        "https://auth.example.com",
+        "https://ory.example.com",
+      ),
+    ).toBe("not a valid url");
+  });
+
+  it("returns provider callback value unchanged when location origin differs", () => {
+    expect(
+      restoreOryProviderCallback(
+        "https://other.example.com/login/callback?code=123",
+        "https://auth.example.com",
+        "https://ory.example.com",
+      ),
+    ).toBe("https://other.example.com/login/callback?code=123");
+  });
+
   it("restores provider callbacks without rewriting internal application routes", () => {
     expect(
       restoreOryProviderCallback(

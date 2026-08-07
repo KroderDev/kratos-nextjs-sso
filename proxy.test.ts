@@ -37,7 +37,7 @@ vi.mock("./ory.config", () => ({
   orySdkUrl: "https://ory.example.com",
 }));
 
-import { rewriteOryResponseLocation } from "./lib/ory/url";
+import { restoreOryProviderCallback, rewriteOryResponseLocation } from "./lib/ory/url";
 import { proxy } from "./proxy";
 
 describe("proxy", () => {
@@ -174,6 +174,29 @@ describe("proxy", () => {
     expect(nextResult.headers.get("set-cookie")).toContain("kratos_settings_area=security");
     expect(nextResult.headers.get("set-cookie")).toContain("Path=/dashboard/settings");
     expect(nextResult.headers.get("set-cookie")).toContain("SameSite=Lax");
+  });
+
+  it("sets rewritten location header when restoreOryProviderCallback modifies the location", async () => {
+    vi.mocked(restoreOryProviderCallback).mockImplementationOnce(
+      (value: string) => `${value}/restored`,
+    );
+    state.appBaseUrl = undefined;
+    state.middlewareResponse = new Response(null, {
+      status: 303,
+      headers: { location: "https://auth.example.com/auth/login/callback" },
+    });
+
+    const request = new NextRequest("http://localhost:3000/self-service/login/browser");
+    const result = await proxy(request);
+
+    expect(result.headers.get("location")).toBe(
+      "https://auth.example.com/auth/login/callback/restored",
+    );
+    expect(restoreOryProviderCallback).toHaveBeenCalledWith(
+      "https://auth.example.com/auth/login/callback",
+      "http://localhost:3000",
+      "https://ory.example.com",
+    );
   });
 
   it("does not set a settings cookie for an unknown area", async () => {
