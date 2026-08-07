@@ -376,6 +376,100 @@ describe("FlowForm", () => {
     expect(markup).toContain('aria-label="Sign in with a social account"');
   });
 
+  it("omits the divider when only providers and hidden inputs exist (social-only flow)", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      providerNode(),
+      providerNode({ value: "github-provider", label: { id: 2, text: "Sign in with GitHub", type: "info" } }),
+    ]);
+    const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
+
+    expect(markup).not.toContain('role="separator"');
+    expect(markup).toContain('aria-label="Sign in with a social account"');
+  });
+
+  it("renders the divider for code (passwordless) method with providers", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      groupedNode("code", { name: "code", type: "text", label: { id: 1, text: "Verification code", type: "info" } }),
+      providerNode(),
+    ]);
+    const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
+
+    expect(markup).toContain('role="separator"');
+    expect(markup).toContain('aria-label="Sign in with a social account"');
+  });
+
+  it("renders the divider for mixed password+social mode", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      groupedNode("password", { name: "password", type: "password", label: { id: 2, text: "Password", type: "info" } }),
+      providerNode(),
+    ]);
+    const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
+
+    expect(markup).toContain('role="separator"');
+    expect(markup).toContain('aria-label="Sign in with a social account"');
+  });
+
+  it("renders the divider for password+social even when providers are compact", () => {
+    const flow = buildFlow([
+      groupedNode("password", { name: "password", type: "password" }),
+      providerNode({ value: "google-provider", label: { id: 1, text: "Sign in with Google", type: "info" } }),
+      providerNode({ value: "github-provider", label: { id: 2, text: "Sign in with GitHub", type: "info" } }),
+      providerNode({ value: "facebook-provider", label: { id: 3, text: "Sign in with Facebook", type: "info" } }),
+    ]);
+    const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
+
+    expect(markup).toContain('aria-label="Or continue with"');
+  });
+
+  it("renders centered provider section when social-only", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      providerNode(),
+      providerNode({ value: "github-provider", label: { id: 2, text: "Sign in with GitHub", type: "info" } }),
+    ]);
+    const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
+
+    expect(markup).not.toContain('role="separator"');
+    expect(markup).toContain('aria-label="Sign in with a social account"');
+    expect(markup).toContain("flex-col items-center");
+  });
+
+  it("renders social-only with a single provider without a grid layout", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      providerNode(),
+    ]);
+    const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
+
+    expect(markup).not.toContain('role="separator"');
+    expect(markup).toContain('aria-label="Sign in with a social account"');
+    expect(markup).toContain("flex-col items-center");
+  });
+
+  it("still includes hidden nodes in the form for csrf submission when social-only", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      providerNode(),
+    ]);
+    const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
+
+    expect(markup).toContain('name="csrf_token"');
+    expect(markup).toContain('type="hidden"');
+  });
+
+  it("omits the visible form-node wrapper when there are no non-hidden, non-provider nodes", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      providerNode(),
+    ]);
+    const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
+
+    expect(markup).not.toContain('gap-5');
+  });
+
   it("wraps the form in a bordered container without a card when embedded", () => {
     const flow = buildFlow([inputNode()]);
     const markup = renderToStaticMarkup(<FlowForm embedded flow={flow} kind="login" />);

@@ -170,6 +170,15 @@ test("sign-in page shows setup state when unconfigured", async ({ page }) => {
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
 });
 
+test("sign-in page shows create-account link and hides password recovery when unconfigured", async ({
+  page,
+}) => {
+  await page.goto("/auth/login");
+
+  await expect(page.getByRole("link", { name: "Create an account" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Forgot your password?" })).toHaveCount(0);
+});
+
 test("registration page shows setup state when unconfigured", async ({ page }) => {
   const response = await page.goto("/auth/registration");
   expect(response?.status()).toBe(200);

@@ -25,3 +25,14 @@ test("loads a browser login flow with the browser cookie", async ({
   expect(flowRequests).toHaveLength(1);
   expect(flowRequests[0]?.cookie).toContain("csrf_token=e2e-flow-cookie");
 });
+
+test("hides password recovery link when no password login methods are available in the flow", async ({
+  page,
+  request,
+}) => {
+  await request.post(`${kratosBaseUrl}/__e2e/reset`);
+  await page.goto("/self-service/login/browser");
+
+  await expect(page.getByRole("link", { name: "Forgot your password?" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Create an account" })).toBeVisible();
+});

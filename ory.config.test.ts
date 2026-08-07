@@ -1,9 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import config, {
-  appBaseUrl,
-  isOryConfigured,
-  oryCanonicalUrl,
+  isRegistrationEnabled,
   orySdkUrl,
   orySetupMessage,
 } from "./ory.config";
@@ -20,12 +18,50 @@ describe("ory.config", () => {
     expect(config.project.name).toBeDefined();
   });
 
-  it("exports expected environment defaults or configured values", () => {
-    expect(typeof orySdkUrl).toBe("string");
-    expect(typeof oryCanonicalUrl).toBe("string");
-    expect(typeof appBaseUrl === "string" || appBaseUrl === undefined).toBe(true);
-    expect(typeof isOryConfigured).toBe("boolean");
-    expect(typeof orySetupMessage).toBe("string");
+  it("exports isRegistrationEnabled as a boolean", () => {
+    expect(typeof isRegistrationEnabled).toBe("boolean");
+  });
+
+  it("enables registration by default when NEXT_PUBLIC_ORY_REGISTRATION_ENABLED is unset", async () => {
+    vi.resetModules();
+    vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "http://localhost:4010/");
+    vi.stubEnv("ORY_SDK_URL", "");
+    delete process.env.NEXT_PUBLIC_ORY_REGISTRATION_ENABLED;
+
+    try {
+      const configured = await import("./ory.config");
+      expect(configured.isRegistrationEnabled).toBe(true);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("disables registration when NEXT_PUBLIC_ORY_REGISTRATION_ENABLED is 'false'", async () => {
+    vi.resetModules();
+    vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "http://localhost:4010/");
+    vi.stubEnv("ORY_SDK_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_ORY_REGISTRATION_ENABLED", "false");
+
+    try {
+      const configured = await import("./ory.config");
+      expect(configured.isRegistrationEnabled).toBe(false);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("keeps registration enabled when NEXT_PUBLIC_ORY_REGISTRATION_ENABLED has another value", async () => {
+    vi.resetModules();
+    vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "http://localhost:4010/");
+    vi.stubEnv("ORY_SDK_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_ORY_REGISTRATION_ENABLED", "0");
+
+    try {
+      const configured = await import("./ory.config");
+      expect(configured.isRegistrationEnabled).toBe(true);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("provides appropriate setup message depending on configuration state", () => {

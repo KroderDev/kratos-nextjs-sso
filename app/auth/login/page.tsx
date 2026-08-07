@@ -5,8 +5,9 @@ import type { OryPageParams } from "@ory/nextjs/app";
 import { AuthContent } from "@/components/layout/auth-shell";
 import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
+import { hasPasswordLogin, isProviderNode, isSocialOnlyLogin } from "@/lib/ory/flow";
 import { rewriteOryFlow } from "@/lib/ory/url";
-import { isOryConfigured } from "@/ory.config";
+import { isOryConfigured, isRegistrationEnabled } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 import { getLoginFlowWithRequestHeaders } from "@/lib/ory/login";
 import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
@@ -59,21 +60,41 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
     // flow stays null -> FlowUnavailable renders
   }
 
+  const returnToParam =
+    typeof params.return_to === "string" ? `return_to=${encodeURIComponent(params.return_to)}` : null;
+  const registrationHref = returnToParam
+    ? `/auth/registration?${returnToParam}`
+    : "/auth/registration";
+  const recoveryHref = returnToParam
+    ? `/auth/recovery?${returnToParam}`
+    : "/auth/recovery";
+
+  const passwordAvailable = flow ? hasPasswordLogin(flow.ui.nodes) : false;
+  const providerNodes = flow ? flow.ui.nodes.filter(isProviderNode) : [];
+  const socialOnly = flow ? isSocialOnlyLogin(flow.ui.nodes, providerNodes) : false;
+  const descriptionKey = socialOnly ? "auth.login.descriptionSocialOnly" : "auth.login.description";
+
   return (
     <AuthFlowPage
-      description={t("auth.login.description")}
+      description={t(descriptionKey)}
       eyebrow={t("auth.login.eyebrow")}
       flow={flow}
       footer={
         <span>
-          {t("auth.login.footer.needIdentity")}{" "}
-          <Link className="font-medium text-primary hover:underline" href="/auth/registration">
-            {t("auth.login.footer.createOne")}
-          </Link>
-          <span className="mx-2 text-border">/</span>
-          <Link className="font-medium text-primary hover:underline" href="/auth/recovery">
-            {t("auth.login.footer.recoverAccess")}
-          </Link>
+          {isRegistrationEnabled ? (
+            <>
+              {t("auth.login.footer.needIdentity")}{" "}
+              <Link className="font-medium text-primary hover:underline" href={registrationHref}>
+                {t("auth.login.footer.createOne")}
+              </Link>
+              {passwordAvailable ? <span className="mx-2 text-border">/</span> : null}
+            </>
+          ) : null}
+          {passwordAvailable ? (
+            <Link className="font-medium text-primary hover:underline" href={recoveryHref}>
+              {t("auth.login.footer.recoverAccess")}
+            </Link>
+          ) : null}
         </span>
       }
       kind="login"

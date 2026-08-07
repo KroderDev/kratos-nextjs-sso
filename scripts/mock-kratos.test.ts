@@ -242,4 +242,54 @@ describe("mock-kratos e2e test server", () => {
       { cookie: null, host: null, path: "/__e2e/requests", userAgent: null },
     ]);
   });
+
+  it("returns provider nodes when MOCK_KRATOS_SOCIAL_ONLY is set to true", async () => {
+    const handler = await loadHandler({ MOCK_KRATOS_SOCIAL_ONLY: "true" });
+    const exchange = createExchange(
+      "/self-service/login/flows?id=e2e-login-flow",
+      { cookie: "csrf_token=e2e-flow-cookie" },
+    );
+
+    handler(exchange.request, exchange.response);
+
+    expect(exchange.getStatus()).toBe(200);
+    const flow = exchange.getJson();
+
+    expect(flow.ui.nodes).toHaveLength(3);
+    const providers = flow.ui.nodes.filter(
+      (node: Record<string, unknown>) =>
+        node.group === "oidc",
+    );
+    expect(providers).toHaveLength(2);
+
+    const google = providers.find(
+      (node: Record<string, unknown>) =>
+        (node.attributes as Record<string, unknown>)?.value === "google-provider",
+    );
+    expect(google).toBeDefined();
+
+    const csrf = flow.ui.nodes.find(
+      (node: Record<string, unknown>) =>
+        node.group === "default",
+    );
+    expect(csrf).toBeDefined();
+    expect((csrf?.attributes as Record<string, unknown>)?.name).toBe("csrf_token");
+  });
+
+  it("excludes password-group nodes from the social-only flow nodes", async () => {
+    const handler = await loadHandler({ MOCK_KRATOS_SOCIAL_ONLY: "true" });
+    const exchange = createExchange(
+      "/self-service/login/flows?id=e2e-login-flow",
+      { cookie: "csrf_token=e2e-flow-cookie" },
+    );
+
+    handler(exchange.request, exchange.response);
+
+    const flow = exchange.getJson();
+    const hasPasswordNode = flow.ui.nodes.some(
+      (node: Record<string, unknown>) =>
+        node.group === "password" || node.group === "code",
+    );
+    expect(hasPasswordNode).toBe(false);
+  });
 });

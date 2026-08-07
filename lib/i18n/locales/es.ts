@@ -75,6 +75,7 @@ export const es: TranslationKeys = {
       title: "Bienvenido de nuevo",
       eyebrow: "Iniciar sesión",
       description: "Inicia sesión con tu correo electrónico o una cuenta conectada.",
+      descriptionSocialOnly: "Inicia sesión con una cuenta conectada.",
       footer: {
         needIdentity: "¿No tienes una cuenta?",
         createOne: "Crear una cuenta",
