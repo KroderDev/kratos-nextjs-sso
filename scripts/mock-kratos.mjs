@@ -97,8 +97,19 @@ const server = createServer((request, response) => {
   }
 
   if (url.pathname === "/self-service/login/browser") {
+    const location = new URL(
+      "/auth/login",
+      `http://127.0.0.1:${port}`,
+    );
+    location.searchParams.set("flow", flowId);
+
+    const returnTo = url.searchParams.get("return_to");
+    if (returnTo) {
+      location.searchParams.set("return_to", returnTo);
+    }
+
     response.writeHead(303, {
-      location: `/auth/login?flow=${flowId}`,
+      location: `${location.pathname}${location.search}`,
       "set-cookie": "csrf_token=e2e-flow-cookie; Path=/; HttpOnly",
     });
     response.end();
