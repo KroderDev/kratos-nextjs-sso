@@ -175,6 +175,22 @@ Do not concatenate the callback URL into the outer query string. Unescaped
 ampersands are parsed as outer parameters before Next.js or Kratos can process
 the flow, and the original nested query boundaries cannot be recovered safely.
 
+### Hydra provider handoffs
+
+The Mida Hydra login-consent provider uses `flow=login` and `flow=consent` to
+identify its browser handoff. Ory's Next.js SDK uses the same parameter for a
+Kratos flow ID, so [`app/auth/login`](../app/auth/login/page.tsx) recognizes
+only those provider values, validates the fixed `auth` origin and callback
+path, and starts a fresh Kratos browser flow without forwarding the provider
+flow marker as an Ory flow ID.
+
+Login carries the opaque transaction and CSRF values inside the provider
+callback. Consent carries them through the authenticated internal
+`/auth/consent` route, which submits only the provider's fixed `/consent`
+endpoint. The provider origin is derived from `NEXT_PUBLIC_ORY_SDK_URL`; an
+untrusted `return_to`, callback path, transaction, or CSRF value rejects the
+handoff instead of becoming a redirect or form target.
+
 ## Multi-Factor Authentication
 
 Kratos owns TOTP and backup recovery-code validation. The UI only renders the

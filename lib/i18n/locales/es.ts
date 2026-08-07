@@ -82,6 +82,17 @@ export const es: TranslationKeys = {
         recoverAccess: "¿Olvidaste tu contraseña?",
       },
     },
+    consent: {
+      title: "Continuar a {client}",
+      eyebrow: "Acceso de aplicación",
+      description: "Revisa el acceso solicitado por {client}.",
+      defaultClient: "la aplicación",
+      permissionsTitle: "Permisos solicitados",
+      permissionsDescription: "Esta aplicación recibirá los permisos indicados abajo.",
+      basicAccess: "Acceso básico a la cuenta",
+      allow: "Permitir acceso",
+      deny: "Denegar",
+    },
     registration: {
       title: "Crea tu cuenta",
       eyebrow: "Registrarse",
