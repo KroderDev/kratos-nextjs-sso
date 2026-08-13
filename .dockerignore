@@ -14,7 +14,6 @@ LICENSE
 coverage
 test-results
 playwright-report
-playwright.config.ts
 tests
 .vercel
 *.tsbuildinfo
