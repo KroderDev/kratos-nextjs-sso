@@ -1,5 +1,83 @@
 # Changelog
 
+## [0.5.0](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.4.0...v0.5.0) (2026-08-13)
+
+
+### Features
+
+* **ory:** add TOTP MFA support ([1f2d96a](https://github.com/KroderDev/kratos-nextjs-sso/commit/1f2d96a585939e9e775728a146487d0dae7a8d5c))
+* **settings:** add account security workspace ([1f3518d](https://github.com/KroderDev/kratos-nextjs-sso/commit/1f3518d25021eb5ef5e270f22153d06876bff901))
+* **settings:** add recovery code management ([6a085e9](https://github.com/KroderDev/kratos-nextjs-sso/commit/6a085e9c6170e63caac29ddac595074d2e65c4cf))
+* **settings:** complete dashboard identity settings ([52c9563](https://github.com/KroderDev/kratos-nextjs-sso/commit/52c95636b8080dab383bf951fc78e08c79e17a02))
+* **settings:** show flow messages as toasts ([43649b8](https://github.com/KroderDev/kratos-nextjs-sso/commit/43649b8a1b67006a49112acca61f9df18c5e6fe7))
+* **ui:** add base toast notifications ([a2c590b](https://github.com/KroderDev/kratos-nextjs-sso/commit/a2c590bdd88994334e4c81f957041c81e3919c70))
+
+
+### Bug Fixes
+
+* **auth:** accept nested provider callbacks ([6d7ec79](https://github.com/KroderDev/kratos-nextjs-sso/commit/6d7ec79d3f0e5934c150d4f7a00e3a8472b3c2b6))
+* **auth:** accept nested provider callbacks ([25ab9fa](https://github.com/KroderDev/kratos-nextjs-sso/commit/25ab9fa905c2859c78cefd7e5a8aa186e796c996))
+* **auth:** address PR feedback — session check, deny form, docs, coverage ([3e9b821](https://github.com/KroderDev/kratos-nextjs-sso/commit/3e9b8216c4b27ad08f65d87dbba2ca047e43bce3))
+* **auth:** handle Hydra provider handoffs ([82d79c0](https://github.com/KroderDev/kratos-nextjs-sso/commit/82d79c05102c0944348b4915b050f8a3500ed281))
+* **auth:** handle Hydra provider handoffs ([893d8ae](https://github.com/KroderDev/kratos-nextjs-sso/commit/893d8ae7e21a4ce9a02ce9ec6e72b5907b5449dd))
+* **auth:** preserve nested return_to query parameters ([7c9ad00](https://github.com/KroderDev/kratos-nextjs-sso/commit/7c9ad0062a33385f07fd0f2ccc65b7fdb5db93a2))
+* **auth:** preserve nested return_to query parameters ([f61ce71](https://github.com/KroderDev/kratos-nextjs-sso/commit/f61ce71a932314541200be6bbc6b98ae8d839272)), closes [#53](https://github.com/KroderDev/kratos-nextjs-sso/issues/53)
+* **auth:** preserve provider callback redirects ([6fd1527](https://github.com/KroderDev/kratos-nextjs-sso/commit/6fd1527bf42b9f4e3f6e49cf95076f70f92a1568))
+* **auth:** preserve provider callback redirects ([31c727b](https://github.com/KroderDev/kratos-nextjs-sso/commit/31c727b4e2cf9a016248fab39c80d7dddc87bf11))
+* **auth:** request AAL2 for provider login flows ([ee5e857](https://github.com/KroderDev/kratos-nextjs-sso/commit/ee5e857f5535c4febdc4f33a11453dc7fdef3f58))
+* **auth:** request AAL2 for provider login flows ([4e8d1a9](https://github.com/KroderDev/kratos-nextjs-sso/commit/4e8d1a9e415d9048a3cc6cbc0b456fe70da3254a))
+* **auth:** route provider login through SSO AAL continue page ([4a3786b](https://github.com/KroderDev/kratos-nextjs-sso/commit/4a3786bc0e86d2da1159995e7729c397d5485032))
+* **auth:** route provider login through SSO AAL continue page ([7c63315](https://github.com/KroderDev/kratos-nextjs-sso/commit/7c633159744d033811b4c74f7ea7fc869f6b5df3))
+* **auth:** use public metadata for avatars ([e76ce17](https://github.com/KroderDev/kratos-nextjs-sso/commit/e76ce1717c2130ae34c3c360db8f51121695023e))
+* **auth:** use public metadata for avatars ([6c11569](https://github.com/KroderDev/kratos-nextjs-sso/commit/6c11569cb611c37752e31d18c7dbaf7cd9ba9678))
+* **build:** include Playwright config in Docker context ([ecbaf25](https://github.com/KroderDev/kratos-nextjs-sso/commit/ecbaf254963345029eeac5142e608a3c894ab23a))
+* **dashboard:** render Ory QR codes ([9586911](https://github.com/KroderDev/kratos-nextjs-sso/commit/9586911de9d02acace461d891d004d733704483c))
+* **login:** hide divider and password recovery link when social-only providers are configured ([c312eb2](https://github.com/KroderDev/kratos-nextjs-sso/commit/c312eb23619ac0cca1fcdad5649702d6d31facd4))
+* **login:** hide divider and password recovery link when social-only providers are configured ([5444dc0](https://github.com/KroderDev/kratos-nextjs-sso/commit/5444dc0fe616ade2f0758d72bc68751abfdc406f)), closes [#52](https://github.com/KroderDev/kratos-nextjs-sso/issues/52)
+* **ory:** avoid uncontrolled OTP inputs ([c8cf128](https://github.com/KroderDev/kratos-nextjs-sso/commit/c8cf12861fed69cee9d77c3afc9f4d4ae9b9f6d8))
+* **settings:** address review feedback ([809cbdb](https://github.com/KroderDev/kratos-nextjs-sso/commit/809cbdbdca2bd3859c31cae08d06932c39c6c324))
+* **settings:** isolate section form validation ([c027371](https://github.com/KroderDev/kratos-nextjs-sso/commit/c027371b6899a3b21232445538a42b726fd90ffd))
+* **settings:** keep provider actions inline ([2cb3936](https://github.com/KroderDev/kratos-nextjs-sso/commit/2cb393602f76f1f3c7acc43c6b3c757e38789687))
+* **settings:** prevent loading overlay on section switches ([cf71add](https://github.com/KroderDev/kratos-nextjs-sso/commit/cf71add5f64df532c4d0840091654df2f37f2379))
+* **settings:** prevent loading overlay on section switches ([392f504](https://github.com/KroderDev/kratos-nextjs-sso/commit/392f50441580f4057f00dc46f38ec5c3f3d05aac))
+* **settings:** show provider link state ([e91ef84](https://github.com/KroderDev/kratos-nextjs-sso/commit/e91ef84dbff81308a31c0090cd5bcecc60445b4d))
+* **ui:** align loading skeleton with settings layout ([a4727ee](https://github.com/KroderDev/kratos-nextjs-sso/commit/a4727eec3437d9aa5c5e7b06ab445c0cb6eb2f90))
+
+
+### Dependencies
+
+* **deps-dev:** bump eslint-config-next in the dev-dependencies group ([b6e2ffb](https://github.com/KroderDev/kratos-nextjs-sso/commit/b6e2ffb66a08f32225d4ae73be795d04f8d509f6))
+* **deps-dev:** bump jsdom from 29.1.1 to 30.0.1 ([741b65c](https://github.com/KroderDev/kratos-nextjs-sso/commit/741b65cf9b975d7a25f527d463b0a348f3956854))
+* **deps-dev:** bump the dev-dependencies group with 3 updates ([3cbdbe6](https://github.com/KroderDev/kratos-nextjs-sso/commit/3cbdbe6b35d3b699572706dd4fe4a2fca2bc9577))
+* **deps:** bump codecov/codecov-action from 5 to 7 ([c4af8af](https://github.com/KroderDev/kratos-nextjs-sso/commit/c4af8af748593049e95e011102d3126422630b8f))
+* **deps:** bump lucide-react in the production-dependencies group ([995c10c](https://github.com/KroderDev/kratos-nextjs-sso/commit/995c10c0bb7639cde97d2a7d30f0c0e9fa44ea6e))
+* **deps:** bump pnpm/action-setup from 6 to 6.0.9 ([b8899da](https://github.com/KroderDev/kratos-nextjs-sso/commit/b8899daa0b626f8802bd9c2fa3fc632f85f0d22b))
+* **deps:** bump pnpm/action-setup from 6.0.9 to 6.0.10 ([0b7910f](https://github.com/KroderDev/kratos-nextjs-sso/commit/0b7910fe851e9482564159a83404e212a673c529))
+* **deps:** bump the production-dependencies group across 1 directory with 4 updates ([a4977f0](https://github.com/KroderDev/kratos-nextjs-sso/commit/a4977f03536a0a79bdbbe1e3fd5909225a8ee588))
+* override fast-uri, brace-expansion, and hono to resolve audit vulnerabilities ([f1902a9](https://github.com/KroderDev/kratos-nextjs-sso/commit/f1902a93a0cb76cc1932d397f16af90952830c66))
+
+
+### Documentation
+
+* add UX heuristics skill and documentation index ([3c1c785](https://github.com/KroderDev/kratos-nextjs-sso/commit/3c1c785a6b485bc8affea6694816d71200f035d6))
+
+
+### Tests
+
+* add coverage for login continue page and provider-handoff fallback ([a5b06ef](https://github.com/KroderDev/kratos-nextjs-sso/commit/a5b06ef15ca37009ed0621d5c9b130b9be401eee))
+* add mock-kratos social-only coverage for codecov patch threshold ([44ed140](https://github.com/KroderDev/kratos-nextjs-sso/commit/44ed140a58f632df67337ac55075d6ca6062a010))
+* cover restoreOryProviderCallback error paths and proxy integration ([f7b10ac](https://github.com/KroderDev/kratos-nextjs-sso/commit/f7b10ac06e4b5dfc4bbf2debcecb26bc72a0cbaf))
+* **coverage:** cover remaining Ory branches ([c0921a2](https://github.com/KroderDev/kratos-nextjs-sso/commit/c0921a29afff60fd9cfd20c591a083e1ac33e3db))
+* **ory:** bring provider-handoff coverage to 100% ([b55d56b](https://github.com/KroderDev/kratos-nextjs-sso/commit/b55d56b2a920326b92e49aa55dada1cf9e8500fe))
+* remove accidentally injected return_to test ([40a5f25](https://github.com/KroderDev/kratos-nextjs-sso/commit/40a5f25ffac960e7ac486755e1dcf95d96bf34a2))
+* **ui:** cover settings loading feedback ([7633f7b](https://github.com/KroderDev/kratos-nextjs-sso/commit/7633f7b6f0899d5e654329a3c216b2cc867fd1ce))
+* **ui:** cover toast notifications ([f61dacc](https://github.com/KroderDev/kratos-nextjs-sso/commit/f61daccf3afaa0959be3e883a22b61b120e8f4aa))
+
+
+### Continuous Integration
+
+* ignore pre-existing nanoid advisory ([f0f2137](https://github.com/KroderDev/kratos-nextjs-sso/commit/f0f2137e31b6afbd8d70ee44da393b9ef47a8093))
+
 ## [0.4.0](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.3.0...v0.4.0) (2026-08-02)
 
 
