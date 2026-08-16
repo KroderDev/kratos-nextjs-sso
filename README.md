@@ -54,6 +54,7 @@ Copy `.env.example` to `.env.local` and set your public app URL and Ory SDK URL:
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_ORY_SDK_URL=https://your-project.projects.oryapis.com
 NEXT_PUBLIC_ORY_OAUTH_ORIGINS=https://accounts.google.com
+NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS=https://your-client.example.com
 NEXT_PUBLIC_ORY_PROJECT_NAME=Your Platform
 ORY_PROJECT_API_TOKEN=ory_pat_...
 ```
@@ -117,6 +118,7 @@ docker build \
   --build-arg "NEXT_PUBLIC_BRAND_MARK=YP" \
   --build-arg "NEXT_PUBLIC_ORY_SDK_URL=https://your-project.projects.oryapis.com" \
   --build-arg "NEXT_PUBLIC_ORY_OAUTH_ORIGINS=https://accounts.google.com" \
+  --build-arg "NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS=https://your-client.example.com" \
   -t kratos-nextjs-sso:latest .
 
 docker run --rm -p 3000:3000 \
@@ -129,6 +131,7 @@ Before going live, confirm:
 - **Set `NEXT_PUBLIC_APP_URL`** to the exact HTTPS origin users will visit.
 - **Set public branding and Ory values** before the image build.
 - **Provide `ORY_PROJECT_API_TOKEN` only at runtime** when proxying requires it.
+- **Configure `NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS`** with exact OAuth client origins that receive form redirects; do not use wildcards.
 - **Put the app behind an ingress or reverse proxy** that terminates TLS and correctly sets `Host`, `X-Forwarded-Host`, and `X-Forwarded-Proto`.
 - **Configure Ory return URLs and allowed origins** for the deployed application URL.
 - **Point health checks at `/api/health`.**

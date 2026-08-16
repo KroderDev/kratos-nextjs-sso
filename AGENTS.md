@@ -18,5 +18,5 @@
 ## Configuration and Builds
 
 - Copy `.env.example` to `.env.local` for a real Ory project. `NEXT_PUBLIC_*` values are embedded at `next build` time, so set branding, app URL, and SDK URL before building or creating a Docker image.
-- `NEXT_PUBLIC_ORY_SDK_URL` is the public identity API endpoint. `NEXT_PUBLIC_ORY_CANONICAL_URL` is optional provider URL metadata for proxy rewrites; `ORY_PROJECT_API_TOKEN` is supplied only at runtime when required by the provider setup.
+- `NEXT_PUBLIC_ORY_SDK_URL` is the public identity API endpoint. `NEXT_PUBLIC_ORY_CANONICAL_URL` is optional provider URL metadata for proxy rewrites; `NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS` is the exact origin allowlist for additional form destinations and OAuth client redirects; `ORY_PROJECT_API_TOKEN` is supplied only at runtime when required by the provider setup.
 - `next.config.ts` uses `output: "standalone"`; the Dockerfile builds the image with public values as build args and runs the standalone server as the non-root `nextjs` user. The health endpoint is `/api/health`.

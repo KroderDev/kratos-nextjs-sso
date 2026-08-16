@@ -33,7 +33,7 @@ All headers are emitted on every route via [`next.config.ts`](../next.config.ts)
 ```
 default-src 'self'
 connect-src 'self' <ORY_SDK_ORIGIN>
-form-action 'self' <ORY_SDK_ORIGIN>
+form-action 'self' <ORY_SDK_ORIGIN> <CONFIGURED_FORM_ACTION_ORIGINS>
 script-src 'self' <ORY_SDK_ORIGIN> 'unsafe-inline'
 img-src 'self' data: https:
 style-src 'self' 'unsafe-inline'
@@ -46,7 +46,7 @@ frame-ancestors 'none'
 | --- | --- |
 | `default-src 'self'` | Lock down all fetches to the application origin by default. |
 | `connect-src` | Allow XHR/fetch to the Ory SDK API origin so browser flows can call the identity API directly. |
-| `form-action` | Restrict `<form action>` destinations to the app and the Ory API origin. Prevents form-action hijacking even if a malicious flow action bypasses the server-side check. |
+| `form-action` | Restrict `<form action>` destinations to the app, Ory API, and explicitly configured provider/client origins. This also permits the final OAuth client redirect after a consent POST without allowing arbitrary destinations. |
 | `script-src 'unsafe-inline'` | Next.js emits inline `<script>` tags for bootstrap and route preloading. Nonce-based CSP requires framework-level support that is not yet available. The policy scopes script sources to `'self'` and the Ory origin. |
 | `img-src https:` | QR codes and OIDC provider logos are hosted on external HTTPS origins. Restricting to specific origins would require an allowlist of every configured OIDC provider. |
 | `style-src 'self' 'unsafe-inline'` | Next.js and React components emit dynamic inline styles and style attributes at runtime. The policy scopes style origins to `'self'`. |
@@ -111,10 +111,15 @@ The allowed origin set is built from three configuration values (mapped in
 2. `NEXT_PUBLIC_ORY_SDK_URL` — the Ory Identity API origin.
 3. `NEXT_PUBLIC_ORY_CANONICAL_URL` — an optional canonical provider URL.
 
-The CSP `form-action` directive also includes the origins in
+The CSP `form-action` directive includes the origins in
 `NEXT_PUBLIC_ORY_OAUTH_ORIGINS`. Set this build-time variable to the explicit
-OAuth authorization origins used by the configured providers, separated by
-commas or whitespace. Do not use a wildcard origin.
+OAuth provider origins used by the configured providers, separated by commas or
+whitespace. Do not use a wildcard origin.
+
+Additional form destinations, including OAuth client origins that receive the
+redirect after a consent POST, belong in
+`NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS`. Use exact HTTP or HTTPS origins only;
+paths, credentials, and wildcard hosts are rejected.
 
 Only origins with `http:` or `https:` protocol are included. Invalid or
 unset URLs are silently excluded from the set.
@@ -177,7 +182,7 @@ the flow, and the original nested query boundaries cannot be recovered safely.
 
 ### Hydra provider handoffs
 
-The Mida Hydra login-consent provider uses `flow=login` and `flow=consent` to
+The Hydra login-consent provider uses `flow=login` and `flow=consent` to
 identify its browser handoff. Ory's Next.js SDK uses the same parameter for a
 Kratos flow ID, so [`app/auth/login`](../app/auth/login/page.tsx) recognizes
 only those provider values, validates the provider origin and the fixed
@@ -299,6 +304,7 @@ pnpm test:e2e
 ## Production Deployment Checklist
 
 - [ ] `NEXT_PUBLIC_APP_URL` is set to the exact HTTPS origin.
+- [ ] `NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS` contains every exact OAuth client origin that receives form redirects.
 - [ ] Ingress validates and sets `Host`, `X-Forwarded-Host`, and
   `X-Forwarded-Proto`.
 - [ ] Ingress terminates TLS and redirects HTTP to HTTPS.

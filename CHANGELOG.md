@@ -288,7 +288,7 @@
 
 ### Documentation
 
-* add branding customization section and remove Mida development instructions ([744c232](https://github.com/KroderDev/kratos-nextjs-sso/commit/744c23292504306794a1c95539ca6bf7c7fc605f))
+* add branding customization section and remove development instructions ([744c232](https://github.com/KroderDev/kratos-nextjs-sso/commit/744c23292504306794a1c95539ca6bf7c7fc605f))
 * add i18n guide in docs/i18n.md ([f5d7e80](https://github.com/KroderDev/kratos-nextjs-sso/commit/f5d7e8026787dd6d82e42df8425cc69be5fb77ed))
 * replace generic Next.js warning with repo-specific guidance ([395e6b5](https://github.com/KroderDev/kratos-nextjs-sso/commit/395e6b56f3ab604fd030c1ebc782fda022f7d0e2))
 * **security:** extract and expand security documentation ([f349747](https://github.com/KroderDev/kratos-nextjs-sso/commit/f349747b8732e46964a0de128e8513a25ecc1d3a))
