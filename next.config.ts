@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-import { getFormActionSources, getOAuthOrigins } from "./lib/ory/csp";
+import { getConfiguredOrigins, getFormActionSources } from "./lib/ory/csp";
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -24,8 +24,15 @@ const nextConfig: NextConfig = {
     })();
     const connectSources = ["'self'", sdkOrigin].filter(Boolean).join(" ");
     const scriptSources = ["'self'", sdkOrigin].filter(Boolean).join(" ");
-    const oauthOrigins = getOAuthOrigins(process.env.NEXT_PUBLIC_ORY_OAUTH_ORIGINS);
-    const formSources = getFormActionSources(sdkOrigin, oauthOrigins);
+    const oauthOrigins = getConfiguredOrigins(process.env.NEXT_PUBLIC_ORY_OAUTH_ORIGINS);
+    const formActionOrigins = getConfiguredOrigins(
+      process.env.NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS,
+    );
+    const formSources = getFormActionSources(
+      sdkOrigin,
+      oauthOrigins,
+      formActionOrigins,
+    );
     const developmentScriptSource =
       process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "";
     const securityHeaders = [

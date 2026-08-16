@@ -1,12 +1,12 @@
 const allowedProtocols = new Set(["http:", "https:"]);
 
 /**
- * Parses configured OAuth provider origins for use in a CSP `form-action` directive.
+ * Parses configured origins for use in a CSP `form-action` directive.
  *
- * @param value - A whitespace- or comma-separated list of provider URLs
+ * @param value - A whitespace- or comma-separated list of URLs
  * @returns Unique HTTP or HTTPS origins without credentials, paths, queries, or fragments
  */
-export function getOAuthOrigins(value: string | undefined) {
+export function getConfiguredOrigins(value: string | undefined) {
   const origins = new Set<string>();
 
   for (const candidate of value?.split(/[\s,]+/) ?? []) {
@@ -31,7 +31,7 @@ export function getOAuthOrigins(value: string | undefined) {
 
       origins.add(url.origin);
     } catch {
-      // Ignore malformed provider origins rather than weakening the CSP.
+      // Ignore malformed configured origins rather than weakening the CSP.
     }
   }
 
@@ -42,12 +42,16 @@ export function getOAuthOrigins(value: string | undefined) {
  * Builds the space-separated CSP `form-action` source list.
  *
  * @param sdkOrigin - The optional SDK origin to include
- * @param oauthOrigins - OAuth provider origins to include
+ * @param originLists - Additional origin lists to include
  * @returns The CSP `form-action` source list containing `'self'` and the provided origins
  */
 export function getFormActionSources(
   sdkOrigin: string | undefined,
-  oauthOrigins: string[],
+  ...originLists: string[][]
 ) {
-  return ["'self'", sdkOrigin, ...oauthOrigins].filter(Boolean).join(" ");
+  const sources = ["'self'", sdkOrigin, ...originLists.flat()].filter(
+    (source): source is string => Boolean(source),
+  );
+
+  return [...new Set(sources)].join(" ");
 }

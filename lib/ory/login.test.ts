@@ -128,13 +128,13 @@ describe("getLoginFlowWithRequestHeaders", () => {
   it("uses the forwarded ingress origin (not just the proto header) for the public URL", async () => {
     state.incoming = new Headers({
       host: "nextjs:3000",
-      "x-forwarded-host": "auth.mida.com.ec",
+      "x-forwarded-host": "auth.example.com",
       "x-forwarded-proto": "https",
     });
 
     await getLoginFlowWithRequestHeaders({ flow: "flow-id" });
 
-    expect(state.publicUrl).toBe("https://auth.mida.com.ec");
+    expect(state.publicUrl).toBe("https://auth.example.com");
   });
 
   it("falls back to the plain http host origin when forwarding headers are incomplete", async () => {

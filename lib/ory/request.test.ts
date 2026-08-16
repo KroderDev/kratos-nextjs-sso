@@ -8,12 +8,12 @@ describe("forwarded request origin", () => {
       getForwardedOrigin(
         new Headers({
           host: "nextjs:3000",
-          "x-forwarded-host": "auth.mida.com.ec",
+          "x-forwarded-host": "auth.example.com",
           "x-forwarded-proto": "https",
         }),
         "http://nextjs:3000",
       ),
-    ).toBe("https://auth.mida.com.ec");
+    ).toBe("https://auth.example.com");
   });
 
   it("uses the first value from comma-separated proxy headers", () => {
