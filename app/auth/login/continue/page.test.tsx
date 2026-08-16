@@ -16,6 +16,11 @@ vi.mock("@ory/nextjs/app", () => ({
   getServerSession: mockGetServerSession,
 }));
 
+vi.mock("@/ory.config", () => ({
+  appBaseUrl: "https://sso.example.com",
+  orySdkUrl: "https://auth.example.com",
+}));
+
 vi.mock("@/lib/i18n/server", () => ({
   getTranslations: vi.fn(async () => ({
     t: (key: string) => key,
@@ -74,6 +79,57 @@ describe("LoginContinuePage", () => {
         }),
       }),
     ).rejects.toThrow("redirect:/auth/error?reason=invalid_request");
+  });
+
+  it.each([
+    ["an external", "https://attacker.example/login/callback"],
+    ["a protocol-relative", "//attacker.example/login/callback"],
+    ["a malformed", "not a URL"],
+    ["a callback with the wrong path", "https://auth.example.com/callback"],
+  ])("rejects %s provider_callback", async (_description, providerCallback) => {
+    await expect(
+      LoginContinuePage({
+        searchParams: Promise.resolve({
+          transaction: "txn-1",
+          csrf: "csrf-1",
+          provider_callback: providerCallback,
+        }),
+      }),
+    ).rejects.toThrow("redirect:/auth/error?reason=invalid_request");
+
+    expect(mockGetServerSession).not.toHaveBeenCalled();
+  });
+
+  it("rejects a provider_callback with mismatched transaction or csrf context", async () => {
+    await expect(
+      LoginContinuePage({
+        searchParams: Promise.resolve({
+          transaction: "txn-1",
+          csrf: "csrf-1",
+          provider_callback:
+            "https://auth.example.com/login/callback?flow=login&transaction=other&csrf=csrf-1",
+        }),
+      }),
+    ).rejects.toThrow("redirect:/auth/error?reason=invalid_request");
+  });
+
+  it("accepts a provider_callback with matching transaction and csrf context", async () => {
+    mockGetServerSession.mockResolvedValue({
+      authenticator_assurance_level: AuthenticatorAssuranceLevel.Aal2,
+    });
+
+    await expect(
+      LoginContinuePage({
+        searchParams: Promise.resolve({
+          transaction: "txn-1",
+          csrf: "csrf-1",
+          provider_callback:
+            "https://auth.example.com/login/callback?flow=login&transaction=txn-1&csrf=csrf-1",
+        }),
+      }),
+    ).rejects.toThrow(
+      "redirect:https://auth.example.com/login/callback?transaction=txn-1&csrf=csrf-1",
+    );
   });
 
   it("redirects unauthenticated users to login with return_to", async () => {

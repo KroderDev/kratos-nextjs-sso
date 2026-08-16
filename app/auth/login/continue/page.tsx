@@ -3,6 +3,7 @@ import { AuthenticatorAssuranceLevel } from "@ory/client-fetch";
 import { redirect } from "next/navigation";
 
 import { getTranslations } from "@/lib/i18n/server";
+import { validateProviderCallback } from "@/lib/ory/provider-handoff";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,14 @@ export default async function LoginContinuePage({ searchParams }: LoginContinueP
     redirect("/auth/error?reason=invalid_request");
   }
 
+  const callback = validateProviderCallback(providerCallback, "login", {
+    transaction,
+    csrf,
+  });
+  if (!callback) {
+    redirect("/auth/error?reason=invalid_request");
+  }
+
   const session = await getServerSession();
   if (!session) {
     const loginSearch = new URLSearchParams();
@@ -74,7 +83,6 @@ export default async function LoginContinuePage({ searchParams }: LoginContinueP
     redirect(stepUp.pathname + stepUp.search);
   }
 
-  const callback = new URL(providerCallback);
   callback.searchParams.set("transaction", transaction);
   callback.searchParams.set("csrf", csrf);
   redirect(callback.toString());
