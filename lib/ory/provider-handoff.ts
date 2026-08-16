@@ -89,12 +89,17 @@ function providerOrigin() {
  * @param expected - The outer handoff credentials that must match any nested callback values
  * @returns The parsed callback URL when valid, otherwise `undefined`
  */
-function providerCallback(
+export function validateProviderCallback(
   value: string | undefined,
   flow: ProviderFlow,
   expected: { transaction: string; csrf: string },
 ) {
-  if (!value || value.length > 2048) {
+  if (
+    !isOpaqueValue(expected.transaction) ||
+    !isOpaqueValue(expected.csrf) ||
+    !value ||
+    value.length > 2048
+  ) {
     return undefined;
   }
 
@@ -235,7 +240,7 @@ function parseHandoff(params: FlowSearchParams): ConsentHandoff | null {
     return null;
   }
 
-  const returnTo = providerCallback(singleParam(params, "return_to"), flow, {
+  const returnTo = validateProviderCallback(singleParam(params, "return_to"), flow, {
     csrf,
     transaction,
   });
@@ -321,7 +326,7 @@ export function consentHandoff(params: FlowSearchParams): ConsentHandoff | null 
     return null;
   }
 
-  const providerReturnTo = providerCallback(
+  const providerReturnTo = validateProviderCallback(
     singleParam(params, "provider_return_to"),
     "consent",
     { csrf, transaction },
