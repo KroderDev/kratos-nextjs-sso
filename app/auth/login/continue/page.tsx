@@ -75,7 +75,7 @@ export default async function LoginContinuePage({ searchParams }: LoginContinueP
       }
     }
     const continueQs = continueSearch.toString();
-    const returnToPath = `/auth/login/continue${continueQs ? `?${continueQs}` : ""}`;
+    const returnToPath = `/auth/login/continue?${continueQs}`;
     const stepUp = new URL("/self-service/login/browser", "https://sso.invalid");
     stepUp.searchParams.set("aal", "aal2");
     stepUp.searchParams.set("return_to", returnToPath);
