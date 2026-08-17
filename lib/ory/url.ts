@@ -20,6 +20,10 @@ const providerCallbackPathMap: Record<string, string> = {
   "/consent": "/consent",
   "/logout": "/logout",
 };
+const applicationHandoffQueryMap: Record<string, string> = {
+  "/consent": "provider_return_to",
+  "/logout": "return_to",
+};
 
 /**
  * Builds an application-origin URL for a flow return path.
@@ -129,6 +133,13 @@ export function restoreOryProviderCallback(
   }
 
   if (location.origin !== application.origin) {
+    return value;
+  }
+
+  // Consent and logout handoffs reuse provider callback paths. Keep marked
+  // application handoffs local so their route-level validation can run.
+  const handoffQuery = applicationHandoffQueryMap[location.pathname];
+  if (handoffQuery && location.searchParams.has(handoffQuery)) {
     return value;
   }
 
