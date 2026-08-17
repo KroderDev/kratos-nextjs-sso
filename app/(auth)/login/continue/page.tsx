@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { getTranslations } from "@/lib/i18n/server";
 import { validateProviderCallback } from "@/lib/ory/provider-handoff";
+import { applicationUrl } from "@/lib/ory/url";
 
 export const dynamic = "force-dynamic";
 
@@ -62,7 +63,9 @@ export default async function LoginContinuePage({ searchParams }: LoginContinueP
         loginSearch.set(key, value);
       }
     }
-    const continuePath = `/login/continue?${loginSearch.toString()}`;
+    const continuePath = applicationUrl(
+      `/login/continue?${loginSearch.toString()}`,
+    );
     redirect(`/login?return_to=${encodeURIComponent(continuePath)}`);
   }
 
@@ -75,7 +78,7 @@ export default async function LoginContinuePage({ searchParams }: LoginContinueP
       }
     }
     const continueQs = continueSearch.toString();
-    const returnToPath = `/login/continue?${continueQs}`;
+    const returnToPath = applicationUrl(`/login/continue?${continueQs}`);
     const stepUp = new URL("/self-service/login/browser", "https://sso.invalid");
     stepUp.searchParams.set("aal", "aal2");
     stepUp.searchParams.set("return_to", returnToPath);

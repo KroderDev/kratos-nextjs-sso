@@ -7,6 +7,7 @@ vi.mock("@/ory.config", () => ({
 }));
 
 import {
+  applicationUrl,
   rewriteOryFlow,
   rewriteOryResponseLocation,
   rewriteOryUrl,
@@ -14,6 +15,12 @@ import {
 } from "./url";
 
 describe("Ory URL rewriting", () => {
+  it("builds flow return URLs on the configured application origin", () => {
+    expect(applicationUrl("/consent?transaction=txn-1")).toBe(
+      "https://auth.example.com/consent?transaction=txn-1",
+    );
+  });
+
   it("rewrites local provider URLs to the configured public app origin", () => {
     expect(
       rewriteOryUrl("https://ory.example.com/login?flow=123"),
@@ -150,5 +157,33 @@ describe("Ory URL rewriting", () => {
     const response = new Response(null, { status: 200 });
     expect(rewriteOryResponseLocation(response, "https://auth.example.com")).toBe(response);
     expect(response.headers.get("location")).toBeNull();
+  });
+
+  it("keeps a relative path when the application origin is unset", async () => {
+    vi.resetModules();
+    vi.doMock("@/ory.config", () => ({
+      appBaseUrl: "",
+      oryCanonicalUrl: "",
+      orySdkUrl: "",
+    }));
+    const mod = await import("./url");
+
+    expect(mod.applicationUrl("/consent?transaction=txn-1")).toBe(
+      "/consent?transaction=txn-1",
+    );
+  });
+
+  it("keeps a relative path when the application origin is malformed", async () => {
+    vi.resetModules();
+    vi.doMock("@/ory.config", () => ({
+      appBaseUrl: "://invalid",
+      oryCanonicalUrl: "",
+      orySdkUrl: "",
+    }));
+    const mod = await import("./url");
+
+    expect(mod.applicationUrl("/consent?transaction=txn-1")).toBe(
+      "/consent?transaction=txn-1",
+    );
   });
 });

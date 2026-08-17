@@ -21,6 +21,24 @@ const providerCallbackPathMap: Record<string, string> = {
   "/logout": "/logout",
 };
 
+/**
+ * Builds an application-origin URL for a flow return path.
+ *
+ * Kratos resolves relative return_to values against its protocol origin. Keep
+ * authentication fallbacks absolute whenever the public app origin is known.
+ */
+export function applicationUrl(path: string) {
+  if (!appBaseUrl) {
+    return path;
+  }
+
+  try {
+    return new URL(path, appBaseUrl).toString();
+  } catch {
+    return path;
+  }
+}
+
 function isLocalSdkUrl() {
   try {
     return localHosts.has(new URL(orySdkUrl).hostname);
