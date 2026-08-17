@@ -4,7 +4,7 @@ import { generateTotpCode, readTotpSecretFromQrDataUrl } from "./totp";
 
 async function registerIdentity(page: Page, email: string) {
   await page.goto("/self-service/registration/browser");
-  await expect(page).toHaveURL(/\/auth\/registration\?flow=[0-9a-f-]+$/i);
+  await expect(page).toHaveURL(/\/registration\?flow=[0-9a-f-]+$/i);
 
   await page.locator('input[name="traits.email"]').fill(email);
   const firstName = page.locator('input[name="traits.name.first"]');
@@ -54,7 +54,7 @@ test("renders a login flow from real Kratos", async ({ page }) => {
   const response = await page.goto("/self-service/login/browser");
 
   expect(response?.status()).toBe(200);
-  await expect(page).toHaveURL(/\/auth\/login\?flow=[0-9a-f-]+$/i);
+  await expect(page).toHaveURL(/\/login\?flow=[0-9a-f-]+$/i);
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
   await expect(page.locator('input[name="identifier"]')).toBeVisible();
   await expect(page.locator('input[name="password"]')).toBeVisible();
@@ -81,7 +81,7 @@ test("registers an identity and loads the authenticated dashboard", async ({ pag
 
 test("preserves a deep-linked settings area through the login redirect", async ({ page }) => {
   await page.goto("/dashboard/settings?section=security&lang=es");
-  await expect(page).toHaveURL(/\/auth\/login/);
+  await expect(page).toHaveURL(/\/login/);
 
   const url = new URL(page.url());
   const returnTo = url.searchParams.get("return_to");

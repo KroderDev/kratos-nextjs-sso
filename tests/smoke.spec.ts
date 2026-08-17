@@ -97,7 +97,7 @@ test("header actions share the same shadcn button height", async ({ page }) => {
 
 test("navigation feedback appears before a route transition completes", async ({ page }) => {
   await page.goto("/");
-  await page.route("**/login", async (route) => {
+  await page.route("**/login**", async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     await route.continue();
   });
@@ -119,7 +119,7 @@ test("navigation feedback appears before a route transition completes", async ({
 
 test("auth navigation shows the two-column loading frame", async ({ page }) => {
   await page.goto("/");
-  await page.route("**/login", async (route) => {
+  await page.route("**/login**", async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     await route.continue();
   });
@@ -127,7 +127,7 @@ test("auth navigation shows the two-column loading frame", async ({ page }) => {
   const navigation = page.getByRole("link", { name: "Sign in", exact: true }).click();
 
   await expect(page.getByRole("complementary").first()).toBeVisible();
-  await expect(page.getByRole("status", { name: "Loading authentication form" })).toBeVisible();
+  await expect(page.getByRole("status", { name: "Loading authentication form" }).first()).toBeVisible();
   await navigation;
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
 });
