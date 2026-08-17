@@ -68,6 +68,6 @@ export async function getLoginFlowWithRequestHeaders(
       ),
     FlowType.Login,
     await publicUrl(),
-    "/auth/login",
+    "/login",
   );
 }

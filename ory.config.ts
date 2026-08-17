@@ -28,12 +28,12 @@ const config = {
   project: {
     name: projectName,
     default_redirect_url: pageUrl("/dashboard"),
-    error_ui_url: pageUrl("/auth/error"),
-    login_ui_url: pageUrl("/auth/login"),
-    recovery_ui_url: pageUrl("/auth/recovery"),
-    registration_ui_url: pageUrl("/auth/registration"),
+    error_ui_url: pageUrl("/error"),
+    login_ui_url: pageUrl("/login"),
+    recovery_ui_url: pageUrl("/recovery"),
+    registration_ui_url: pageUrl("/registration"),
     settings_ui_url: pageUrl("/dashboard/settings"),
-    verification_ui_url: pageUrl("/auth/verification"),
+    verification_ui_url: pageUrl("/verification"),
   },
 };
 

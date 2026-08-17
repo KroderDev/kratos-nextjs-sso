@@ -43,7 +43,17 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      disallow: ["/auth/", "/dashboard/", "/api/"],
+       disallow: [
+         "/login",
+         "/registration",
+         "/recovery",
+         "/verification",
+         "/consent",
+         "/logout",
+         "/error",
+         "/dashboard/",
+         "/api/",
+       ],
     },
   };
 }

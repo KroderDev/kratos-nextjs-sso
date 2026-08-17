@@ -98,7 +98,7 @@ const server = createServer((request, response) => {
 
   if (url.pathname === "/self-service/login/browser") {
     const location = new URL(
-      "/auth/login",
+      "/login",
       `http://127.0.0.1:${port}`,
     );
     location.searchParams.set("flow", flowId);

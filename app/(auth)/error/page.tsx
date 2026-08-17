@@ -48,7 +48,7 @@ export default async function AuthErrorPage({ searchParams }: ErrorPageProps) {
           <p>
             {errorMessage ?? t("auth.error.fallbackMessage")}
           </p>
-          <ButtonLink className="w-fit" href="/auth/login">
+          <ButtonLink className="w-fit" href="/login">
             {t("auth.error.backToSignIn")}
           </ButtonLink>
         </AlertDescription>

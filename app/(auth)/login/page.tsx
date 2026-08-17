@@ -29,10 +29,15 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
 export default async function LoginPage({ searchParams }: OryPageParams) {
   const { t } = await getTranslations(searchParams);
   const params = await searchParams;
+
+  if (params.flow === "logout") {
+    redirect(buildCleanFlowUrl("/logout", params, ["flow", "transaction", "csrf", "return_to"]));
+  }
+
   const flowParams = providerLoginParams(params);
 
   if (!flowParams && isProviderHandoff(params)) {
-    redirect("/auth/error?reason=invalid_request");
+    redirect("/error?reason=invalid_request");
   }
 
   if (!isOryConfigured) {
@@ -43,7 +48,7 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
         footer={
           <span>
             {t("auth.login.footer.needIdentity")}{" "}
-            <Link className="font-medium text-primary hover:underline" href="/auth/registration">
+            <Link className="font-medium text-primary hover:underline" href="/registration">
               {t("auth.login.footer.createOne")}
             </Link>
           </span>
@@ -60,7 +65,7 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
     flow = rewriteOryFlow(await getLoginFlowWithRequestHeaders(flowParams ?? params)) || null;
   } catch (e) {
     if (typeof flowParams?.flow === "string" && isOryFlowRestartRedirect(e, "login")) {
-      redirect(buildCleanFlowUrl("/auth/login", flowParams, ["return_to", "lang"]));
+      redirect(buildCleanFlowUrl("/login", flowParams, ["return_to", "lang"]));
     }
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders
@@ -71,11 +76,11 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
       ? `return_to=${encodeURIComponent(flowParams.return_to)}`
       : null;
   const registrationHref = returnToParam
-    ? `/auth/registration?${returnToParam}`
-    : "/auth/registration";
+    ? `/registration?${returnToParam}`
+    : "/registration";
   const recoveryHref = returnToParam
-    ? `/auth/recovery?${returnToParam}`
-    : "/auth/recovery";
+    ? `/recovery?${returnToParam}`
+    : "/recovery";
 
   const passwordAvailable = flow ? hasPasswordLogin(flow.ui.nodes) : false;
   const providerNodes = flow ? flow.ui.nodes.filter(isProviderNode) : [];

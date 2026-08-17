@@ -9,6 +9,7 @@ import {
   consentHandoff,
   isProviderHandoff,
   providerLoginParams,
+  providerLogoutParams,
 } from "./provider-handoff";
 
 describe("provider handoff", () => {
@@ -25,7 +26,7 @@ describe("provider handoff", () => {
 
     expect(isProviderHandoff(params)).toBe(true);
     const returnTo = new URL(String(result?.return_to));
-    expect(returnTo.pathname).toBe("/auth/login/continue");
+    expect(returnTo.pathname).toBe("/login/continue");
     expect(returnTo.searchParams.get("transaction")).toBe("transaction-id");
     expect(returnTo.searchParams.get("csrf")).toBe("csrf-token");
     expect(returnTo.searchParams.get("provider_callback")).toBe(
@@ -35,7 +36,7 @@ describe("provider handoff", () => {
     expect(result).toEqual({
       lang: "es",
       return_to:
-        "https://sso.example.com/auth/login/continue?transaction=transaction-id&csrf=csrf-token&provider_callback=https%3A%2F%2Fauth.example.com%2Flogin%2Fcallback&lang=es",
+        "https://sso.example.com/login/continue?transaction=transaction-id&csrf=csrf-token&provider_callback=https%3A%2F%2Fauth.example.com%2Flogin%2Fcallback&lang=es",
     });
   });
 
@@ -49,7 +50,7 @@ describe("provider handoff", () => {
     });
 
     const returnTo = new URL(String(result?.return_to));
-    expect(returnTo.pathname).toBe("/auth/login/continue");
+    expect(returnTo.pathname).toBe("/login/continue");
     expect(returnTo.searchParams.get("provider_callback")).toBe(
       "https://auth.example.com/login/callback",
     );
@@ -70,7 +71,7 @@ describe("provider handoff", () => {
     expect(result?.flow).toBeUndefined();
     const returnTo = new URL(String(result?.return_to));
     expect(returnTo.origin).toBe("https://sso.example.com");
-    expect(returnTo.pathname).toBe("/auth/consent");
+    expect(returnTo.pathname).toBe("/consent");
     expect(returnTo.searchParams.get("provider_return_to")).toBe(
       "https://auth.example.com/consent",
     );
@@ -177,6 +178,30 @@ describe("provider handoff", () => {
 
     expect(
       providerLoginParams({ ...base, return_to: "://unparseable" }),
+    ).toBeNull();
+  });
+
+  it("validates logout handoffs against the provider callback", () => {
+    expect(
+      providerLogoutParams({
+        flow: "logout",
+        transaction: "transaction-id",
+        csrf: "csrf-token",
+        return_to: "https://auth.example.com/logout",
+      }),
+    ).toEqual({
+      csrf: "csrf-token",
+      providerReturnTo: "https://auth.example.com/logout",
+      transaction: "transaction-id",
+    });
+
+    expect(
+      providerLogoutParams({
+        flow: "logout",
+        transaction: "transaction-id",
+        csrf: "csrf-token",
+        return_to: "https://attacker.example/logout",
+      }),
     ).toBeNull();
   });
 
@@ -324,7 +349,7 @@ describe("provider handoff", () => {
       return_to: "https://auth.example.com/consent",
     });
 
-    expect(result?.return_to).toMatch(/^\/auth\/consent\?/);
+    expect(result?.return_to).toMatch(/^\/consent\?/);
   });
 
   it("falls back to relative login continue URL when appBaseUrl is not set", async () => {
@@ -342,7 +367,7 @@ describe("provider handoff", () => {
       return_to: "https://auth.example.com/login/callback",
     });
 
-    expect(result?.return_to).toMatch(/^\/auth\/login\/continue\?/);
+    expect(result?.return_to).toMatch(/^\/login\/continue\?/);
     const returnTo = result?.return_to as string;
     expect(returnTo).not.toContain("https://");
     expect(returnTo).toContain("transaction=transaction-id");

@@ -39,7 +39,7 @@ export default async function RegistrationPage({
         footer={
           <span>
             {t("auth.registration.footer.alreadyAccess")}{" "}
-            <Link className="font-medium text-primary hover:underline" href="/auth/login">
+            <Link className="font-medium text-primary hover:underline" href="/login">
               {t("auth.registration.footer.signIn")}
             </Link>
           </span>
@@ -58,7 +58,7 @@ export default async function RegistrationPage({
     // Restart stale registration flows at the clean route. Disabled registration
     // is handled by the explicit flow error below when the provider returns it.
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "registration")) {
-      redirect(buildCleanFlowUrl("/auth/registration", params, ["lang"]));
+      redirect(buildCleanFlowUrl("/registration", params, ["lang"]));
     }
 
     unstable_rethrow(e);
@@ -70,7 +70,7 @@ export default async function RegistrationPage({
     if (typeof params.lang === "string") {
       errorParams.set("lang", params.lang);
     }
-    redirect(`/auth/error?${errorParams.toString()}`);
+    redirect(`/error?${errorParams.toString()}`);
   }
 
   const flow = rewriteOryFlow(rawFlow) || null;
@@ -83,7 +83,7 @@ export default async function RegistrationPage({
       footer={
         <span>
           {t("auth.registration.footer.alreadyAccess")}{" "}
-          <Link className="font-medium text-primary hover:underline" href="/auth/login">
+          <Link className="font-medium text-primary hover:underline" href="/login">
             {t("auth.registration.footer.signIn")}
           </Link>
         </span>

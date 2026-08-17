@@ -97,7 +97,7 @@ test("header actions share the same shadcn button height", async ({ page }) => {
 
 test("navigation feedback appears before a route transition completes", async ({ page }) => {
   await page.goto("/");
-  await page.route("**/auth/login**", async (route) => {
+  await page.route("**/login", async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     await route.continue();
   });
@@ -119,7 +119,7 @@ test("navigation feedback appears before a route transition completes", async ({
 
 test("auth navigation shows the two-column loading frame", async ({ page }) => {
   await page.goto("/");
-  await page.route("**/auth/login**", async (route) => {
+  await page.route("**/login", async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     await route.continue();
   });
@@ -134,8 +134,8 @@ test("auth navigation shows the two-column loading frame", async ({ page }) => {
 
 
 test("auth navigation keeps the frame while flow content loads", async ({ page }) => {
-  await page.goto("/auth/login");
-  await page.route("**/auth/registration**", async (route) => {
+  await page.goto("/login");
+  await page.route("**/registration", async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 500));
     await route.continue();
   });
@@ -164,7 +164,7 @@ test("theme control is circular on mobile", async ({ page }) => {
 });
 
 test("sign-in page shows setup state when unconfigured", async ({ page }) => {
-  const response = await page.goto("/auth/login");
+  const response = await page.goto("/login");
   expect(response?.status()).toBe(200);
   await expect(page.getByText("Welcome back")).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
@@ -173,28 +173,28 @@ test("sign-in page shows setup state when unconfigured", async ({ page }) => {
 test("sign-in page shows create-account link and hides password recovery when unconfigured", async ({
   page,
 }) => {
-  await page.goto("/auth/login");
+  await page.goto("/login");
 
   await expect(page.getByRole("link", { name: "Create an account" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Forgot your password?" })).toHaveCount(0);
 });
 
 test("registration page shows setup state when unconfigured", async ({ page }) => {
-  const response = await page.goto("/auth/registration");
+  const response = await page.goto("/registration");
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
 });
 
 test("recovery page shows setup state when unconfigured", async ({ page }) => {
-  const response = await page.goto("/auth/recovery");
+  const response = await page.goto("/recovery");
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("heading", { name: "Recover your account" })).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
 });
 
 test("verification page shows setup state when unconfigured", async ({ page }) => {
-  const response = await page.goto("/auth/verification");
+  const response = await page.goto("/verification");
   expect(response?.status()).toBe(200);
   await expect(page.getByText("Verify your email address")).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
@@ -233,7 +233,7 @@ test("settings navigation skips the auth loading frame", async ({ page }) => {
 });
 
 test("error page loads", async ({ page }) => {
-  const response = await page.goto("/auth/error");
+  const response = await page.goto("/error");
   expect(response?.status()).toBe(200);
   await expect(page.getByText("Unable to complete request")).toBeVisible();
 });

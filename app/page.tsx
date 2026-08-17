@@ -29,13 +29,13 @@ export default async function Home({ searchParams }: HomeProps) {
           <ThemeToggle />
           <ButtonLink
             className="hidden sm:inline-flex"
-            href="/auth/login"
+            href="/login"
             size="sm"
             variant="ghost"
           >
             {t("common.navigation.signIn")}
           </ButtonLink>
-          <ButtonLink href="/auth/registration" size="sm">
+          <ButtonLink href="/registration" size="sm">
             {t("common.navigation.getStarted")}
             <ArrowRight aria-hidden="true" data-icon="inline-end" />
           </ButtonLink>
@@ -56,14 +56,14 @@ export default async function Home({ searchParams }: HomeProps) {
               {t("home.hero.description")}
             </p>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink className="h-11 px-4" href="/auth/login">
+              <ButtonLink className="h-11 px-4" href="/login">
                 {t("home.hero.enterWorkspace")}
                 <ArrowRight aria-hidden="true" data-icon="inline-end" />
               </ButtonLink>
               <ButtonLink
                 className="h-11 px-4"
                 variant="outline"
-                href="/auth/registration"
+                href="/registration"
               >
                 {t("home.hero.createIdentity")}
                 <MoveUpRight aria-hidden="true" data-icon="inline-end" />
@@ -136,7 +136,7 @@ export default async function Home({ searchParams }: HomeProps) {
           </p>
           <Link
             className="inline-flex items-center gap-2 font-medium text-primary hover:underline"
-            href="/auth/login"
+            href="/login"
           >
             {t("common.footer.openSignIn")}
             <ArrowRight aria-hidden="true" data-icon="inline-end" />
@@ -146,4 +146,3 @@ export default async function Home({ searchParams }: HomeProps) {
     </div>
   );
 }
-

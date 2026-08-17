@@ -82,7 +82,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   if (!session?.identity) {
     redirect(
       buildCleanFlowUrl(
-        "/auth/login",
+        "/login",
         { return_to: "/dashboard" },
         ["return_to"],
       ),

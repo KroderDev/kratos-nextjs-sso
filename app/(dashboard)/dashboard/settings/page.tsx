@@ -117,7 +117,7 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
   if (!session?.identity) {
     redirect(
       buildCleanFlowUrl(
-        "/auth/login",
+        "/login",
         { return_to: "/dashboard/settings" },
         ["return_to"],
       ),

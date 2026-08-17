@@ -154,7 +154,7 @@ validation is needed for the OIDC provider URL embedded in the button value.
 [`app/(dashboard)/dashboard/layout.tsx`](../app/(dashboard)/dashboard/layout.tsx)
 calls `getServerSession()` from `@ory/nextjs/app` on every request under
 `/dashboard/*`. Unauthenticated requests are redirected to
-`/auth/login?return_to=/dashboard`.
+`/login?return_to=/dashboard`.
 
 The session check only runs when Ory is configured (`isOryConfigured` is
 `true`). In unconfigured environments (local development without an Ory
@@ -172,7 +172,7 @@ callback.searchParams.set("csrf", csrf);
 callback.searchParams.set("transaction", transaction);
 callback.searchParams.set("flow", "login");
 
-const login = new URL("https://app.example/auth/login");
+const login = new URL("https://app.example/login");
 login.searchParams.set("return_to", callback.toString());
 ```
 
@@ -184,7 +184,7 @@ the flow, and the original nested query boundaries cannot be recovered safely.
 
 The Hydra login-consent provider uses `flow=login` and `flow=consent` to
 identify its browser handoff. Ory's Next.js SDK uses the same parameter for a
-Kratos flow ID, so [`app/auth/login`](../app/auth/login/page.tsx) recognizes
+Kratos flow ID, so [`app/(auth)/login`](../app/(auth)/login/page.tsx) recognizes
 only those provider values, validates the provider origin and the fixed
 callback path, and starts a fresh Kratos browser flow without forwarding the
 provider flow marker as an Ory flow ID. The validation rules are implemented
@@ -192,8 +192,10 @@ in [`lib/ory/provider-handoff.ts`](../lib/ory/provider-handoff.ts).
 
 Login carries the opaque transaction and CSRF values inside the provider
 callback. Consent carries them through the authenticated internal
-[`/auth/consent`](../app/auth/consent/page.tsx) route, which submits only to
-the provider's fixed `/consent` endpoint. The provider origin is derived from
+[`/consent`](../app/(auth)/consent/page.tsx) route, which submits only to
+the provider's fixed `/consent` endpoint. Logout clears the Kratos session
+through [`/logout`](../app/(auth)/logout/page.tsx) before returning to the
+provider's fixed `/logout` endpoint. The provider origin is derived from
 `NEXT_PUBLIC_ORY_SDK_URL`. An untrusted `return_to`, callback path,
 transaction, or CSRF value rejects the handoff instead of becoming a redirect
 or form target.

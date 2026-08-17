@@ -69,7 +69,7 @@ describe("login flow request headers", () => {
         accept: "text/html",
         cookie: "csrf_token=valid-flow-cookie",
         origin: "https://auth.example.com",
-        referer: "https://auth.example.com/auth/login",
+        referer: "https://auth.example.com/login",
         "user-agent": "Mozilla/5.0",
         authorization: "Bearer must-not-forward",
       }),
@@ -78,7 +78,7 @@ describe("login flow request headers", () => {
     expect(result.get("cookie")).toBe("csrf_token=valid-flow-cookie");
     expect(result.get("accept")).toBe("application/json");
     expect(result.get("origin")).toBe("https://auth.example.com");
-    expect(result.get("referer")).toBe("https://auth.example.com/auth/login");
+    expect(result.get("referer")).toBe("https://auth.example.com/login");
     expect(result.get("user-agent")).toBe("Mozilla/5.0");
     expect(result.get("authorization")).toBeNull();
   });

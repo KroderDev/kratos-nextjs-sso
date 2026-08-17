@@ -12,7 +12,11 @@ const isDashboardRoute = vi.hoisted(() =>
   vi.fn((path: string) => path === "/dashboard" || path === "/dashboard/settings"),
 );
 const isAuthLayoutRoute = vi.hoisted(() =>
-  vi.fn((path: string) => path.startsWith("/auth/") && !isDashboardRoute(path)),
+  vi.fn((path: string) =>
+    ["/login", "/registration", "/recovery", "/verification", "/consent", "/logout", "/error"].some(
+      (route) => path === route || path.startsWith(`${route}/`),
+    ) && !isDashboardRoute(path),
+  ),
 );
 
 vi.mock("next/navigation", () => ({ usePathname }));
@@ -60,7 +64,7 @@ describe("navigation feedback", () => {
     it("keeps document, mismatched, auth, and dashboard navigations pending", () => {
       expect(shouldClearPendingNavigation("document", undefined, "/settings")).toBe(false);
       expect(shouldClearPendingNavigation("route", "/settings", "/dashboard")).toBe(false);
-      expect(shouldClearPendingNavigation("route", "/auth/login", "/auth/login")).toBe(false);
+      expect(shouldClearPendingNavigation("route", "/login", "/login")).toBe(false);
       expect(shouldClearPendingNavigation("route", "/dashboard", "/dashboard")).toBe(false);
     });
 

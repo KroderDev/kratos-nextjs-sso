@@ -43,7 +43,7 @@ export default async function ConsentPage({ searchParams }: ConsentPageProps) {
   const handoff = consentHandoff(params);
 
   if (!handoff) {
-    redirect("/auth/error?reason=invalid_request");
+    redirect("/error?reason=invalid_request");
   }
 
   const session = await getServerSession();
@@ -55,8 +55,8 @@ export default async function ConsentPage({ searchParams }: ConsentPageProps) {
       }
     }
     const consentQs = consentSearch.toString();
-    const consentPath = consentQs ? `/auth/consent?${consentQs}` : "/auth/consent";
-    redirect(`/auth/login?return_to=${encodeURIComponent(consentPath)}`);
+    const consentPath = consentQs ? `/consent?${consentQs}` : "/consent";
+    redirect(`/login?return_to=${encodeURIComponent(consentPath)}`);
   }
 
   const clientName = handoff.clientName || t("auth.consent.defaultClient");

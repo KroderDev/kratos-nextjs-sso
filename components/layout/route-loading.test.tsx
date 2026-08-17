@@ -31,7 +31,7 @@ describe("RouteLoading", () => {
   });
 
   it("selects the auth loading frame", () => {
-    usePathname.mockReturnValue("/auth/login");
+    usePathname.mockReturnValue("/login");
     const markup = renderToStaticMarkup(<RouteLoading />);
     expect(markup).toContain("<section>");
     expect(markup).toContain("auth loading");

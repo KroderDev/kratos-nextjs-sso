@@ -8,10 +8,10 @@ import {
 
 const localHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
 const uiPathMap: Record<string, string> = {
-  "/login": "/auth/login",
-  "/registration": "/auth/registration",
-  "/recovery": "/auth/recovery",
-  "/verification": "/auth/verification",
+  "/login": "/login",
+  "/registration": "/registration",
+  "/recovery": "/recovery",
+  "/verification": "/verification",
   "/settings": "/dashboard/settings",
 };
 const providerCallbackPathMap: Record<string, string> = {

@@ -39,7 +39,7 @@ export default async function VerificationPage({
         footer={
           <span>
             {t("auth.verification.footer.needStartOver")}{" "}
-            <Link className="font-medium text-primary hover:underline" href="/auth/login">
+            <Link className="font-medium text-primary hover:underline" href="/login">
               {t("auth.verification.footer.returnSignIn")}
             </Link>
           </span>
@@ -57,7 +57,7 @@ export default async function VerificationPage({
       rewriteOryFlow(await getVerificationFlow(config, params)) || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "verification")) {
-      redirect(buildCleanFlowUrl("/auth/verification", params, ["lang"]));
+      redirect(buildCleanFlowUrl("/verification", params, ["lang"]));
     }
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders
@@ -71,7 +71,7 @@ export default async function VerificationPage({
       footer={
         <span>
           {t("auth.verification.footer.needStartOver")}{" "}
-          <Link className="font-medium text-primary hover:underline" href="/auth/login">
+          <Link className="font-medium text-primary hover:underline" href="/login">
             {t("auth.verification.footer.returnSignIn")}
           </Link>
         </span>

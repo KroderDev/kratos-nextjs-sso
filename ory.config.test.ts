@@ -8,12 +8,12 @@ import config, {
 
 describe("ory.config", () => {
   it("exports project route configuration", () => {
-    expect(config.project.login_ui_url).toBe("/auth/login");
-    expect(config.project.registration_ui_url).toBe("/auth/registration");
-    expect(config.project.recovery_ui_url).toBe("/auth/recovery");
-    expect(config.project.verification_ui_url).toBe("/auth/verification");
+    expect(config.project.login_ui_url).toBe("/login");
+    expect(config.project.registration_ui_url).toBe("/registration");
+    expect(config.project.recovery_ui_url).toBe("/recovery");
+    expect(config.project.verification_ui_url).toBe("/verification");
     expect(config.project.settings_ui_url).toBe("/dashboard/settings");
-    expect(config.project.error_ui_url).toBe("/auth/error");
+    expect(config.project.error_ui_url).toBe("/error");
     expect(config.project.default_redirect_url).toBe("/dashboard");
     expect(config.project.name).toBeDefined();
   });

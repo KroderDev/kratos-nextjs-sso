@@ -89,7 +89,7 @@ test("preserves a deep-linked settings area through the login redirect", async (
     (cookie) => cookie.name === "kratos_settings_area",
   );
 
-  expect(url.pathname).toBe("/auth/login");
+  expect(url.pathname).toBe("/login");
   expect(returnTo).not.toBeNull();
   expect(returnTo).toContain("/dashboard/settings");
   expect(settingsCookie?.value).toBe("security");
