@@ -154,7 +154,7 @@ describe("LoginContinuePage", () => {
     const returnToStart = call.indexOf("return_to=") + "return_to=".length;
     const returnToEncoded = call.substring(returnToStart);
     const decoded = decodeURIComponent(returnToEncoded);
-    expect(decoded).toContain("/login/continue");
+    expect(decoded).toContain("https://sso.example.com/login/continue");
     expect(decoded).toContain("transaction=txn-1");
     expect(decoded).toContain("csrf=csrf-1");
     expect(decoded).toContain("lang=es");
@@ -182,7 +182,9 @@ describe("LoginContinuePage", () => {
     expect(call).toContain("aal=aal2");
     expect(call).toContain("refresh=true");
     expect(call).toContain("return_to=");
-    expect(call).toContain(encodeURIComponent("/login/continue?"));
+    expect(call).toContain(
+      encodeURIComponent("https://sso.example.com/login/continue?"),
+    );
   });
 
   it("redirects AAL2 sessions to the provider callback", async () => {

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { consentHandoff } from "@/lib/ory/provider-handoff";
 import { getTranslations } from "@/lib/i18n/server";
+import { applicationUrl } from "@/lib/ory/url";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +56,9 @@ export default async function ConsentPage({ searchParams }: ConsentPageProps) {
       }
     }
     const consentQs = consentSearch.toString();
-    const consentPath = consentQs ? `/consent?${consentQs}` : "/consent";
+    const consentPath = applicationUrl(
+      consentQs ? `/consent?${consentQs}` : "/consent",
+    );
     redirect(`/login?return_to=${encodeURIComponent(consentPath)}`);
   }
 
