@@ -38,7 +38,7 @@ describe("ConsentPage", () => {
           provider_return_to: "https://operator.example.com/consent",
           transaction: "txn-1",
           csrf: "csrf-1",
-          client_name: "Grafana",
+          client_name: "Example Client",
           scope: "openid profile",
         }),
       }),
