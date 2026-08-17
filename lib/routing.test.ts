@@ -11,10 +11,12 @@ describe("routing helpers", () => {
   });
 
   it("recognizes auth layout routes except dashboard paths", () => {
-    expect(isAuthLayoutRoute("/auth/login")).toBe(true);
-    expect(isAuthLayoutRoute("/auth/registration?lang=es")).toBe(true);
+    expect(isAuthLayoutRoute("/login")).toBe(true);
+    expect(isAuthLayoutRoute("/registration?lang=es")).toBe(true);
+    expect(isAuthLayoutRoute("/login/continue")).toBe(true);
+    expect(isAuthLayoutRoute("/consent")).toBe(true);
     expect(isAuthLayoutRoute("/dashboard")).toBe(false);
     expect(isAuthLayoutRoute("/settings")).toBe(false);
-    expect(isAuthLayoutRoute("/auth")).toBe(false);
+    expect(isAuthLayoutRoute("/auth/login")).toBe(false);
   });
 });

@@ -15,7 +15,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/ory.config", () => ({
-  default: { project: { login_ui_url: "/auth/login" } },
+  default: { project: { login_ui_url: "/login" } },
   appBaseUrl: undefined,
   isOryConfigured: true,
   isRegistrationEnabled: true,

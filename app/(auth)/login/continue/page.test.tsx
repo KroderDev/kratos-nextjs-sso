@@ -54,9 +54,9 @@ describe("LoginContinuePage", () => {
       LoginContinuePage({
         searchParams: Promise.resolve({}),
       }),
-    ).rejects.toThrow("redirect:/auth/error?reason=invalid_request");
+    ).rejects.toThrow("redirect:/error?reason=invalid_request");
 
-    expect(mockRedirect).toHaveBeenCalledWith("/auth/error?reason=invalid_request");
+    expect(mockRedirect).toHaveBeenCalledWith("/error?reason=invalid_request");
   });
 
   it("redirects to error page when transaction param is missing", async () => {
@@ -67,7 +67,7 @@ describe("LoginContinuePage", () => {
           provider_callback: "https://example.com/callback",
         }),
       }),
-    ).rejects.toThrow("redirect:/auth/error?reason=invalid_request");
+    ).rejects.toThrow("redirect:/error?reason=invalid_request");
   });
 
   it("redirects to error page when provider_callback param is missing", async () => {
@@ -78,7 +78,7 @@ describe("LoginContinuePage", () => {
           csrf: "csrf-1",
         }),
       }),
-    ).rejects.toThrow("redirect:/auth/error?reason=invalid_request");
+    ).rejects.toThrow("redirect:/error?reason=invalid_request");
   });
 
   it.each([
@@ -95,7 +95,7 @@ describe("LoginContinuePage", () => {
           provider_callback: providerCallback,
         }),
       }),
-    ).rejects.toThrow("redirect:/auth/error?reason=invalid_request");
+    ).rejects.toThrow("redirect:/error?reason=invalid_request");
 
     expect(mockGetServerSession).not.toHaveBeenCalled();
   });
@@ -110,7 +110,7 @@ describe("LoginContinuePage", () => {
             "https://auth.example.com/login/callback?flow=login&transaction=other&csrf=csrf-1",
         }),
       }),
-    ).rejects.toThrow("redirect:/auth/error?reason=invalid_request");
+    ).rejects.toThrow("redirect:/error?reason=invalid_request");
   });
 
   it("accepts a provider_callback with matching transaction and csrf context", async () => {
@@ -144,17 +144,17 @@ describe("LoginContinuePage", () => {
           lang: "es",
         }),
       }),
-    ).rejects.toThrow("redirect:/auth/login");
+    ).rejects.toThrow("redirect:/login");
 
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/auth/login?return_to="),
+      expect.stringContaining("/login?return_to="),
     );
     const call = mockRedirect.mock.calls[0][0] as string;
-    expect(call).toContain("/auth/login");
+    expect(call).toContain("/login");
     const returnToStart = call.indexOf("return_to=") + "return_to=".length;
     const returnToEncoded = call.substring(returnToStart);
     const decoded = decodeURIComponent(returnToEncoded);
-    expect(decoded).toContain("/auth/login/continue");
+    expect(decoded).toContain("/login/continue");
     expect(decoded).toContain("transaction=txn-1");
     expect(decoded).toContain("csrf=csrf-1");
     expect(decoded).toContain("lang=es");
@@ -182,7 +182,7 @@ describe("LoginContinuePage", () => {
     expect(call).toContain("aal=aal2");
     expect(call).toContain("refresh=true");
     expect(call).toContain("return_to=");
-    expect(call).toContain(encodeURIComponent("/auth/login/continue?"));
+    expect(call).toContain(encodeURIComponent("/login/continue?"));
   });
 
   it("redirects AAL2 sessions to the provider callback", async () => {
@@ -237,7 +237,7 @@ describe("LoginContinuePage", () => {
           extra: ["value1", "value2"],
         }),
       }),
-    ).rejects.toThrow("redirect:/auth/login");
+    ).rejects.toThrow("redirect:/login");
 
     const call = mockRedirect.mock.calls[0][0] as string;
     expect(call).not.toContain("extra");

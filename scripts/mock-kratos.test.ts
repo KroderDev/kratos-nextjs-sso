@@ -101,7 +101,7 @@ describe("mock-kratos e2e test server", () => {
 
     expect(exchange.getStatus()).toBe(303);
     expect(exchange.getHeaders()).toMatchObject({
-      location: "/auth/login?flow=e2e-login-flow",
+      location: "/login?flow=e2e-login-flow",
       "set-cookie": "csrf_token=e2e-flow-cookie; Path=/; HttpOnly",
     });
   });

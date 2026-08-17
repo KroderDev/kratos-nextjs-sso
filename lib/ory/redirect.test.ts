@@ -15,7 +15,7 @@ describe("Ory flow redirects", () => {
   it("does not classify unrelated or non-redirect errors", () => {
     expect(
       isOryFlowRestartRedirect(
-        { digest: "NEXT_REDIRECT;replace;https://app.test/auth/error;307;" },
+        { digest: "NEXT_REDIRECT;replace;https://app.test/error;307;" },
         "settings",
       ),
     ).toBe(false);

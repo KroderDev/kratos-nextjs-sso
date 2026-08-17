@@ -11,7 +11,7 @@ test("login page does not retry flow requests when authentication is unavailable
     }
   });
 
-  const response = await page.goto("/auth/login");
+  const response = await page.goto("/login");
 
   expect(response?.status()).toBe(200);
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();

@@ -18,7 +18,7 @@ describe("AuthContentReady", () => {
     mockDispatchEvent.mockReset();
     globalThis.window = {
       dispatchEvent: mockDispatchEvent,
-      location: { pathname: "/auth/login" },
+      location: { pathname: "/login" },
     } as unknown as Window & typeof globalThis;
   });
 
@@ -32,18 +32,18 @@ describe("AuthContentReady", () => {
     expect(mockDispatchEvent).toHaveBeenCalledTimes(1);
     const event = mockDispatchEvent.mock.calls[0][0] as CustomEvent<string>;
     expect(event.type).toBe("auth-content-ready");
-    expect(event.detail).toBe("/auth/login");
+    expect(event.detail).toBe("/login");
   });
 
   it("includes the current location pathname in the event detail", () => {
     globalThis.window = {
       dispatchEvent: mockDispatchEvent,
-      location: { pathname: "/auth/registration" },
+      location: { pathname: "/registration" },
     } as unknown as Window & typeof globalThis;
 
     renderToStaticMarkup(<AuthContentReady />);
 
     const event = mockDispatchEvent.mock.calls[0][0] as CustomEvent<string>;
-    expect(event.detail).toBe("/auth/registration");
+    expect(event.detail).toBe("/registration");
   });
 });

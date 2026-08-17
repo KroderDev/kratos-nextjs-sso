@@ -1,6 +1,6 @@
 import { appBaseUrl, orySdkUrl } from "@/ory.config";
 
-export type ProviderFlow = "login" | "consent";
+export type ProviderFlow = "login" | "consent" | "logout";
 type ProviderFlowValue = ProviderFlow | "logout";
 type LocaleParam = "en" | "es";
 
@@ -20,6 +20,7 @@ const providerFlows = new Set<ProviderFlowValue>(["login", "consent", "logout"])
 const callbackPaths: Record<ProviderFlow, string> = {
   login: "/login/callback",
   consent: "/consent",
+  logout: "/logout",
 };
 const maxOpaqueValueLength = 256;
 const maxClientNameLength = 256;
@@ -179,7 +180,7 @@ function localeFromParams(params: FlowSearchParams): LocaleParam | undefined {
  */
 function loginContinueParams(handoff: ConsentHandoff) {
   const base = appBaseUrl || "https://sso.invalid";
-  const internal = new URL("/auth/login/continue", base);
+  const internal = new URL("/login/continue", base);
   internal.searchParams.set("transaction", handoff.transaction);
   internal.searchParams.set("csrf", handoff.csrf);
   internal.searchParams.set("provider_callback", handoff.providerReturnTo);
@@ -200,7 +201,7 @@ function loginContinueParams(handoff: ConsentHandoff) {
  */
 function consentReturnTo(handoff: ConsentHandoff) {
   const base = appBaseUrl || "https://sso.invalid";
-  const internal = new URL("/auth/consent", base);
+  const internal = new URL("/consent", base);
   internal.searchParams.set("provider_return_to", handoff.providerReturnTo);
   internal.searchParams.set("transaction", handoff.transaction);
   internal.searchParams.set("csrf", handoff.csrf);
@@ -311,6 +312,39 @@ export function providerLoginParams(params: FlowSearchParams): FlowSearchParams 
   }
 
   return clean;
+}
+
+/**
+ * Validates the logout handoff before the UI starts the Kratos logout flow.
+ *
+ * @param params - Query parameters from the login-consent provider
+ * @returns The validated provider callback data, or `null` for an invalid handoff
+ */
+export function providerLogoutParams(params: FlowSearchParams) {
+  if (providerFlow(params) !== "logout") {
+    return null;
+  }
+
+  const transaction = singleParam(params, "transaction");
+  const csrf = singleParam(params, "csrf");
+  if (!isOpaqueValue(transaction) || !isOpaqueValue(csrf)) {
+    return null;
+  }
+
+  const providerReturnTo = validateProviderCallback(
+    singleParam(params, "return_to"),
+    "logout",
+    { csrf, transaction },
+  );
+  if (!providerReturnTo) {
+    return null;
+  }
+
+  return {
+    csrf,
+    providerReturnTo: providerReturnTo.toString(),
+    transaction,
+  };
 }
 
 /**

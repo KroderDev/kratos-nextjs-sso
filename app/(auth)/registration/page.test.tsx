@@ -19,7 +19,7 @@ vi.mock("@ory/nextjs/app", () => ({
 }));
 
 vi.mock("@/ory.config", () => ({
-  default: { project: { registration_ui_url: "/auth/registration" } },
+  default: { project: { registration_ui_url: "/registration" } },
   appBaseUrl: undefined,
   isOryConfigured: true,
   oryCanonicalUrl: "",
@@ -45,10 +45,10 @@ describe("RegistrationPage", () => {
       RegistrationPage({
         searchParams: Promise.resolve({ flow: "disabled-flow", lang: "es" }),
       }),
-    ).rejects.toThrow("redirect:/auth/error?reason=registration_disabled&lang=es");
+    ).rejects.toThrow("redirect:/error?reason=registration_disabled&lang=es");
 
     expect(mockRedirect).toHaveBeenCalledWith(
-      "/auth/error?reason=registration_disabled&lang=es",
+      "/error?reason=registration_disabled&lang=es",
     );
   });
 
@@ -61,8 +61,8 @@ describe("RegistrationPage", () => {
       RegistrationPage({
         searchParams: Promise.resolve({ flow: "expired-flow" }),
       }),
-    ).rejects.toThrow("redirect:/auth/registration");
+    ).rejects.toThrow("redirect:/registration");
 
-    expect(mockRedirect).toHaveBeenCalledWith("/auth/registration");
+    expect(mockRedirect).toHaveBeenCalledWith("/registration");
   });
 });

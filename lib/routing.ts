@@ -3,5 +3,10 @@ export function isDashboardRoute(pathname: string) {
 }
 
 export function isAuthLayoutRoute(pathname: string) {
-  return pathname.startsWith("/auth/") && !isDashboardRoute(pathname);
+  const path = pathname.split("?", 1)[0];
+  return (
+    ["/login", "/registration", "/recovery", "/verification", "/consent", "/logout", "/error"].some(
+      (route) => path === route || path.startsWith(`${route}/`),
+    ) && !isDashboardRoute(pathname)
+  );
 }

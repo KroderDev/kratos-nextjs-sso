@@ -17,7 +17,7 @@ describe("Ory URL rewriting", () => {
   it("rewrites local provider URLs to the configured public app origin", () => {
     expect(
       rewriteOryUrl("https://ory.example.com/login?flow=123"),
-    ).toBe("https://auth.example.com/auth/login?flow=123");
+    ).toBe("https://auth.example.com/login?flow=123");
     expect(
       rewriteOryUrl("https://ory.example.com/self-service/login"),
     ).toBe("https://auth.example.com/self-service/login");
@@ -26,7 +26,7 @@ describe("Ory URL rewriting", () => {
   it("supports fallback origin override when appBaseUrl is unset", () => {
     expect(
       rewriteOryUrl("https://ory.example.com/login", "https://fallback.example.com"),
-    ).toBe("https://fallback.example.com/auth/login");
+    ).toBe("https://fallback.example.com/login");
   });
 
   it("leaves unrelated origins and malformed URLs unchanged", () => {
@@ -100,13 +100,13 @@ describe("Ory URL rewriting", () => {
     expect(rewriteOryFlow(flow as never)).toEqual({
       ui: {
         action: "https://auth.example.com/self-service/login",
-        nodes: [{ attributes: { href: "https://auth.example.com/auth/login", count: 42, active: true } }],
+        nodes: [{ attributes: { href: "https://auth.example.com/login", count: 42, active: true } }],
       },
       id: "flow-id",
       return_to: callbackUrl,
       count: 10,
       active: false,
-      tags: ["tag1", "https://auth.example.com/auth/login"],
+      tags: ["tag1", "https://auth.example.com/login"],
     });
   });
 
@@ -125,7 +125,7 @@ describe("Ory URL rewriting", () => {
       response,
     );
     expect(response.headers.get("location")).toBe(
-      "https://auth.example.com/auth/login?flow=123",
+      "https://auth.example.com/login?flow=123",
     );
   });
 

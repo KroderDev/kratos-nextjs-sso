@@ -30,7 +30,7 @@ export default async function RecoveryPage({ searchParams }: OryPageParams) {
         footer={
           <span>
             {t("auth.recovery.footer.rememberedDetails")}{" "}
-            <Link className="font-medium text-primary hover:underline" href="/auth/login">
+            <Link className="font-medium text-primary hover:underline" href="/login">
               {t("auth.recovery.footer.returnSignIn")}
             </Link>
           </span>
@@ -47,7 +47,7 @@ export default async function RecoveryPage({ searchParams }: OryPageParams) {
     flow = rewriteOryFlow(await getRecoveryFlow(config, params)) || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "recovery")) {
-      redirect(buildCleanFlowUrl("/auth/recovery", params, ["lang"]));
+      redirect(buildCleanFlowUrl("/recovery", params, ["lang"]));
     }
     unstable_rethrow(e);
     // flow stays null -> FlowUnavailable renders
@@ -61,7 +61,7 @@ export default async function RecoveryPage({ searchParams }: OryPageParams) {
       footer={
         <span>
           {t("auth.recovery.footer.rememberedDetails")}{" "}
-          <Link className="font-medium text-primary hover:underline" href="/auth/login">
+          <Link className="font-medium text-primary hover:underline" href="/login">
             {t("auth.recovery.footer.returnSignIn")}
           </Link>
         </span>

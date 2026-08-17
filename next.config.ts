@@ -5,6 +5,18 @@ import { getConfiguredOrigins, getFormActionSources } from "./lib/ory/csp";
 const nextConfig: NextConfig = {
   output: process.env.VERCEL ? undefined : "standalone",
   devIndicators: { position: "bottom-left" },
+  async redirects() {
+    return [
+      { source: "/auth/login", destination: "/login", permanent: false },
+      { source: "/auth/login/continue", destination: "/login/continue", permanent: false },
+      { source: "/auth/registration", destination: "/registration", permanent: false },
+      { source: "/auth/recovery", destination: "/recovery", permanent: false },
+      { source: "/auth/verification", destination: "/verification", permanent: false },
+      { source: "/auth/consent", destination: "/consent", permanent: false },
+      { source: "/auth/logout", destination: "/logout", permanent: false },
+      { source: "/auth/error", destination: "/error", permanent: false },
+    ];
+  },
   async headers() {
     const appOrigin = (() => {
       try {

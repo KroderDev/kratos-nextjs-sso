@@ -11,7 +11,7 @@ test("loads a browser login flow with the browser cookie", async ({
   await request.post(`${kratosBaseUrl}/__e2e/reset`);
   await page.goto("/self-service/login/browser");
 
-  await expect(page).toHaveURL(/\/auth\/login\?flow=e2e-login-flow$/);
+  await expect(page).toHaveURL(/\/login\?flow=e2e-login-flow$/);
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
 
   const mockRequests = await request.get(`${kratosBaseUrl}/__e2e/requests`);
@@ -39,12 +39,12 @@ test("adapts the provider login handoff before creating a Kratos flow", async ({
     return_to: callbackUrl.toString(),
   });
 
-  await page.goto(`/auth/login?${handoff.toString()}`);
+  await page.goto(`/login?${handoff.toString()}`);
 
-  await expect(page).toHaveURL(/\/auth\/login\?flow=e2e-login-flow/);
+  await expect(page).toHaveURL(/\/login\?flow=e2e-login-flow/);
   const returnTo = new URL(page.url()).searchParams.get("return_to");
   const decoded = decodeURIComponent(returnTo ?? "");
-  expect(decoded).toContain("/auth/login/continue");
+  expect(decoded).toContain("/login/continue");
   expect(decoded).toContain("transaction=transaction-id");
   expect(decoded).toContain("csrf=csrf-token");
 });

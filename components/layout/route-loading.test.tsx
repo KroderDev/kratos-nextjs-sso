@@ -11,13 +11,13 @@ vi.mock("@/components/dashboard/dashboard-loading", () => ({
     <div>{variant === "settings" ? "settings loading" : "dashboard loading"}</div>
   ),
 }));
-vi.mock("./auth-shell", () => ({
-  AuthContentLoading: () => <div>auth loading</div>,
-  AuthFrame: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
-}));
-vi.mock("./page-loading", () => ({
-  PageLoading: () => <div>page loading</div>,
-}));
+  vi.mock("./page-loading", () => ({
+    PageLoading: () => <div>page loading</div>,
+  }));
+  vi.mock("./auth-shell", () => ({
+    AuthContentLoading: () => <div>auth loading</div>,
+    AuthFrame: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
+  }));
 
 describe("RouteLoading", () => {
   it("selects the dashboard loading state", () => {
@@ -31,7 +31,7 @@ describe("RouteLoading", () => {
   });
 
   it("selects the auth loading frame", () => {
-    usePathname.mockReturnValue("/auth/login");
+    usePathname.mockReturnValue("/login");
     const markup = renderToStaticMarkup(<RouteLoading />);
     expect(markup).toContain("<section>");
     expect(markup).toContain("auth loading");

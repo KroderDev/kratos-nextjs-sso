@@ -12,6 +12,13 @@ selfservice:
   default_browser_return_url: http://127.0.0.1:3002/dashboard
   allowed_return_urls:
     - http://127.0.0.1:3002
+    - http://127.0.0.1:3002/login
+    - http://127.0.0.1:3002/registration
+    - http://127.0.0.1:3002/recovery
+    - http://127.0.0.1:3002/verification
+    - http://127.0.0.1:3002/consent
+    - http://127.0.0.1:3002/logout
+    - http://127.0.0.1:3002/error
     - http://127.0.0.1:3002/dashboard
     - http://127.0.0.1:3002/dashboard/settings
 
@@ -40,14 +47,14 @@ selfservice:
 
   flows:
     error:
-      ui_url: http://127.0.0.1:3002/auth/error
+      ui_url: http://127.0.0.1:3002/error
 
     login:
-      ui_url: http://127.0.0.1:3002/auth/login
+      ui_url: http://127.0.0.1:3002/login
       lifespan: 10m
 
     registration:
-      ui_url: http://127.0.0.1:3002/auth/registration
+      ui_url: http://127.0.0.1:3002/registration
       lifespan: 10m
       after:
         password:
@@ -60,15 +67,15 @@ selfservice:
 
     recovery:
       enabled: false
-      ui_url: http://127.0.0.1:3002/auth/recovery
+      ui_url: http://127.0.0.1:3002/recovery
 
     verification:
       enabled: false
-      ui_url: http://127.0.0.1:3002/auth/verification
+      ui_url: http://127.0.0.1:3002/verification
 
     logout:
       after:
-        default_browser_return_url: http://127.0.0.1:3002/auth/login
+        default_browser_return_url: http://127.0.0.1:3002/login
 
 log:
   level: warning

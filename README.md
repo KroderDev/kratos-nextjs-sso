@@ -144,12 +144,14 @@ Read [`docs/security.md`](docs/security.md) for the threat model, proxy requirem
 | Route | Purpose |
 | --- | --- |
 | `/` | Public landing page |
-| `/auth/login` | Login browser flow |
-| `/auth/registration` | Registration browser flow |
-| `/auth/recovery` | Account recovery browser flow |
-| `/auth/verification` | Address verification browser flow |
+| `/login` | Login browser flow |
+| `/registration` | Registration browser flow |
+| `/recovery` | Account recovery browser flow |
+| `/verification` | Address verification browser flow |
+| `/consent` | OAuth consent handoff |
+| `/logout` | OAuth logout handoff |
 | `/dashboard/settings` | Protected settings browser flow |
-| `/auth/error` | Safe error destination for failed flows |
+| `/error` | Safe error destination for failed flows |
 | `/dashboard` | Protected session dashboard |
 
 ## How It Works

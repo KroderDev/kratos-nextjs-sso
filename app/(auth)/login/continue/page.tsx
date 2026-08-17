@@ -43,7 +43,7 @@ export default async function LoginContinuePage({ searchParams }: LoginContinueP
   const providerCallback = singleParam(params, "provider_callback");
 
   if (!transaction || !csrf || !providerCallback) {
-    redirect("/auth/error?reason=invalid_request");
+    redirect("/error?reason=invalid_request");
   }
 
   const callback = validateProviderCallback(providerCallback, "login", {
@@ -51,7 +51,7 @@ export default async function LoginContinuePage({ searchParams }: LoginContinueP
     csrf,
   });
   if (!callback) {
-    redirect("/auth/error?reason=invalid_request");
+    redirect("/error?reason=invalid_request");
   }
 
   const session = await getServerSession();
@@ -62,8 +62,8 @@ export default async function LoginContinuePage({ searchParams }: LoginContinueP
         loginSearch.set(key, value);
       }
     }
-    const continuePath = `/auth/login/continue?${loginSearch.toString()}`;
-    redirect(`/auth/login?return_to=${encodeURIComponent(continuePath)}`);
+    const continuePath = `/login/continue?${loginSearch.toString()}`;
+    redirect(`/login?return_to=${encodeURIComponent(continuePath)}`);
   }
 
   const aal = session.authenticator_assurance_level;
@@ -75,7 +75,7 @@ export default async function LoginContinuePage({ searchParams }: LoginContinueP
       }
     }
     const continueQs = continueSearch.toString();
-    const returnToPath = `/auth/login/continue?${continueQs}`;
+    const returnToPath = `/login/continue?${continueQs}`;
     const stepUp = new URL("/self-service/login/browser", "https://sso.invalid");
     stepUp.searchParams.set("aal", "aal2");
     stepUp.searchParams.set("return_to", returnToPath);
