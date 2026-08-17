@@ -182,6 +182,15 @@ describe("provider handoff", () => {
   });
 
   it("validates logout handoffs against the provider callback", () => {
+    expect(providerLogoutParams({ flow: "login" })).toBeNull();
+    expect(
+      providerLogoutParams({
+        flow: "logout",
+        transaction: "",
+        csrf: "csrf-token",
+      }),
+    ).toBeNull();
+
     expect(
       providerLogoutParams({
         flow: "logout",
