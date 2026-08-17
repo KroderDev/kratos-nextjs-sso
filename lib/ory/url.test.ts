@@ -63,7 +63,7 @@ describe("Ory URL rewriting", () => {
     ).toBe("https://other.example.com/login/callback?code=123");
   });
 
-  it("restores provider callbacks without rewriting internal application routes", () => {
+  it("restores provider callbacks and preserves marked application handoffs", () => {
     expect(
       restoreOryProviderCallback(
         "https://auth.example.com/auth/login/callback?transaction=opaque&csrf=token",
@@ -80,6 +80,45 @@ describe("Ory URL rewriting", () => {
         "https://ory.example.com",
       ),
     ).toBe("https://ory.example.com/consent?transaction=opaque&csrf=token");
+
+    const consentHandoff = new URL("https://auth.example.com/consent");
+    consentHandoff.searchParams.set(
+      "provider_return_to",
+      "https://ory.example.com/consent",
+    );
+    consentHandoff.searchParams.set("transaction", "opaque");
+    consentHandoff.searchParams.set("csrf", "token");
+    consentHandoff.searchParams.set("client_name", "Example Client");
+    consentHandoff.searchParams.set("scope", "openid profile");
+    expect(
+      restoreOryProviderCallback(
+        consentHandoff.toString(),
+        "https://auth.example.com",
+        "https://ory.example.com",
+      ),
+    ).toBe(consentHandoff.toString());
+
+    expect(
+      restoreOryProviderCallback(
+        "https://auth.example.com/logout?transaction=opaque&csrf=token",
+        "https://auth.example.com",
+        "https://ory.example.com",
+      ),
+    ).toBe("https://ory.example.com/logout?transaction=opaque&csrf=token");
+
+    const logoutHandoff = new URL("https://auth.example.com/logout");
+    logoutHandoff.searchParams.set("flow", "logout");
+    logoutHandoff.searchParams.set("transaction", "opaque");
+    logoutHandoff.searchParams.set("csrf", "token");
+    logoutHandoff.searchParams.set("return_to", "https://ory.example.com/logout");
+    expect(
+      restoreOryProviderCallback(
+        logoutHandoff.toString(),
+        "https://auth.example.com",
+        "https://ory.example.com",
+      ),
+    ).toBe(logoutHandoff.toString());
+
     expect(
       restoreOryProviderCallback(
         "https://auth.example.com/auth/consent?transaction=opaque&csrf=token",

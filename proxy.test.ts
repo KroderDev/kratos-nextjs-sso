@@ -16,15 +16,20 @@ vi.mock("@ory/nextjs/middleware", () => ({
   }),
 }));
 
-vi.mock("./lib/ory/url", () => ({
-  restoreOryProviderCallback: vi.fn((value: string) => value),
-  rewriteOryResponseLocation: vi.fn(
-    (response: Response, fallbackOrigin: string) => {
-      state.rewriteCalls.push({ response, fallbackOrigin });
-      return response;
-    },
-  ),
-}));
+vi.mock("./lib/ory/url", async () => {
+  const actual = await vi.importActual<typeof import("./lib/ory/url")>("./lib/ory/url");
+
+  return {
+    ...actual,
+    restoreOryProviderCallback: vi.fn(actual.restoreOryProviderCallback),
+    rewriteOryResponseLocation: vi.fn(
+      (response: Response, fallbackOrigin: string) => {
+        state.rewriteCalls.push({ response, fallbackOrigin });
+        return response;
+      },
+    ),
+  };
+});
 
 vi.mock("./ory.config", () => ({
   default: { project: { name: "test-project" } },
@@ -47,6 +52,7 @@ describe("proxy", () => {
     state.middlewareResponse = undefined;
     state.middlewareCalls = [];
     state.rewriteCalls = [];
+    vi.mocked(restoreOryProviderCallback).mockClear();
     vi.mocked(rewriteOryResponseLocation).mockClear();
   });
 
@@ -196,6 +202,41 @@ describe("proxy", () => {
       "https://auth.example.com/auth/login/callback",
       "http://localhost:3000",
       "https://ory.example.com",
+    );
+  });
+
+  it("preserves an internal consent handoff on the application origin", async () => {
+    const location = new URL("http://localhost:3000/consent");
+    location.searchParams.set("provider_return_to", "https://ory.example.com/consent");
+    location.searchParams.set("transaction", "transaction-id");
+    location.searchParams.set("csrf", "csrf-token");
+    location.searchParams.set("client_name", "Example Client");
+    location.searchParams.set("scope", "openid profile");
+    state.middlewareResponse = new Response(null, {
+      status: 303,
+      headers: { location: location.toString() },
+    });
+
+    const request = new NextRequest("http://localhost:3000/self-service/login/browser");
+    const result = await proxy(request);
+
+    expect(result.headers.get("location")).toBe(location.toString());
+  });
+
+  it("restores a genuine consent callback to the provider origin", async () => {
+    const location = new URL("http://localhost:3000/consent");
+    location.searchParams.set("transaction", "transaction-id");
+    location.searchParams.set("csrf", "csrf-token");
+    state.middlewareResponse = new Response(null, {
+      status: 303,
+      headers: { location: location.toString() },
+    });
+
+    const request = new NextRequest("http://localhost:3000/self-service/login/browser");
+    const result = await proxy(request);
+
+    expect(result.headers.get("location")).toBe(
+      "https://ory.example.com/consent?transaction=transaction-id&csrf=csrf-token",
     );
   });
 
