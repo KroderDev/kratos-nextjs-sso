@@ -56,9 +56,7 @@ export default async function ConsentPage({ searchParams }: ConsentPageProps) {
       }
     }
     const consentQs = consentSearch.toString();
-    const consentPath = applicationUrl(
-      consentQs ? `/consent?${consentQs}` : "/consent",
-    );
+    const consentPath = applicationUrl(`/consent?${consentQs}`);
     redirect(`/login?return_to=${encodeURIComponent(consentPath)}`);
   }
 
