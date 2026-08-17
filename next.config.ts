@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 import { getConfiguredOrigins, getFormActionSources } from "./lib/ory/csp";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  output: process.env.VERCEL ? undefined : "standalone",
   devIndicators: { position: "bottom-left" },
   async headers() {
     const appOrigin = (() => {

@@ -33,8 +33,9 @@ describe("run-playwright-auth", () => {
   it("starts Playwright in auth mode and forwards CLI arguments", async () => {
     await import("./run-playwright-auth.mjs");
 
+    const expectedCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
     expect(spawn).toHaveBeenCalledWith(
-      "pnpm",
+      expectedCommand,
       ["exec", "playwright", "test", "--project", "chromium"],
       {
         env: expect.objectContaining({
