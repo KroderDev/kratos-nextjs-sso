@@ -57,9 +57,12 @@ NEXT_PUBLIC_ORY_OAUTH_ORIGINS=https://accounts.google.com
 NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS=https://your-client.example.com
 NEXT_PUBLIC_ORY_PROJECT_NAME=Your Platform
 ORY_PROJECT_API_TOKEN=ory_pat_...
+ORY_CONSENT_REMEMBER_MODE=always
 ```
 
 `ORY_PROJECT_API_TOKEN` is **server-only**. Never expose it through a `NEXT_PUBLIC_*` variable, Docker build argument, client component, or browser bundle.
+
+`ORY_CONSENT_REMEMBER_MODE` controls whether accepted OAuth consent is remembered for future requests. It is server-only and supports `always` (the default), `prompt` to show a user checkbox, and `never` to disable remembering new consent decisions. Changing this setting does not revoke consent sessions already stored by Hydra.
 
 ### 3. **Start customizing**
 

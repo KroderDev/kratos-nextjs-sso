@@ -88,6 +88,7 @@ export const en = {
       permissionsTitle: "Requested permissions",
       permissionsDescription: "This application will receive the permissions below.",
       basicAccess: "Basic account access",
+      remember: "Remember my decision for this application",
       allow: "Allow access",
       deny: "Deny",
     },

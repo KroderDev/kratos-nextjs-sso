@@ -2,6 +2,7 @@ import { getServerSession } from "@ory/nextjs/app";
 import { redirect } from "next/navigation";
 
 import { AuthContent } from "@/components/layout/auth-shell";
+import { ConsentForm } from "@/components/ory/consent-form";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,6 +15,7 @@ import {
 import { consentHandoff } from "@/lib/ory/provider-handoff";
 import { getTranslations } from "@/lib/i18n/server";
 import { applicationUrl } from "@/lib/ory/url";
+import { consentRememberMode } from "@/ory.config";
 
 export const dynamic = "force-dynamic";
 
@@ -85,17 +87,35 @@ export default async function ConsentPage({ searchParams }: ConsentPageProps) {
           )}
         </CardContent>
         <CardFooter className="flex flex-col items-stretch gap-3 sm:flex-row sm:justify-end">
-          <form action={handoff.providerReturnTo} method="post">
+          <ConsentForm
+            action={handoff.providerReturnTo}
+            autoSubmit={handoff.skipConsent}
+            className="flex flex-col gap-3 sm:flex-row sm:items-center"
+            method="post"
+          >
             <input name="transaction" type="hidden" value={handoff.transaction} />
             <input name="csrf" type="hidden" value={handoff.csrf} />
             <input name="decision" type="hidden" value="accept" />
             {handoff.scopes.map((scope) => (
               <input key={scope} name="grant_scope" type="hidden" value={scope} />
             ))}
+            {consentRememberMode === "always" ? (
+              <input name="remember" type="hidden" value="true" />
+            ) : consentRememberMode === "prompt" ? (
+              <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                <input
+                  className="size-4 accent-primary"
+                  name="remember"
+                  type="checkbox"
+                  value="true"
+                />
+                <span>{t("auth.consent.remember")}</span>
+              </label>
+            ) : null}
             <Button className="w-full sm:w-auto" type="submit">
               {t("auth.consent.allow")}
             </Button>
-          </form>
+          </ConsentForm>
           <form action={handoff.providerReturnTo} method="post">
             <input name="transaction" type="hidden" value={handoff.transaction} />
             <input name="csrf" type="hidden" value={handoff.csrf} />
