@@ -31,6 +31,33 @@ describe("ConsentForm", () => {
     expect(markup).not.toContain('data-auto-submit="true"');
   });
 
+  it("does not submit the form when automatic submission is disabled", () => {
+    const requestSubmit = vi.fn();
+    const originalRequestSubmit = HTMLFormElement.prototype.requestSubmit;
+    HTMLFormElement.prototype.requestSubmit = requestSubmit;
+
+    try {
+      mountedContainer = document.createElement("div");
+      document.body.append(mountedContainer);
+      mountedRoot = createRoot(mountedContainer);
+
+      act(() => {
+        mountedRoot?.render(
+          <ConsentForm
+            action="https://operator.example.com/consent"
+            method="post"
+          >
+            <button type="submit">Allow</button>
+          </ConsentForm>,
+        );
+      });
+
+      expect(requestSubmit).not.toHaveBeenCalled();
+    } finally {
+      HTMLFormElement.prototype.requestSubmit = originalRequestSubmit;
+    }
+  });
+
   it("submits the application-owned form when automatic submission is enabled", () => {
     const requestSubmit = vi.fn();
     const originalRequestSubmit = HTMLFormElement.prototype.requestSubmit;
