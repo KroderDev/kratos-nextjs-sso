@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
 import config, {
+  consentRememberMode,
   isRegistrationEnabled,
   orySdkUrl,
   orySetupMessage,
+  parseConsentRememberMode,
 } from "./ory.config";
 
 describe("ory.config", () => {
@@ -20,6 +22,29 @@ describe("ory.config", () => {
 
   it("exports isRegistrationEnabled as a boolean", () => {
     expect(typeof isRegistrationEnabled).toBe("boolean");
+  });
+
+  it("remembers consent by default", () => {
+    expect(consentRememberMode).toBe("always");
+  });
+
+  it("normalizes supported consent remember modes and falls back to always", () => {
+    expect(parseConsentRememberMode("prompt")).toBe("prompt");
+    expect(parseConsentRememberMode(" NEVER ")).toBe("never");
+    expect(parseConsentRememberMode("unsupported")).toBe("always");
+    expect(parseConsentRememberMode(undefined)).toBe("always");
+  });
+
+  it("reads the consent remember mode from the server environment", async () => {
+    vi.resetModules();
+    vi.stubEnv("ORY_CONSENT_REMEMBER_MODE", "prompt");
+
+    try {
+      const configured = await import("./ory.config");
+      expect(configured.consentRememberMode).toBe("prompt");
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("enables registration by default when NEXT_PUBLIC_ORY_REGISTRATION_ENABLED is unset", async () => {
