@@ -48,6 +48,18 @@ describe("Ory flow error helpers", () => {
     expect(getKnownOryErrorMessage("registration_disabled", translate)).toBe(
       "translated:auth.error.registrationDisabled",
     );
+    expect(getKnownOryErrorMessage("recovery_disabled", translate)).toBe(
+      "translated:auth.error.recoveryDisabled",
+    );
+    expect(getKnownOryErrorMessage("verification_disabled", translate)).toBe(
+      "translated:auth.error.verificationDisabled",
+    );
+    expect(getKnownOryErrorMessage("invalid_request", translate)).toBe(
+      "translated:auth.error.invalidRequest",
+    );
+    expect(getKnownOryErrorMessage("logout_unavailable", translate)).toBe(
+      "translated:auth.error.logoutUnavailable",
+    );
     expect(getKnownOryErrorMessage("unknown_reason", translate)).toBeNull();
     expect(getKnownOryErrorMessage(undefined, translate)).toBeNull();
   });

@@ -25,6 +25,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (process.env.NODE_ENV === "production" && !appBaseUrl) {
+    return new NextResponse("Invalid application configuration", { status: 503 });
+  }
+
   const requestOrigin = getForwardedOrigin(request.headers, request.nextUrl.origin);
 
   if (appBaseUrl) {
@@ -51,6 +55,10 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
+  if (!isOryRequest(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
   const response = await oryMiddleware(request);
   const location = response.headers.get("location");
   if (location) {
@@ -67,8 +75,26 @@ export async function proxy(request: NextRequest) {
   return rewriteOryResponseLocation(response, requestOrigin);
 }
 
+function isOryRequest(pathname: string) {
+  return (
+    pathname.startsWith("/self-service/") ||
+    pathname.startsWith("/sessions/") ||
+    pathname.startsWith("/ui/") ||
+    pathname.startsWith("/.well-known/ory/") ||
+    pathname.startsWith("/.ory/")
+  );
+}
+
 export const config = {
   matcher: [
+    "/login/:path*",
+    "/registration/:path*",
+    "/recovery/:path*",
+    "/verification/:path*",
+    "/consent",
+    "/logout",
+    "/error",
+    "/dashboard/:path*",
     "/self-service/:path*",
     "/sessions/:path*",
     "/ui/:path*",

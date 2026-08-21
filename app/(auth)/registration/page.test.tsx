@@ -14,8 +14,8 @@ vi.mock("next/navigation", () => ({
   },
 }));
 
-vi.mock("@ory/nextjs/app", () => ({
-  getRegistrationFlow: mockGetRegistrationFlow,
+vi.mock("@/lib/ory/flow-request", () => ({
+  getRegistrationFlowWithRequestHeaders: mockGetRegistrationFlow,
 }));
 
 vi.mock("@/ory.config", () => ({

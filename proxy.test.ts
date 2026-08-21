@@ -85,6 +85,22 @@ describe("proxy", () => {
     );
   });
 
+  it("fails closed in production when Ory is configured without an app origin", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    state.appBaseUrl = undefined;
+
+    try {
+      const request = new NextRequest("http://localhost:3000/self-service/login/browser");
+      const result = await proxy(request);
+
+      expect(result.status).toBe(503);
+      expect(await result.text()).toBe("Invalid application configuration");
+      expect(state.middlewareCalls).toHaveLength(0);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it("allows the request when the forwarded origin matches the configured app base URL", async () => {
     state.appBaseUrl = "https://auth.example.com";
 
@@ -118,6 +134,28 @@ describe("proxy", () => {
     expect(await result.text()).toBe("Invalid application origin");
     expect(state.middlewareCalls).toHaveLength(0);
     expect(rewriteOryResponseLocation).not.toHaveBeenCalled();
+  });
+
+  it("applies origin validation to application flow routes before Ory middleware", async () => {
+    state.appBaseUrl = "https://auth.example.com";
+
+    for (const pathname of [
+      "/login",
+      "/registration",
+      "/recovery",
+      "/verification",
+      "/consent",
+      "/logout",
+      "/error",
+      "/dashboard/settings",
+    ]) {
+      const request = new NextRequest(`http://localhost:3000${pathname}`);
+      const result = await proxy(request);
+
+      expect(result.status, pathname).toBe(400);
+    }
+
+    expect(state.middlewareCalls).toHaveLength(0);
   });
 
   it("rejects a forwarded origin that does not match appBaseUrl even though it differs from the raw request origin", async () => {

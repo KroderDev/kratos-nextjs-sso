@@ -84,6 +84,8 @@ const SAFE_QR_DATA_URL = /^data:image\/(?:gif|jpeg|png|webp);base64,[A-Za-z0-9+/
 type OryNodeProps = {
   compactProvider?: boolean;
   formId?: string;
+  formPending?: boolean;
+  formSubmitter?: string;
   kind?: OryFlowKind;
   lookupSecretConfirmationNode?: UiNode;
   lookupSecretPending?: boolean;
@@ -107,6 +109,8 @@ function nodeId(node: UiNode) {
  *
  * @param compactProvider - Whether provider actions should use a compact icon-only layout.
  * @param formId - Optional form identifier used to associate rendered actions with a form.
+ * @param formPending - Whether the containing form has started submitting.
+ * @param formSubmitter - Name/value key of the action that initiated submission.
  * @param kind - The flow kind used to determine flow-specific labels and behavior.
  * @param lookupSecretConfirmationNode - Optional node rendered as the lookup-secret confirmation action.
  * @param lookupSecretPending - Whether lookup-secret recovery codes are pending.
@@ -115,6 +119,8 @@ function nodeId(node: UiNode) {
 export function OryNode({
   compactProvider = false,
   formId,
+  formPending = false,
+  formSubmitter,
   kind,
   lookupSecretConfirmationNode,
   lookupSecretPending = false,
@@ -135,7 +141,13 @@ export function OryNode({
     const label = getNodeLabel(node, locale);
     const messages = getNodeMessages(node);
     const hasErrors = messages.some((message) => message.type === "error");
-    const disabled = attributes.disabled === true;
+    const isActionInput = inputType === "submit" || inputType === "button";
+    const actionSubmitterKey = `${getString(attributes.name) ?? id}\u0000${
+      getString(attributes.value) ?? ""
+    }`;
+    const disabled =
+      attributes.disabled === true ||
+      (formPending && isActionInput && formSubmitter !== actionSubmitterKey);
     const required = attributes.required === true;
     const maxLength = getNumber(attributes.maxlength);
 
@@ -413,6 +425,8 @@ export function OryNode({
             lookupSecretConfirmationNode ? (
               <OryNode
                 formId={formId}
+                formPending={formPending}
+                formSubmitter={formSubmitter}
                 kind={kind}
                 node={lookupSecretConfirmationNode}
               />

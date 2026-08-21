@@ -76,17 +76,21 @@ This relaxation is **never present in production** (enforced by the
 
 ## Proxy Origin Validation
 
-[`proxy.ts`](../proxy.ts) rejects requests whose effective origin (derived
-from `request.nextUrl.origin`) does not match `NEXT_PUBLIC_APP_URL`. This
-prevents:
+[`proxy.ts`](../proxy.ts) rejects requests whose effective origin (derived from
+trusted `X-Forwarded-Proto` and `X-Forwarded-Host` values, with the request
+origin as fallback) does not match `NEXT_PUBLIC_APP_URL`. This prevents:
 
 - Host-header injection attacks that would cause Ory to embed a malicious
   domain in redirect URLs.
 - Cache poisoning through mismatched host headers.
 
-The proxy only activates when Ory is configured (`isOryConfigured` is
-`true`). The matcher covers Ory's well-known paths, session endpoints, and
-self-service UI routes.
+The proxy only activates when Ory is configured (`isOryConfigured` is `true`).
+In production, a configured Ory deployment without `NEXT_PUBLIC_APP_URL` fails
+closed. Requests with a forwarded origin that does not match the configured
+application URL receive `400` before any Ory request is made. The matcher also
+covers the application flow, dashboard, consent, logout, and error routes so
+they receive the same origin check; Ory middleware itself is invoked only for
+Ory endpoint paths.
 
 ## Provider URL Validation
 
@@ -151,10 +155,12 @@ validation is needed for the OIDC provider URL embedded in the button value.
 
 ## Session Protection
 
+The dashboard page and settings page call `getServerSession()` from
+`@ory/nextjs/app` before rendering protected content. The route-group layout at
 [`app/(dashboard)/dashboard/layout.tsx`](../app/(dashboard)/dashboard/layout.tsx)
-calls `getServerSession()` from `@ory/nextjs/app` on every request under
-`/dashboard/*`. Unauthenticated requests are redirected to
-`/login?return_to=/dashboard`.
+is currently a structural pass-through, not the session boundary.
+Unauthenticated requests are redirected to `/login?return_to=/dashboard` or
+`/login?return_to=/dashboard/settings` by the respective page.
 
 The session check only runs when Ory is configured (`isOryConfigured` is
 `true`). In unconfigured environments (local development without an Ory
@@ -229,7 +235,7 @@ application **never evaluates** this inline JavaScript.
 - WebAuthn/passkey triggers are invoked through an allowlist of supported
   trigger names in
   [`components/ory/ory-trigger-runtime.tsx`](../components/ory/ory-trigger-runtime.tsx).
-- The WehAuthn runtime script is loaded from
+- The WebAuthn runtime script is loaded from
   `/.well-known/ory/webauthn.js` only when the flow contains nodes whose
   trigger attributes match the allowlist.
 - Arbitrary `onclick`/`onload` JavaScript strings in Ory node attributes are
@@ -242,6 +248,13 @@ application **never evaluates** this inline JavaScript.
   argument, and never included in client bundles.
 - The Playwright E2E suite verifies that the token and the `ory_pat_` prefix
   do not appear in the rendered HTML.
+
+## Health Semantics
+
+`/api/health` is a process liveness endpoint. It returns `200` when the Next.js
+server can handle a request and does not call Ory or validate the provider
+configuration. Use a separate dependency/readiness probe when deployment
+orchestration must remove instances whose Ory provider is unavailable.
 
 ## Dependency Security
 

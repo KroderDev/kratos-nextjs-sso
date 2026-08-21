@@ -1,5 +1,7 @@
 "use client";
 
+import { useRef, useState, type FormEvent } from "react";
+
 import type { OryFlow, OryFlowKind, RenderableOryFlow } from "@/lib/ory/types";
 import {
   getLookupSecretAction,
@@ -27,7 +29,7 @@ import { Separator } from "@/components/ui/separator";
 
 import { FlowMessages } from "./flow-messages";
 import { OryNode } from "./ory-node";
-import { OryTriggerRuntime } from "./ory-trigger-runtime";
+import { isAllowedOryTrigger, OryTriggerRuntime } from "./ory-trigger-runtime";
 import { rememberSettingsAction } from "./settings-navigation";
 import {
   getSettingsAreaDefinition,
@@ -74,6 +76,7 @@ const OTHER_SETTINGS_SECTION = {
  * @param formId - Optional identifier of the containing form
  * @param lookupSecretConfirmationNode - Optional lookup-secret confirmation node
  * @param onActionStart - Optional callback invoked when an action begins
+ * @param formPending - Whether the containing form has started submitting
  * @returns The rendered Ory node components
  */
 function renderNodes(
@@ -84,10 +87,14 @@ function renderNodes(
   formId?: string,
   lookupSecretConfirmationNode?: OryFlow["ui"]["nodes"][number],
   onActionStart?: () => void,
+  formPending = false,
+  formSubmitter?: string,
 ) {
   return nodes.map((node, index) => (
     <OryNode
       formId={formId}
+      formPending={formPending}
+      formSubmitter={formSubmitter}
       key={`${keyPrefix}-${node.type}-${index}`}
       kind={kind}
       lookupSecretConfirmationNode={lookupSecretConfirmationNode}
@@ -96,6 +103,32 @@ function renderNodes(
       onActionStart={onActionStart}
     />
   ));
+}
+
+function useFlowSubmissionState(onSubmit?: () => void) {
+  const [pending, setPending] = useState(false);
+  const [submitter, setSubmitter] = useState<string | undefined>();
+  const pendingRef = useRef(false);
+
+  function handleSubmitCapture(event: FormEvent<HTMLFormElement>) {
+    if (pendingRef.current) {
+      event.preventDefault();
+      return;
+    }
+
+    const nativeSubmitter = (event.nativeEvent as SubmitEvent).submitter;
+    if (
+      nativeSubmitter instanceof HTMLButtonElement ||
+      nativeSubmitter instanceof HTMLInputElement
+    ) {
+      setSubmitter(`${nativeSubmitter.name}\u0000${nativeSubmitter.value}`);
+    }
+    pendingRef.current = true;
+    setPending(true);
+    onSubmit?.();
+  }
+
+  return { handleSubmitCapture, pending, submitter };
 }
 
 /**
@@ -144,6 +177,7 @@ function SettingsSectionCard({
   const showCardHeader = settingsArea !== "connections";
   const renderActionsInBody = settingsArea === "connections" || section.group === "lookup_secret";
   const handleActionStart = () => rememberSettingsAction(settingsArea);
+  const { handleSubmitCapture, pending, submitter } = useFlowSubmissionState(handleActionStart);
   const hiddenNodes = [
     ...sharedNodes,
     ...section.nodes.filter(isHiddenInputNode),
@@ -151,13 +185,15 @@ function SettingsSectionCard({
 
   return (
     <form
+      aria-busy={pending || undefined}
       action={action}
       className="min-w-0"
       data-settings-area={settingsArea}
       data-settings-form={section.group}
+      data-submitting={pending || undefined}
       id={formId}
       method={method}
-      onSubmitCapture={handleActionStart}
+      onSubmitCapture={handleSubmitCapture}
     >
       <Card
         aria-label={!showCardHeader ? t(section.label) : undefined}
@@ -179,6 +215,9 @@ function SettingsSectionCard({
             lookupSecretPending,
             formId,
             lookupSecretConfirmationNode,
+            undefined,
+            pending,
+            submitter,
           )}
           {contentNodes.length > 0 ? (
             <FieldGroup>
@@ -189,6 +228,9 @@ function SettingsSectionCard({
                 lookupSecretPending,
                 formId,
                 lookupSecretConfirmationNode,
+                undefined,
+                pending,
+                submitter,
               )}
             </FieldGroup>
           ) : null}
@@ -206,6 +248,8 @@ function SettingsSectionCard({
                 formId,
                 lookupSecretConfirmationNode,
                 handleActionStart,
+                pending,
+                submitter,
               )}
             </div>
           ) : null}
@@ -220,6 +264,8 @@ function SettingsSectionCard({
               formId,
               lookupSecretConfirmationNode,
               handleActionStart,
+              pending,
+              submitter,
             )}
           </CardFooter>
         ) : null}
@@ -348,6 +394,7 @@ export function FlowForm({
   settingsArea = "profile",
 }: FlowFormProps) {
   const { t } = useTranslation();
+  const { handleSubmitCapture, pending, submitter } = useFlowSubmissionState();
   const method = flow.ui.method.toLowerCase() === "get" ? "get" : "post";
   const origins = allowedOryOrigins([appBaseUrl ?? "", orySdkUrl, oryCanonicalUrl]);
 
@@ -361,11 +408,11 @@ export function FlowForm({
       getString(attributes.onloadTrigger),
     ];
 
-    return triggers.some((trigger) => trigger?.startsWith("ory"));
+    return triggers.some((trigger) => isAllowedOryTrigger(trigger));
   });
   const onloadTriggers = flow.ui.nodes
     .map((node) => getString(getNodeAttributes(node).onloadTrigger))
-    .filter((trigger): trigger is string => Boolean(trigger));
+    .filter((trigger): trigger is string => isAllowedOryTrigger(trigger));
   const nodes = flow.ui.nodes;
   const providerNodes = separateProviders ? nodes.filter(isProviderNode) : [];
   const formNodes = separateProviders ? nodes.filter((node) => !isProviderNode(node)) : nodes;
@@ -392,15 +439,40 @@ export function FlowForm({
         />
       </>
     ) : (
-      <form action={flow.ui.action} className="flex flex-col gap-6" method={method}>
+      <form
+        action={flow.ui.action}
+        aria-busy={pending || undefined}
+        className="flex flex-col gap-6"
+        data-submitting={pending || undefined}
+        method={method}
+        onSubmitCapture={handleSubmitCapture}
+      >
         <FlowMessages messages={flow.ui.messages} />
         {renderNodes(
           formNodes.filter((node) => isHiddenInputNode(node)),
           kind,
           "form-hidden",
+          false,
+          undefined,
+          undefined,
+          undefined,
+          pending,
+          submitter,
         )}
         {visibleFormNodes.length > 0 ? (
-          <div className="flex flex-col gap-5">{renderNodes(visibleFormNodes, kind, "form")}</div>
+          <div className="flex flex-col gap-5">
+            {renderNodes(
+              visibleFormNodes,
+              kind,
+              "form",
+              false,
+              undefined,
+              undefined,
+              undefined,
+              pending,
+              submitter,
+            )}
+          </div>
         ) : null}
         {!socialOnly && providerNodes.length > 0 && hasPasswordLogin(nodes) ? (
           <div
@@ -426,6 +498,8 @@ export function FlowForm({
                 key={`${node.type}-${index}`}
                 kind={kind}
                 node={node}
+                formPending={pending}
+                formSubmitter={submitter}
               />
             ))}
           </section>

@@ -3,7 +3,10 @@
 import type { ComponentProps, MouseEvent, ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
-import { invokeOryTrigger } from "./ory-trigger-runtime";
+import {
+  invokeOryTrigger,
+  isAllowedOryTrigger,
+} from "./ory-trigger-runtime";
 
 function setFormValue(
   form: HTMLFormElement | null,
@@ -48,13 +51,29 @@ export function OryTriggerButton({
   function handleClick(event: MouseEvent<HTMLButtonElement>) {
     onClick?.(event);
 
-    if (event.defaultPrevented || !trigger) {
+    if (event.defaultPrevented) {
       return;
     }
 
-    event.preventDefault();
-    setFormValue(event.currentTarget.form, name, value?.toString());
-    invokeOryTrigger(trigger);
+    if (isAllowedOryTrigger(trigger)) {
+      event.preventDefault();
+      setFormValue(event.currentTarget.form, name, value?.toString());
+      invokeOryTrigger(trigger);
+      return;
+    }
+
+    if (!trigger) {
+      return;
+    }
+
+    // Unknown provider triggers must not execute arbitrary code. If Ory used
+    // a button input for the trigger, preserve the action through a native
+    // form submission instead of silently doing nothing.
+    if (props.type === "button") {
+      event.preventDefault();
+      setFormValue(event.currentTarget.form, name, value?.toString());
+      event.currentTarget.form?.requestSubmit();
+    }
   }
 
   return (

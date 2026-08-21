@@ -4,7 +4,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/KroderDev/kratos-nextjs-sso/ci.yml?branch=master&label=CI&style=flat-square)](https://github.com/KroderDev/kratos-nextjs-sso/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/github/KroderDev/kratos-nextjs-sso/graph/badge.svg?token=G5MF0O5IFS)](https://codecov.io/github/KroderDev/kratos-nextjs-sso)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
-[![Next.js](https://img.shields.io/badge/Next.js-16.2.12-black?style=flat-square&logo=next.js)](https://nextjs.org)
+[![Next.js](https://img.shields.io/badge/Next.js-16.3.0-black?style=flat-square&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0.3-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Node.js](https://img.shields.io/badge/node-24-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
 [![pnpm](https://img.shields.io/badge/pnpm-11.17.0-F69220?style=flat-square&logo=pnpm&logoColor=white)](https://pnpm.io)
@@ -105,7 +105,7 @@ Deploy the app wherever you run Next.js reliably: **Vercel, Coolify, Netlify, Re
 
 Import your fork into a managed Next.js platform such as Vercel, Coolify, Netlify, Render, Railway, or AWS. Use the platform's native Next.js build or its Dockerfile deployment, then configure the public `NEXT_PUBLIC_*` values as build environment variables. Set `ORY_PROJECT_API_TOKEN` as a server-side runtime secret only when your Ory setup requires the application proxy. Do not expose it to the browser or include it in build arguments.
 
-Set the public domain as `NEXT_PUBLIC_APP_URL`, enable HTTPS, configure Ory return URLs and allowed origins, and point health checks at `/api/health`.
+Set the public domain as `NEXT_PUBLIC_APP_URL`, enable HTTPS, configure Ory return URLs and allowed origins, and point liveness checks at `/api/health`.
 
 ### **Docker**
 
@@ -134,7 +134,8 @@ Before going live, confirm:
 - **Configure `NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS`** with exact OAuth client origins that receive form redirects; do not use wildcards.
 - **Put the app behind an ingress or reverse proxy** that terminates TLS and correctly sets `Host`, `X-Forwarded-Host`, and `X-Forwarded-Proto`.
 - **Configure Ory return URLs and allowed origins** for the deployed application URL.
-- **Point health checks at `/api/health`.**
+- **Point liveness checks at `/api/health`.** It confirms that the Next.js process can serve requests; it does not verify Ory provider readiness.
+- **Use a separate provider readiness check** when your platform requires authentication-service dependency health.
 - **Run the complete validation suite against staging** before release.
 
 Read [`docs/security.md`](docs/security.md) for the threat model, proxy requirements, browser security headers, provider URL validation, credential protection, and production checklist.

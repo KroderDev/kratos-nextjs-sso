@@ -1,4 +1,4 @@
-import { getServerSession, getSettingsFlow, type OryPageParams } from "@ory/nextjs/app";
+import { getServerSession, type OryPageParams } from "@ory/nextjs/app";
 import { cookies } from "next/headers";
 import { getSafeLogoutFlow } from "@/lib/ory/logout";
 import { redirect, unstable_rethrow } from "next/navigation";
@@ -23,8 +23,9 @@ import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
 import { buildCleanFlowUrl } from "@/lib/ory/params";
 import { SETTINGS_AREA_COOKIE } from "@/lib/ory/settings-state";
 import { toRenderableOryFlow } from "@/lib/ory/types";
-import config, { appBaseUrl, isOryConfigured } from "@/ory.config";
+import { appBaseUrl, isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
+import { getSettingsFlowWithRequestHeaders } from "@/lib/ory/flow-request";
 
 export const dynamic = "force-dynamic";
 
@@ -144,7 +145,7 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
   let flow = null;
 
   try {
-    flow = rewriteOryFlow(await getSettingsFlow(config, params)) || null;
+    flow = rewriteOryFlow(await getSettingsFlowWithRequestHeaders(params)) || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "settings")) {
       redirect(buildCleanFlowUrl("/dashboard/settings", params, ["lang", "section"]));

@@ -11,7 +11,15 @@ export function getKnownOryErrorMessage(
     return translate("auth.error.registrationDisabled");
   }
 
-  return null;
+  const reasonKeys: Record<string, string> = {
+    recovery_disabled: "auth.error.recoveryDisabled",
+    verification_disabled: "auth.error.verificationDisabled",
+    invalid_request: "auth.error.invalidRequest",
+    logout_unavailable: "auth.error.logoutUnavailable",
+  };
+  const key = reason ? reasonKeys[reason] : undefined;
+
+  return key ? translate(key) : null;
 }
 
 export async function getOryFlowError(id: string): Promise<FlowError | null> {

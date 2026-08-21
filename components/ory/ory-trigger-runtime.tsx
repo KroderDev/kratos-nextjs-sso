@@ -11,8 +11,12 @@ export const allowedOryTriggers = new Set([
   "oryPasskeySettingsRegistration",
 ]);
 
+export function isAllowedOryTrigger(trigger: string | undefined): trigger is string {
+  return Boolean(trigger && allowedOryTriggers.has(trigger));
+}
+
 function triggerFunction(trigger: string) {
-  if (!allowedOryTriggers.has(trigger)) {
+  if (!isAllowedOryTrigger(trigger)) {
     return undefined;
   }
 
@@ -21,7 +25,7 @@ function triggerFunction(trigger: string) {
 }
 
 export function invokeOryTrigger(trigger: string | undefined) {
-  if (!trigger) {
+  if (!isAllowedOryTrigger(trigger)) {
     return;
   }
 

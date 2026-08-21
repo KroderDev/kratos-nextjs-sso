@@ -74,6 +74,10 @@ export const en = {
       eyebrow: "Sign in",
       description: "Sign in with your email address or a connected account.",
       descriptionSocialOnly: "Sign in with a connected account.",
+      titleRefresh: "Sign in again",
+      descriptionRefresh: "Your session needs to be refreshed before you can continue.",
+      titleAal2: "Verify your identity",
+      descriptionAal2: "Complete an additional security check to continue.",
       footer: {
         needIdentity: "Don't have an account?",
         createOne: "Create an account",
@@ -125,6 +129,10 @@ export const en = {
       alertTitle: "Authentication error",
       fallbackMessage: "No changes were made to your credentials. Return to sign in and try again.",
       registrationDisabled: "Registration is currently disabled. If you already have an account, return to sign in.",
+      recoveryDisabled: "Account recovery is currently disabled. Return to sign in for another option.",
+      verificationDisabled: "Email verification is currently unavailable. Return to sign in and try again.",
+      invalidRequest: "This authentication request is invalid or has expired. Start again from the application.",
+      logoutUnavailable: "We couldn't safely complete sign-out. Return to sign in and try again.",
       backToSignIn: "Back to sign in",
     },
   },
@@ -207,6 +215,14 @@ export const en = {
         totp: {
           title: "Authenticator app",
           description: "Use a time-based code to add another layer of protection at sign-in.",
+        },
+        webauthn: {
+          title: "Security keys and biometrics",
+          description: "Use a hardware security key or device biometric to protect your account.",
+        },
+        passkey: {
+          title: "Passkeys",
+          description: "Sign in securely with a passkey saved to your device or password manager.",
         },
         lookupSecret: {
           title: "Backup recovery codes",

@@ -17,6 +17,31 @@ function firstForwardedValue(value: string | null) {
 }
 
 /**
+ * Checks that a configured application URL has a valid HTTP(S) origin.
+ *
+ * @param value - The configured application URL
+ * @returns `true` when the value contains a valid HTTP(S) origin
+ */
+export function isValidApplicationOrigin(value: string | undefined) {
+  if (!value) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(value);
+    return (
+      ["http:", "https:"].includes(parsed.protocol) &&
+      !parsed.username &&
+      !parsed.password &&
+      !parsed.search &&
+      !parsed.hash
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Determines the request origin from forwarded protocol and host headers.
  *
  * SECURITY NOTE: This function trusts X-Forwarded-Proto and X-Forwarded-Host headers.
@@ -57,6 +82,10 @@ export function validateForwardedOrigin(
 ): boolean {
   if (!trustedAppBaseUrl) {
     return true;
+  }
+
+  if (!isValidApplicationOrigin(trustedAppBaseUrl)) {
+    return false;
   }
 
   try {

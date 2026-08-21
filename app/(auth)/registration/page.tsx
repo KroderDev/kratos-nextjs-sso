@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { isSelfServiceFlowDisabled } from "@ory/client-fetch";
-import { getRegistrationFlow, type OryPageParams } from "@ory/nextjs/app";
+import type { OryPageParams } from "@ory/nextjs/app";
 
 import { AuthContent } from "@/components/layout/auth-shell";
 import { AuthFlowPage } from "@/components/ory/auth-flow-page";
@@ -9,8 +9,9 @@ import { OrySetupState } from "@/components/ory/setup-state";
 import { rewriteOryFlow } from "@/lib/ory/url";
 import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
 import { buildCleanFlowUrl } from "@/lib/ory/params";
-import config, { isOryConfigured } from "@/ory.config";
+import { isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
+import { getRegistrationFlowWithRequestHeaders } from "@/lib/ory/flow-request";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +54,7 @@ export default async function RegistrationPage({
 
   let rawFlow = null;
   try {
-    rawFlow = await getRegistrationFlow(config, params);
+    rawFlow = await getRegistrationFlowWithRequestHeaders(params);
   } catch (e) {
     // Restart stale registration flows at the clean route. Disabled registration
     // is handled by the explicit flow error below when the provider returns it.

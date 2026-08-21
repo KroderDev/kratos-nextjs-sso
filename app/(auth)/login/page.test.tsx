@@ -34,6 +34,12 @@ vi.mock("@/lib/ory/redirect", () => ({
   isOryFlowRestartRedirect: vi.fn(() => false),
 }));
 
+vi.mock("@/lib/ory/login", () => ({
+  getLoginFlowWithRequestHeaders: vi.fn(),
+}));
+
+import { getLoginContext } from "./page";
+
 function buildFlowNode(group: string, overrides: Record<string, unknown> = {}): UiNode {
   return {
     type: "input",
@@ -69,6 +75,22 @@ function buildLoginFlow(nodes: UiNode[] = []): LoginFlow {
 }
 
 describe("LoginPage", () => {
+  it("uses contextual copy for refresh and AAL2 requests", () => {
+    expect(getLoginContext({ refresh: "true" })).toEqual({
+      descriptionKey: "auth.login.descriptionRefresh",
+      titleKey: "auth.login.titleRefresh",
+    });
+    expect(getLoginContext({ aal: "aal2" })).toEqual({
+      descriptionKey: "auth.login.descriptionAal2",
+      titleKey: "auth.login.titleAal2",
+    });
+    expect(getLoginContext({})).toEqual({
+      descriptionKey: "auth.login.description",
+      titleKey: "auth.login.title",
+    });
+    expect(getLoginContext({}, true).descriptionKey).toBe("auth.login.descriptionSocialOnly");
+  });
+
   it("covers the flow-analysis helper functions used in the conditional footer", () => {
     const flow = buildLoginFlow([
       buildFlowNode("default", { name: "csrf_token", type: "hidden" }),

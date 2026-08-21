@@ -31,6 +31,22 @@ function rewriteLogoutUrl(value: string) {
   }
 }
 
+function isSafeLogoutUrl(value: string) {
+  if (!orySdkUrl) {
+    return true;
+  }
+
+  try {
+    const providerOrigin = new URL(orySdkUrl).origin;
+    const applicationOrigin = appBaseUrl ? new URL(appBaseUrl).origin : undefined;
+    const parsed = new URL(value, appBaseUrl ?? orySdkUrl);
+
+    return parsed.origin === providerOrigin || parsed.origin === applicationOrigin;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Applies the application's protocol and host to the flow's logout URL when applicable.
  *
@@ -38,9 +54,11 @@ function rewriteLogoutUrl(value: string) {
  * @returns The logout flow with its `logout_url` processed for the application
  */
 function withApplicationLogoutUrl(flow: LogoutFlow): LogoutFlow {
+  const logoutUrl = rewriteLogoutUrl(flow.logout_url);
+
   return {
     ...flow,
-    logout_url: rewriteLogoutUrl(flow.logout_url),
+    logout_url: isSafeLogoutUrl(logoutUrl) ? logoutUrl : "#",
   };
 }
 

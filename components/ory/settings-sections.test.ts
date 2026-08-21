@@ -4,6 +4,7 @@ import {
   getSettingsArea,
   getSettingsAreaDefinition,
   SETTINGS_AREA_DEFINITIONS,
+  SETTINGS_SECTION_DEFINITIONS,
   type SettingsArea,
 } from "./settings-sections";
 
@@ -23,6 +24,15 @@ describe("settings sections", () => {
     expect(getSettingsAreaDefinition("profile")).toBe(SETTINGS_AREA_DEFINITIONS[0]);
     expect(getSettingsAreaDefinition("unknown" as SettingsArea)).toBe(
       SETTINGS_AREA_DEFINITIONS[0],
+    );
+  });
+
+  it("places WebAuthn and passkey methods in the security area", () => {
+    expect(SETTINGS_SECTION_DEFINITIONS).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ area: "security", group: "webauthn" }),
+        expect.objectContaining({ area: "security", group: "passkey" }),
+      ]),
     );
   });
 });

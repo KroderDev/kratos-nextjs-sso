@@ -76,6 +76,10 @@ export const es: TranslationKeys = {
       eyebrow: "Iniciar sesión",
       description: "Inicia sesión con tu correo electrónico o una cuenta conectada.",
       descriptionSocialOnly: "Inicia sesión con una cuenta conectada.",
+      titleRefresh: "Inicia sesión de nuevo",
+      descriptionRefresh: "Tu sesión debe actualizarse antes de continuar.",
+      titleAal2: "Verifica tu identidad",
+      descriptionAal2: "Completa una comprobación de seguridad adicional para continuar.",
       footer: {
         needIdentity: "¿No tienes una cuenta?",
         createOne: "Crear una cuenta",
@@ -127,6 +131,10 @@ export const es: TranslationKeys = {
       alertTitle: "Error de autenticación",
       fallbackMessage: "No se realizaron cambios en tus credenciales. Vuelve a iniciar sesión e inténtalo de nuevo.",
       registrationDisabled: "El registro está deshabilitado actualmente. Si ya tienes una cuenta, vuelve a iniciar sesión.",
+      recoveryDisabled: "La recuperación de la cuenta está deshabilitada. Vuelve a iniciar sesión para usar otra opción.",
+      verificationDisabled: "La verificación del correo no está disponible. Vuelve a iniciar sesión e inténtalo de nuevo.",
+      invalidRequest: "Esta solicitud de autenticación no es válida o ha caducado. Iníciala de nuevo desde la aplicación.",
+      logoutUnavailable: "No se pudo completar el cierre de sesión de forma segura. Vuelve a iniciar sesión e inténtalo de nuevo.",
       backToSignIn: "Volver al inicio de sesión",
     },
   },
@@ -209,6 +217,14 @@ export const es: TranslationKeys = {
         totp: {
           title: "Aplicación autenticadora",
           description: "Usa un código temporal para añadir otra capa de protección al iniciar sesión.",
+        },
+        webauthn: {
+          title: "Llaves de seguridad y biometría",
+          description: "Usa una llave de seguridad física o la biometría de tu dispositivo para proteger tu cuenta.",
+        },
+        passkey: {
+          title: "Claves de acceso",
+          description: "Inicia sesión de forma segura con una clave de acceso guardada en tu dispositivo o gestor de contraseñas.",
         },
         lookupSecret: {
           title: "Códigos de recuperación de respaldo",

@@ -175,6 +175,20 @@ describe("FlowForm", () => {
     expect(markup).not.toContain('data-slot="card-footer"');
   });
 
+  it("renders WebAuthn and passkey nodes in dedicated security cards", () => {
+    const flow = buildFlow([
+      groupedNode("webauthn", { name: "webauthn_register", type: "submit" }),
+      groupedNode("passkey", { name: "passkey_register", type: "submit" }),
+    ]);
+    const markup = renderToStaticMarkup(
+      <FlowForm flow={flow} kind="settings" separateProviders={false} settingsArea="security" />,
+    );
+
+    expect(markup).toContain(">Security keys and biometrics<");
+    expect(markup).toContain(">Passkeys<");
+    expect(markup).not.toContain(">Additional settings<");
+  });
+
   it("renders the selected settings area as cards with one form per Ory group", () => {
     const flow = buildFlow([
       groupedNode("default", { name: "csrf_token", type: "hidden" }),
@@ -515,5 +529,12 @@ describe("FlowForm", () => {
     const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
 
     expect(markup).toContain('data-slot="card-content"');
+  });
+
+  it("does not enable the WebAuthn runtime for an unsupported trigger", () => {
+    const flow = buildFlow([inputNode({ onloadTrigger: "oryFutureTrigger" })]);
+    const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
+
+    expect(markup).not.toContain("ory-webauthn-");
   });
 });

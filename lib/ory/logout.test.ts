@@ -45,6 +45,27 @@ describe("getSafeLogoutFlow", () => {
     expect(result.logout_token).toBe("");
   });
 
+  it("does not redirect to an unrelated logout origin", async () => {
+    vi.resetModules();
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://app.example");
+    vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "https://ory.example");
+
+    try {
+      const { getSafeLogoutFlow: getConfiguredLogoutFlow } = await import("./logout");
+      const { getLogoutFlow: getConfiguredProviderLogoutFlow } = await import("@ory/nextjs/app");
+      vi.mocked(getConfiguredProviderLogoutFlow).mockResolvedValueOnce({
+        logout_url: "https://attacker.example/logout",
+        logout_token: "123",
+      });
+
+      const result = await getConfiguredLogoutFlow();
+
+      expect(result.logout_url).toBe("#");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it("rewrites a provider logout URL to the application origin", async () => {
     vi.resetModules();
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://app.example");

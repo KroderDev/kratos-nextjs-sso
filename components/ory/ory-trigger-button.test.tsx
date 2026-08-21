@@ -1,8 +1,13 @@
+// @vitest-environment jsdom
+
+import { act } from "react";
+import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("./ory-trigger-runtime", () => ({
   invokeOryTrigger: vi.fn(),
+  isAllowedOryTrigger: (trigger: string | undefined) => trigger === "oryPasskeyLogin",
   allowedOryTriggers: new Set(["oryPasskeyLogin"]),
   getOryTriggerKey: vi.fn(),
   OryTriggerRuntime: () => null,
@@ -56,5 +61,43 @@ describe("OryTriggerButton", () => {
     );
 
     expect(markup).toContain("disabled");
+  });
+
+  it("submits a native button action when its provider trigger is unsupported", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <form>
+          <OryTriggerButton
+            name="method"
+            trigger="oryFutureTrigger"
+            type="button"
+            value="future"
+          >
+            Continue
+          </OryTriggerButton>
+        </form>,
+      );
+    });
+
+    const form = container.querySelector("form");
+    const button = container.querySelector("button");
+    const requestSubmit = vi.fn();
+
+    expect(form).not.toBeNull();
+    expect(button).not.toBeNull();
+    form!.requestSubmit = requestSubmit;
+
+    await act(async () => {
+      button!.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+    });
+
+    expect(requestSubmit).toHaveBeenCalledTimes(1);
+    expect(form?.querySelector('input[name="method"]')?.getAttribute("value")).toBe("future");
+    root.unmount();
+    container.remove();
   });
 });
