@@ -13,6 +13,7 @@ import {
   allowedOryTriggers,
   getOryTriggerKey,
   invokeOryTrigger,
+  isAllowedOryTrigger,
   OryTriggerRuntime,
 } from "./ory-trigger-runtime";
 
@@ -35,6 +36,14 @@ describe("getOryTriggerKey", () => {
       "oryPasskeyLogin|oryWebAuthnLogin",
     );
     expect(getOryTriggerKey([])).toBe("");
+  });
+});
+
+describe("isAllowedOryTrigger", () => {
+  it("rejects provider trigger names outside the explicit allowlist", () => {
+    expect(isAllowedOryTrigger("oryPasskeyLogin")).toBe(true);
+    expect(isAllowedOryTrigger("oryFutureTrigger")).toBe(false);
+    expect(isAllowedOryTrigger(undefined)).toBe(false);
   });
 });
 
@@ -96,7 +105,7 @@ describe("invokeOryTrigger", () => {
     vi.useRealTimers();
   });
 
-  it("polls for unknown trigger names since the function may become available later", () => {
+  it("polls for an allowlisted trigger until its function becomes available", () => {
     vi.useFakeTimers();
     setupWindow();
 

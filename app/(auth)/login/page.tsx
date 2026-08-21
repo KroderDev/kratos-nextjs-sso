@@ -16,9 +16,46 @@ import { buildCleanFlowUrl } from "@/lib/ory/params";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Selects localized title and description keys for the login page based on authentication context.
+ *
+ * @param params - Request parameters that may indicate an AAL2 or refresh login request.
+ * @param socialOnly - Whether the login page is limited to social providers.
+ * @returns The localized title and description keys for the login context.
+ */
+export function getLoginContext(
+  params: Record<string, string | string[] | undefined>,
+  socialOnly = false,
+) {
+  if (params.aal === "aal2") {
+    return {
+      descriptionKey: "auth.login.descriptionAal2",
+      titleKey: "auth.login.titleAal2",
+    };
+  }
+
+  if (params.refresh === "true") {
+    return {
+      descriptionKey: "auth.login.descriptionRefresh",
+      titleKey: "auth.login.titleRefresh",
+    };
+  }
+
+  return {
+    descriptionKey: socialOnly ? "auth.login.descriptionSocialOnly" : "auth.login.description",
+    titleKey: "auth.login.title",
+  };
+}
+
+/**
+ * Generates the localized title metadata for the login page.
+ *
+ * @returns Metadata containing the localized login page title.
+ */
 export async function generateMetadata({ searchParams }: OryPageParams) {
-  const { t } = await getTranslations(searchParams);
-  return { title: t("auth.login.title") };
+  const params = await searchParams;
+  const { t } = await getTranslations(params);
+  return { title: t(getLoginContext(params).titleKey) };
 }
 
 /**
@@ -29,6 +66,7 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
 export default async function LoginPage({ searchParams }: OryPageParams) {
   const { t } = await getTranslations(searchParams);
   const params = await searchParams;
+  const initialLoginContext = getLoginContext(params);
 
   if (params.flow === "logout") {
     redirect(buildCleanFlowUrl("/logout", params, ["flow", "transaction", "csrf", "return_to"]));
@@ -43,7 +81,7 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
   if (!isOryConfigured) {
     return (
       <AuthContent
-        description={t("auth.login.description")}
+        description={t(initialLoginContext.descriptionKey)}
         eyebrow={t("auth.login.eyebrow")}
         footer={
           <span>
@@ -53,7 +91,7 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
             </Link>
           </span>
         }
-        title={t("auth.login.title")}
+        title={t(initialLoginContext.titleKey)}
       >
         <OrySetupState />
       </AuthContent>
@@ -85,11 +123,11 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
   const passwordAvailable = flow ? hasPasswordLogin(flow.ui.nodes) : false;
   const providerNodes = flow ? flow.ui.nodes.filter(isProviderNode) : [];
   const socialOnly = flow ? isSocialOnlyLogin(flow.ui.nodes, providerNodes) : false;
-  const descriptionKey = socialOnly ? "auth.login.descriptionSocialOnly" : "auth.login.description";
+  const loginContext = getLoginContext(params, socialOnly);
 
   return (
     <AuthFlowPage
-      description={t(descriptionKey)}
+      description={t(loginContext.descriptionKey)}
       eyebrow={t("auth.login.eyebrow")}
       flow={flow}
       footer={
@@ -111,7 +149,7 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
         </span>
       }
       kind="login"
-      title={t("auth.login.title")}
+      title={t(loginContext.titleKey)}
     />
   );
 }

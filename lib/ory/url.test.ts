@@ -198,6 +198,16 @@ describe("Ory URL rewriting", () => {
     expect(response.headers.get("location")).toBeNull();
   });
 
+  it("preserves response locations from unrelated origins", () => {
+    const response = new Response(null, {
+      headers: { location: "https://attacker.example/login" },
+      status: 303,
+    });
+
+    expect(rewriteOryResponseLocation(response, "https://auth.example.com")).toBe(response);
+    expect(response.headers.get("location")).toBe("https://attacker.example/login");
+  });
+
   it("keeps a relative path when the application origin is unset", async () => {
     vi.resetModules();
     vi.doMock("@/ory.config", () => ({
@@ -223,6 +233,48 @@ describe("Ory URL rewriting", () => {
 
     expect(mod.applicationUrl("/consent?transaction=txn-1")).toBe(
       "/consent?transaction=txn-1",
+    );
+  });
+
+  it("keeps the source URL when a fallback origin is malformed", async () => {
+    vi.resetModules();
+    vi.doMock("@/ory.config", () => ({
+      appBaseUrl: "https://auth.example.com",
+      oryCanonicalUrl: "https://ory.example.com",
+      orySdkUrl: "http://127.0.0.1:4433",
+    }));
+    const mod = await import("./url");
+
+    expect(
+      mod.rewriteOryUrl("https://ory.example.com/login", "not a url"),
+    ).toBe("https://ory.example.com/login");
+  });
+
+  it("keeps the source URL when the configured application origin is malformed", async () => {
+    vi.resetModules();
+    vi.doMock("@/ory.config", () => ({
+      appBaseUrl: "not a url",
+      oryCanonicalUrl: "https://ory.example.com",
+      orySdkUrl: "http://127.0.0.1:4433",
+    }));
+    const mod = await import("./url");
+
+    expect(mod.rewriteOryUrl("https://ory.example.com/login")).toBe(
+      "https://ory.example.com/login",
+    );
+  });
+
+  it("does not rewrite URLs when the SDK is not local", async () => {
+    vi.resetModules();
+    vi.doMock("@/ory.config", () => ({
+      appBaseUrl: "https://auth.example.com",
+      oryCanonicalUrl: "https://ory.example.com",
+      orySdkUrl: "https://ory.example.com",
+    }));
+    const mod = await import("./url");
+
+    expect(mod.rewriteOryUrl("https://ory.example.com/login")).toBe(
+      "https://ory.example.com/login",
     );
   });
 });

@@ -7,7 +7,7 @@ import { appBaseUrl, orySdkUrl } from "@/ory.config";
  * Rewrites a provider logout URL to use the application's protocol and host.
  *
  * @param value - The logout URL to rewrite
- * @returns The rewritten URL, or the original value when it does not match the provider origin or cannot be parsed
+ * @returns The rewritten URL, or the original value when configuration is missing, the URL does not match the provider origin, or parsing fails
  */
 function rewriteLogoutUrl(value: string) {
   if (!appBaseUrl || !orySdkUrl) {
@@ -32,15 +32,39 @@ function rewriteLogoutUrl(value: string) {
 }
 
 /**
- * Applies the application's protocol and host to the flow's logout URL when applicable.
+ * Determines whether a logout URL resolves to an allowed origin.
  *
- * @param flow - The logout flow to update
- * @returns The logout flow with its `logout_url` processed for the application
+ * @param value - The logout URL to validate
+ * @returns `true` if the URL resolves to the Ory provider origin or application origin, or if no Ory SDK URL is configured; `false` if the URL cannot be parsed or resolves elsewhere
+ */
+function isSafeLogoutUrl(value: string) {
+  if (!orySdkUrl) {
+    return true;
+  }
+
+  try {
+    const providerOrigin = new URL(orySdkUrl).origin;
+    const applicationOrigin = appBaseUrl ? new URL(appBaseUrl).origin : undefined;
+    const parsed = new URL(value, appBaseUrl ?? orySdkUrl);
+
+    return parsed.origin === providerOrigin || parsed.origin === applicationOrigin;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Processes a logout flow's URL for application compatibility and safety.
+ *
+ * @param flow - The logout flow to process
+ * @returns The flow with a safe, processed `logout_url`, or `"#"` when the URL is unsafe
  */
 function withApplicationLogoutUrl(flow: LogoutFlow): LogoutFlow {
+  const logoutUrl = rewriteLogoutUrl(flow.logout_url);
+
   return {
     ...flow,
-    logout_url: rewriteLogoutUrl(flow.logout_url),
+    logout_url: isSafeLogoutUrl(logoutUrl) ? logoutUrl : "#",
   };
 }
 

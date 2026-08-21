@@ -1,6 +1,20 @@
 import { describe, expect, it } from "vitest";
 
-import { getForwardedOrigin, validateForwardedOrigin } from "./request";
+import {
+  getForwardedOrigin,
+  isValidApplicationOrigin,
+  validateForwardedOrigin,
+} from "./request";
+
+describe("configured application origin", () => {
+  it("accepts HTTP(S) URLs and rejects missing or spoofable values", () => {
+    expect(isValidApplicationOrigin("https://auth.example.com")).toBe(true);
+    expect(isValidApplicationOrigin("http://localhost:3000/app")).toBe(true);
+    expect(isValidApplicationOrigin(undefined)).toBe(false);
+    expect(isValidApplicationOrigin("javascript:alert(1)")).toBe(false);
+    expect(isValidApplicationOrigin("https://user:pass@auth.example.com")).toBe(false);
+  });
+});
 
 describe("forwarded request origin", () => {
   it("uses the public HTTPS origin supplied by the ingress", () => {

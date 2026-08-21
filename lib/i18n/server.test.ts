@@ -44,6 +44,20 @@ describe("server i18n", () => {
     expect(await getLocale({ lang: "fr" })).toBe("en");
   });
 
+  it("falls back when request context has no cookie or language header", async () => {
+    cookiesMock.mockResolvedValue({ get: () => undefined });
+    headersMock.mockResolvedValue({ get: () => undefined });
+
+    expect(await getLocale({ lang: ["fr", "es"] })).toBe("en");
+  });
+
+  it("uses the default locale when no search parameters are supplied", async () => {
+    cookiesMock.mockResolvedValue({ get: () => undefined });
+    headersMock.mockResolvedValue({ get: () => undefined });
+
+    expect(await getLocale()).toBe("en");
+  });
+
   it("returns translated functions for an override locale", async () => {
     const result = await getTranslations(undefined, "es");
 
@@ -58,5 +72,12 @@ describe("server i18n", () => {
 
     expect(result.t("common.navigation.signIn")).toBe("Sign in");
     expect(result.t("missing.translation")).toBe("missing.translation");
+  });
+
+  it("uses the default dictionary for an invalid runtime override locale", async () => {
+    const result = await getTranslations(undefined, "fr" as never);
+
+    expect(result.locale).toBe("fr");
+    expect(result.t("common.navigation.signIn")).toBe("Sign in");
   });
 });

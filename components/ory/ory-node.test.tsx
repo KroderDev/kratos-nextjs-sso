@@ -203,6 +203,114 @@ describe("OryNode submit/button rendering", () => {
     ).not.toBeNull();
   });
 
+  it("invokes onTriggerStart when confirming a destructive action with an allowlisted trigger", () => {
+    const node = submitNode({
+      name: "totp_unlink",
+      onclickTrigger: "oryPasskeySettingsRegistration",
+      label: { id: 1, text: "Disable this method", type: "info" },
+    });
+    node.group = "totp";
+    const onTriggerStart = vi.fn().mockReturnValue(true);
+    mountedContainer = document.createElement("div");
+    document.body.append(mountedContainer);
+    mountedRoot = createRoot(mountedContainer);
+    (window as unknown as Record<string, unknown>).oryPasskeySettingsRegistration = vi.fn();
+
+    act(() => {
+      mountedRoot?.render(
+        <OryNode
+          formId="settings-totp-form"
+          kind="settings"
+          node={node}
+          onTriggerStart={onTriggerStart}
+        />,
+      );
+    });
+
+    const trigger = mountedContainer.querySelector<HTMLButtonElement>(
+      '[data-ory-destructive-trigger="totp_unlink"]',
+    );
+    expect(trigger).not.toBeNull();
+    act(() => trigger?.click());
+
+    const confirm = document.querySelector<HTMLButtonElement>(
+      'button[type="submit"][form="settings-totp-form"]',
+    );
+    expect(confirm).not.toBeNull();
+    act(() => confirm?.click());
+
+    expect(onTriggerStart).toHaveBeenCalled();
+
+    delete (window as unknown as Record<string, unknown>).oryPasskeySettingsRegistration;
+  });
+
+  it("allows submission when confirming a destructive action without onTriggerStart", () => {
+    const node = submitNode({
+      name: "lookup_secret_disable",
+      onclickTrigger: "oryPasskeySettingsRegistration",
+      label: { id: 1, text: "Disable recovery codes", type: "info" },
+    });
+    node.group = "lookup_secret";
+    mountedContainer = document.createElement("div");
+    document.body.append(mountedContainer);
+    mountedRoot = createRoot(mountedContainer);
+    (window as unknown as Record<string, unknown>).oryPasskeySettingsRegistration = vi.fn();
+
+    act(() => {
+      mountedRoot?.render(
+        <OryNode
+          formId="settings-lookup_secret-form"
+          kind="settings"
+          node={node}
+        />,
+      );
+    });
+
+    const trigger = mountedContainer.querySelector<HTMLButtonElement>(
+      '[data-ory-destructive-trigger="lookup_secret_disable"]',
+    );
+    act(() => trigger?.click());
+
+    const confirm = document.querySelector<HTMLButtonElement>(
+      'button[type="submit"][form="settings-lookup_secret-form"]',
+    );
+    expect(confirm).not.toBeNull();
+    expect(() => act(() => confirm?.click())).not.toThrow();
+
+    delete (window as unknown as Record<string, unknown>).oryPasskeySettingsRegistration;
+  });
+
+  it("allows submission when a non-destructive action has no onTriggerStart", () => {
+    const node = submitNode({
+      name: "method",
+      value: "passkey",
+      onclickTrigger: "oryPasskeyLogin",
+      label: { id: 1, text: "Sign in with passkey", type: "info" },
+    });
+    mountedContainer = document.createElement("div");
+    document.body.append(mountedContainer);
+    mountedRoot = createRoot(mountedContainer);
+    (window as unknown as Record<string, unknown>).oryPasskeyLogin = vi.fn();
+
+    act(() => {
+      mountedRoot?.render(
+        <OryNode
+          formId="login-form"
+          kind="login"
+          node={node}
+        />,
+      );
+    });
+
+    const button = mountedContainer.querySelector<HTMLButtonElement>(
+      'button[type="submit"][form="login-form"]',
+    );
+    expect(button).not.toBeNull();
+    expect(() => act(() => button?.click())).not.toThrow();
+
+    delete (window as unknown as Record<string, unknown>).oryPasskeyLogin;
+  });
+
   it("renders the button type attribute for button inputs", () => {
     const markup = renderToStaticMarkup(
       <OryNode node={submitNode({ type: "button", name: "resend", label: { id: 1, text: "Resend", type: "info" } })} />,
@@ -402,6 +510,18 @@ describe("OryNode code input", () => {
     expect(markup).toContain("Authenticator code");
   });
 
+  it("uses the localized fallback label for an unlabeled code input", () => {
+    const node = inputNode({
+      type: "text",
+      name: "code",
+      maxlength: 6,
+      label: undefined,
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain(">code<");
+  });
+
   it("renders a lookup-secret login input as a text recovery-code field", () => {
     const node = inputNode({
       group: "lookup_secret",
@@ -431,6 +551,18 @@ describe("OryNode code input", () => {
     const markup = renderToStaticMarkup(<OryNode kind="login" node={node} />);
 
     expect(markup).toContain("Invalid recovery code");
+  });
+
+  it("uses the localized fallback label for an unlabeled lookup-secret input", () => {
+    const node = inputNode({
+      group: "lookup_secret",
+      name: "lookup_secret",
+      type: "text",
+      label: undefined,
+    });
+    const markup = renderToStaticMarkup(<OryNode kind="login" node={node} />);
+
+    expect(markup).toContain(">lookup_secret<");
   });
 });
 

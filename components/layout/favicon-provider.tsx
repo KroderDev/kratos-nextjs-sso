@@ -4,6 +4,9 @@ import { useTheme } from "next-themes";
 import { useEffect, useRef } from "react";
 import { brandFaviconDark, brandFaviconLight } from "@/lib/branding";
 
+/**
+ * Updates the document favicon when the resolved theme changes.
+ */
 export function FaviconProvider() {
   const { resolvedTheme } = useTheme();
   const prevTheme = useRef<string | undefined>(undefined);
@@ -17,8 +20,6 @@ export function FaviconProvider() {
       resolvedTheme === "dark" && brandFaviconDark
         ? brandFaviconDark
         : brandFaviconLight || brandFaviconDark;
-
-    if (!url) return;
 
     document.querySelectorAll('link[rel="icon"]').forEach((el) => el.remove());
 

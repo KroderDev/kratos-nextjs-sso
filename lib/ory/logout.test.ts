@@ -45,6 +45,31 @@ describe("getSafeLogoutFlow", () => {
     expect(result.logout_token).toBe("");
   });
 
+  it("does not redirect to an unrelated logout origin", async () => {
+    vi.resetModules();
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://app.example");
+    vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "https://ory.example");
+    vi.doMock("@/ory.config", () => ({
+      appBaseUrl: "https://app.example",
+      orySdkUrl: "https://ory.example",
+    }));
+
+    try {
+      const { getSafeLogoutFlow: getConfiguredLogoutFlow } = await import("./logout");
+      const { getLogoutFlow: getConfiguredProviderLogoutFlow } = await import("@ory/nextjs/app");
+      vi.mocked(getConfiguredProviderLogoutFlow).mockResolvedValueOnce({
+        logout_url: "https://attacker.example/logout",
+        logout_token: "123",
+      });
+
+      const result = await getConfiguredLogoutFlow();
+
+      expect(result.logout_url).toBe("#");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it("rewrites a provider logout URL to the application origin", async () => {
     vi.resetModules();
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://app.example");
@@ -66,6 +91,54 @@ describe("getSafeLogoutFlow", () => {
       );
     } finally {
       vi.unstubAllEnvs();
+    }
+  });
+
+  it("rejects malformed logout URLs from a configured provider", async () => {
+    vi.resetModules();
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://app.example");
+    vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "https://ory.example");
+    vi.doMock("@/ory.config", () => ({
+      appBaseUrl: "https://app.example",
+      orySdkUrl: "https://ory.example",
+    }));
+
+    try {
+      const { getSafeLogoutFlow: getConfiguredLogoutFlow } = await import("./logout");
+      const { getLogoutFlow: getConfiguredProviderLogoutFlow } = await import("@ory/nextjs/app");
+      vi.mocked(getConfiguredProviderLogoutFlow).mockResolvedValueOnce({
+        logout_url: "https://[invalid",
+        logout_token: "123",
+      });
+
+      const result = await getConfiguredLogoutFlow();
+
+      expect(result.logout_url).toBe("#");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("accepts provider logout URLs when no application origin is configured", async () => {
+    vi.resetModules();
+    vi.doMock("@/ory.config", () => ({
+      appBaseUrl: undefined,
+      orySdkUrl: "https://ory.example",
+    }));
+
+    try {
+      const { getSafeLogoutFlow: getConfiguredLogoutFlow } = await import("./logout");
+      const { getLogoutFlow: getConfiguredProviderLogoutFlow } = await import("@ory/nextjs/app");
+      vi.mocked(getConfiguredProviderLogoutFlow).mockResolvedValueOnce({
+        logout_url: "https://ory.example/logout?token=123",
+        logout_token: "123",
+      });
+
+      const result = await getConfiguredLogoutFlow();
+
+      expect(result.logout_url).toBe("https://ory.example/logout?token=123");
+    } finally {
+      vi.doUnmock("@/ory.config");
     }
   });
 });

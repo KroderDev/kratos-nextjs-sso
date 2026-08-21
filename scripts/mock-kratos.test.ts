@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-type MockRequest = { url: string; headers: Record<string, string> };
+type MockRequest = { url?: string; headers: Record<string, string> };
 type MockResponseHandler = (request: MockRequest, response: MockResponse) => void;
 
 interface MockResponse {
@@ -17,7 +17,7 @@ vi.mock("node:http", () => ({
   }),
 }));
 
-function createExchange(url: string, headers: Record<string, string> = {}) {
+function createExchange(url?: string, headers: Record<string, string> = {}) {
   const request: MockRequest = { url, headers };
   let statusCode: number | undefined;
   let responseHeaders: Record<string, string> | undefined;
@@ -199,6 +199,15 @@ describe("mock-kratos e2e test server", () => {
 
     expect(exchange.getStatus()).toBe(404);
     expect(exchange.getBody()).toBe("");
+  });
+
+  it("uses the root URL when a request has no URL", async () => {
+    const handler = await loadHandler();
+    const exchange = createExchange();
+
+    handler(exchange.request, exchange.response);
+
+    expect(exchange.getStatus()).toBe(404);
   });
 
   it("records every incoming request, including the introspection request itself", async () => {

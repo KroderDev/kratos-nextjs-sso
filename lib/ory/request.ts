@@ -17,6 +17,31 @@ function firstForwardedValue(value: string | null) {
 }
 
 /**
+ * Validates a configured application URL for use as an HTTP(S) origin.
+ *
+ * @param value - The configured application URL
+ * @returns `true` if the value is a valid HTTP or HTTPS URL without credentials, query parameters, or a fragment, `false` otherwise.
+ */
+export function isValidApplicationOrigin(value: string | undefined) {
+  if (!value) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(value);
+    return (
+      ["http:", "https:"].includes(parsed.protocol) &&
+      !parsed.username &&
+      !parsed.password &&
+      !parsed.search &&
+      !parsed.hash
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Determines the request origin from forwarded protocol and host headers.
  *
  * SECURITY NOTE: This function trusts X-Forwarded-Proto and X-Forwarded-Host headers.
@@ -45,11 +70,11 @@ export function getForwardedOrigin(incoming: Headers, fallbackOrigin: string) {
 }
 
 /**
- * Validates that a forwarded origin matches the configured application base URL.
+ * Validates a forwarded origin against the configured application base URL.
  *
  * @param forwardedOrigin - The origin derived from forwarded headers
- * @param trustedAppBaseUrl - The configured application base URL (from NEXT_PUBLIC_APP_URL)
- * @returns `true` if validation passes (origins match or no appBaseUrl configured), `false` otherwise
+ * @param trustedAppBaseUrl - The configured application base URL
+ * @returns `true` if no base URL is configured or the origins match; `false` if the base URL is invalid or the origins differ
  */
 export function validateForwardedOrigin(
   forwardedOrigin: string,
@@ -59,12 +84,12 @@ export function validateForwardedOrigin(
     return true;
   }
 
-  try {
-    const trustedOrigin = new URL(trustedAppBaseUrl).origin;
-    return forwardedOrigin === trustedOrigin;
-  } catch {
+  if (!isValidApplicationOrigin(trustedAppBaseUrl)) {
     return false;
   }
+
+  const trustedOrigin = new URL(trustedAppBaseUrl).origin;
+  return forwardedOrigin === trustedOrigin;
 }
 
 /**

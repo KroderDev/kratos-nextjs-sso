@@ -39,6 +39,18 @@ export const SETTINGS_SECTION_DEFINITIONS = [
     description: "dashboard.settings.cards.totp.description",
   },
   {
+    group: "webauthn",
+    area: "security",
+    label: "dashboard.settings.cards.webauthn.title",
+    description: "dashboard.settings.cards.webauthn.description",
+  },
+  {
+    group: "passkey",
+    area: "security",
+    label: "dashboard.settings.cards.passkey.title",
+    description: "dashboard.settings.cards.passkey.description",
+  },
+  {
     group: "lookup_secret",
     area: "security",
     label: "dashboard.settings.cards.lookupSecret.title",

@@ -20,5 +20,7 @@ describe("Ory flow redirects", () => {
       ),
     ).toBe(false);
     expect(isOryFlowRestartRedirect(new Error("failed"), "settings")).toBe(false);
+    expect(isOryFlowRestartRedirect({ digest: "NEXT_REDIRECT;" }, "settings")).toBe(false);
+    expect(isOryFlowRestartRedirect({ digest: "NOT_A_REDIRECT" }, "settings")).toBe(false);
   });
 });

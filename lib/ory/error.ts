@@ -3,6 +3,13 @@ import { Configuration, FrontendApi, type FlowError } from "@ory/client-fetch";
 import { getSafeText } from "@/lib/ory/flow";
 import { orySdkUrl } from "@/ory.config";
 
+/**
+ * Resolves a known Ory error reason to its translated authentication message.
+ *
+ * @param reason - The Ory error reason to translate
+ * @param translate - The function used to translate the matching message key
+ * @returns The translated error message, or `null` for an unknown or missing reason
+ */
 export function getKnownOryErrorMessage(
   reason: string | undefined,
   translate: (key: string) => string,
@@ -11,9 +18,26 @@ export function getKnownOryErrorMessage(
     return translate("auth.error.registrationDisabled");
   }
 
-  return null;
+  const reasonKeys: Record<string, string> = {
+    recovery_disabled: "auth.error.recoveryDisabled",
+    verification_disabled: "auth.error.verificationDisabled",
+    invalid_request: "auth.error.invalidRequest",
+    logout_unavailable: "auth.error.logoutUnavailable",
+  };
+  const key =
+    reason && Object.prototype.hasOwnProperty.call(reasonKeys, reason)
+      ? reasonKeys[reason]
+      : undefined;
+
+  return key ? translate(key) : null;
 }
 
+/**
+ * Retrieves an Ory flow error by its identifier.
+ *
+ * @param id - The Ory flow error identifier
+ * @returns The flow error, or `null` when the identifier or SDK URL is unavailable or the request fails
+ */
 export async function getOryFlowError(id: string): Promise<FlowError | null> {
   if (!orySdkUrl || !id) {
     return null;
