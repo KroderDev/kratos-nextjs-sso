@@ -8,6 +8,13 @@ import {
   isAllowedOryTrigger,
 } from "./ory-trigger-runtime";
 
+/**
+ * Sets a named form input's value, creating a hidden input when the field does not exist.
+ *
+ * @param form - The form containing the input
+ * @param name - The input name
+ * @param value - The value to assign
+ */
 function setFormValue(
   form: HTMLFormElement | null,
   name: string | undefined,
@@ -40,6 +47,14 @@ type OryTriggerButtonProps = Omit<
   trigger?: string;
 };
 
+/**
+ * Renders a button that invokes an allowed Ory trigger or submits its associated form.
+ *
+ * @param name - The form field name used when preserving the trigger or button value
+ * @param trigger - The Ory trigger to invoke when allowed
+ * @param value - The value submitted with the form field
+ * @returns A button configured with the supplied properties and trigger behavior
+ */
 export function OryTriggerButton({
   children,
   name,

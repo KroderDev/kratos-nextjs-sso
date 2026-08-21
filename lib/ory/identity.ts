@@ -61,6 +61,12 @@ export function getIdentityAvatarUrl(identity: Identity) {
   return getSafeAvatarUrl(getStringValue(identity.metadata_public, "avatar_url"));
 }
 
+/**
+ * Derives up to two uppercase initials from an identity's resolved name.
+ *
+ * @param identity - The identity from which to derive initials
+ * @returns The uppercase initials, or an empty string when no initials are available
+ */
 export function getIdentityInitials(identity: Identity) {
   const name = getIdentityName(identity);
   const initials = name

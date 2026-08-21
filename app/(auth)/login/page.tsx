@@ -16,6 +16,13 @@ import { buildCleanFlowUrl } from "@/lib/ory/params";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Selects localized title and description keys for the login page based on authentication context.
+ *
+ * @param params - Request parameters that may indicate an AAL2 or refresh login request.
+ * @param socialOnly - Whether the login page is limited to social providers.
+ * @returns The localized title and description keys for the login context.
+ */
 export function getLoginContext(
   params: Record<string, string | string[] | undefined>,
   socialOnly = false,
@@ -40,6 +47,11 @@ export function getLoginContext(
   };
 }
 
+/**
+ * Generates the localized title metadata for the login page.
+ *
+ * @returns Metadata containing the localized login page title.
+ */
 export async function generateMetadata({ searchParams }: OryPageParams) {
   const params = await searchParams;
   const { t } = await getTranslations(params);

@@ -33,11 +33,23 @@ type RawFlowFetcher<T extends object> = (
   init: RequestInit,
 ) => Promise<ApiResponse<T>>;
 
+/**
+ * Builds an HTTP origin from the incoming request's host header.
+ *
+ * @param incoming - The request headers containing the host value
+ * @returns An HTTP origin using the host header or `localhost` when the header is unavailable
+ */
 function fallbackOrigin(incoming: Headers) {
   const host = incoming.get("host");
   return `http://${host || "localhost"}`;
 }
 
+/**
+ * Determines and validates the public origin for an incoming request.
+ *
+ * @param incoming - The request headers used to resolve the forwarded origin.
+ * @returns The validated public origin.
+ */
 function publicOrigin(incoming: Headers) {
   const origin = getForwardedOrigin(incoming, fallbackOrigin(incoming));
 
@@ -54,6 +66,14 @@ function publicOrigin(incoming: Headers) {
   return origin;
 }
 
+/**
+ * Retrieves a browser flow using the incoming request headers and flow parameters.
+ *
+ * @param params - Query parameters containing the flow identifier
+ * @param flowType - The browser flow type to retrieve
+ * @param route - The route associated with the flow
+ * @returns The requested flow, `null`, or `undefined`
+ */
 async function getBrowserFlow<T extends object>(
   params: BrowserFlowParams | Promise<BrowserFlowParams>,
   flowType: FlowType,
@@ -85,6 +105,12 @@ async function getBrowserFlow<T extends object>(
   );
 }
 
+/**
+ * Retrieves the login flow using the incoming request headers.
+ *
+ * @param params - Login flow query parameters or a promise resolving to them
+ * @returns The login flow, `null`, or `void`
+ */
 export function getLoginFlowWithRequestHeaders(
   params: BrowserFlowParams | Promise<BrowserFlowParams>,
 ): Promise<LoginFlow | null | void> {
@@ -96,6 +122,12 @@ export function getLoginFlowWithRequestHeaders(
   );
 }
 
+/**
+ * Retrieves the Ory registration flow using the incoming request headers.
+ *
+ * @param params - Registration flow query parameters
+ * @returns The registration flow, `null`, or `void`
+ */
 export function getRegistrationFlowWithRequestHeaders(
   params: BrowserFlowParams | Promise<BrowserFlowParams>,
 ): Promise<RegistrationFlow | null | void> {
@@ -107,6 +139,12 @@ export function getRegistrationFlowWithRequestHeaders(
   );
 }
 
+/**
+ * Retrieves the Ory recovery flow using the incoming request headers.
+ *
+ * @param params - Query parameters for the recovery flow
+ * @returns The recovery flow, `null`, or `void`
+ */
 export function getRecoveryFlowWithRequestHeaders(
   params: BrowserFlowParams | Promise<BrowserFlowParams>,
 ): Promise<RecoveryFlow | null | void> {
@@ -118,6 +156,12 @@ export function getRecoveryFlowWithRequestHeaders(
   );
 }
 
+/**
+ * Retrieves the Ory verification flow using the incoming request headers.
+ *
+ * @param params - Parameters used to identify the verification flow
+ * @returns The verification flow, `null`, or `void` when no flow is available
+ */
 export function getVerificationFlowWithRequestHeaders(
   params: BrowserFlowParams | Promise<BrowserFlowParams>,
 ): Promise<VerificationFlow | null | void> {
@@ -129,6 +173,12 @@ export function getVerificationFlowWithRequestHeaders(
   );
 }
 
+/**
+ * Retrieves the Ory settings flow using the incoming request headers.
+ *
+ * @param params - Query parameters for the settings flow
+ * @returns The settings flow, `null`, or `void`
+ */
 export function getSettingsFlowWithRequestHeaders(
   params: BrowserFlowParams | Promise<BrowserFlowParams>,
 ): Promise<SettingsFlow | null | void> {

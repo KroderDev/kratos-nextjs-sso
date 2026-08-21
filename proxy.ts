@@ -16,9 +16,9 @@ const oryMiddleware = createOryMiddleware({
 });
 
 /**
- * Processes configured requests through Ory middleware and handles settings-area requests.
+ * Processes authentication-related requests through Ory middleware and handles dashboard settings requests.
  *
- * @returns The response for the request, including a `400` response for an invalid application origin.
+ * @returns The request response, including status `400` for an invalid application origin and status `503` for missing production configuration.
  */
 export async function proxy(request: NextRequest) {
   if (!isOryConfigured) {
@@ -75,6 +75,12 @@ export async function proxy(request: NextRequest) {
   return rewriteOryResponseLocation(response, requestOrigin);
 }
 
+/**
+ * Determines whether a pathname targets an Ory-managed route.
+ *
+ * @param pathname - The request pathname to inspect
+ * @returns `true` if the pathname matches an Ory route, `false` otherwise.
+ */
 function isOryRequest(pathname: string) {
   return (
     pathname.startsWith("/self-service/") ||

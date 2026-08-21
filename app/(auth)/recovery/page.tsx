@@ -20,6 +20,11 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
   return { title: t("auth.login.footer.recoverAccess") };
 }
 
+/**
+ * Renders the localized account recovery page and recovery flow.
+ *
+ * @param searchParams - URL parameters used to load the recovery flow and preserve the language.
+ */
 export default async function RecoveryPage({ searchParams }: OryPageParams) {
   const { t } = await getTranslations(searchParams);
   const params = await searchParams;

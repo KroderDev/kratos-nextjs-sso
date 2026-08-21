@@ -8,6 +8,12 @@ function readBrandValue(value: string | undefined, fallback: string) {
   return normalizedValue || fallback;
 }
 
+/**
+ * Derives a two-letter uppercase brand mark from a name.
+ *
+ * @param name - The brand name used to generate the mark
+ * @returns The uppercase initials of the first two words, or the first two characters when the name contains one word
+ */
 function deriveBrandMark(name: string): string {
   const words = name.trim().split(/\s+/).filter(Boolean);
   if (words.length >= 2) {

@@ -77,6 +77,7 @@ const OTHER_SETTINGS_SECTION = {
  * @param lookupSecretConfirmationNode - Optional lookup-secret confirmation node
  * @param onActionStart - Optional callback invoked when an action begins
  * @param formPending - Whether the containing form has started submitting
+ * @param formSubmitter - Optional identifier of the control that submitted the form
  * @returns The rendered Ory node components
  */
 function renderNodes(
@@ -105,6 +106,12 @@ function renderNodes(
   ));
 }
 
+/**
+ * Tracks form submission state and identifies the control that initiated the submission.
+ *
+ * @param onSubmit - Optional callback invoked when the first submission begins.
+ * @returns Submission capture handler, pending state, and submitting control identifier.
+ */
 function useFlowSubmissionState(onSubmit?: () => void) {
   const [pending, setPending] = useState(false);
   const [submitter, setSubmitter] = useState<string | undefined>();
@@ -132,7 +139,7 @@ function useFlowSubmissionState(onSubmit?: () => void) {
 }
 
 /**
- * Renders a settings section as a form within a card.
+ * Renders a settings section as a form within a card, including its fields, shared inputs, and actions.
  *
  * @param action - The form submission URL
  * @param kind - The type of Ory flow being rendered

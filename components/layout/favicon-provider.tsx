@@ -4,6 +4,9 @@ import { useTheme } from "next-themes";
 import { useEffect, useRef } from "react";
 import { brandFaviconDark, brandFaviconLight } from "@/lib/branding";
 
+/**
+ * Updates the document favicon when the resolved theme changes.
+ */
 export function FaviconProvider() {
   const { resolvedTheme } = useTheme();
   const prevTheme = useRef<string | undefined>(undefined);

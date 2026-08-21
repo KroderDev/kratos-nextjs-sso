@@ -23,9 +23,9 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
 /**
  * Renders the localized Ory verification page.
  *
- * Displays setup information when Ory is unavailable and otherwise loads the verification flow, redirecting to a fresh flow when the current one must be restarted.
+ * Displays setup information when Ory is unavailable, redirects when verification is disabled, and loads the verification flow when configured.
  *
- * @param searchParams - Request search parameters used to load the verification flow and translations
+ * @param searchParams - Request search parameters used for localization and flow handling
  */
 export default async function VerificationPage({
   searchParams,

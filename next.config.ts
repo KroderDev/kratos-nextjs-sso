@@ -3,6 +3,11 @@ import type { NextConfig } from "next";
 import { getConfiguredOrigins, getFormActionSources } from "./lib/ory/csp";
 import { isValidApplicationOrigin } from "./lib/ory/request";
 
+/**
+ * Validates the application origin when Ory is configured in production.
+ *
+ * @throws An error if `NEXT_PUBLIC_APP_URL` is not a valid HTTP(S) origin.
+ */
 function assertApplicationOrigin() {
   if (process.env.NODE_ENV !== "production") {
     return;
