@@ -99,6 +99,7 @@ describe("ConsentPage", () => {
     });
     const markup = renderToStaticMarkup(page);
 
+    expect(markup).toContain('data-slot="checkbox"');
     expect(markup).toContain('name="remember"');
     expect(markup).toContain('type="checkbox"');
     expect(markup).toContain('value="true"');

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AuthContent } from "@/components/layout/auth-shell";
 import { ConsentForm } from "@/components/ory/consent-form";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -12,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { consentHandoff } from "@/lib/ory/provider-handoff";
 import { getTranslations } from "@/lib/i18n/server";
 import { applicationUrl } from "@/lib/ory/url";
@@ -102,15 +104,19 @@ export default async function ConsentPage({ searchParams }: ConsentPageProps) {
             {consentRememberMode === "always" ? (
               <input name="remember" type="hidden" value="true" />
             ) : consentRememberMode === "prompt" ? (
-              <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                <input
-                  className="size-4 accent-primary"
+              <Field className="w-auto items-center" orientation="horizontal">
+                <Checkbox
+                  id="consent-remember"
                   name="remember"
-                  type="checkbox"
                   value="true"
                 />
-                <span>{t("auth.consent.remember")}</span>
-              </label>
+                <FieldLabel
+                  className="text-muted-foreground"
+                  htmlFor="consent-remember"
+                >
+                  {t("auth.consent.remember")}
+                </FieldLabel>
+              </Field>
             ) : null}
             <Button className="w-full sm:w-auto" type="submit">
               {t("auth.consent.allow")}
