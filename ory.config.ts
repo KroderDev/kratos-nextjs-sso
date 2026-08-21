@@ -1,5 +1,19 @@
 import { brandName } from "@/lib/branding";
 
+export const consentRememberModes = ["always", "prompt", "never"] as const;
+export type ConsentRememberMode = (typeof consentRememberModes)[number];
+
+/**
+ * Normalizes the consent persistence policy while keeping invalid deployments
+ * on the default automatic behavior.
+ */
+export function parseConsentRememberMode(value: string | undefined): ConsentRememberMode {
+  const normalized = value?.trim().toLowerCase();
+  return consentRememberModes.includes(normalized as ConsentRememberMode)
+    ? (normalized as ConsentRememberMode)
+    : "always";
+}
+
 const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
 
 const sdkUrl = (
@@ -40,6 +54,9 @@ const config = {
 export const appBaseUrl = configuredAppUrl;
 export const orySdkUrl = sdkUrl;
 export const oryCanonicalUrl = canonicalOryUrl;
+export const consentRememberMode = parseConsentRememberMode(
+  process.env.ORY_CONSENT_REMEMBER_MODE,
+);
 export const isOryConfigured =
   Boolean(sdkUrl) && (!isOryNetworkUrl || hasProjectApiToken);
 export const isRegistrationEnabled =

@@ -94,6 +94,7 @@ export const es: TranslationKeys = {
       permissionsTitle: "Permisos solicitados",
       permissionsDescription: "Esta aplicación recibirá los permisos indicados abajo.",
       basicAccess: "Acceso básico a la cuenta",
+      remember: "Recordar mi decisión para esta aplicación",
       allow: "Permitir acceso",
       deny: "Denegar",
     },
