@@ -145,4 +145,30 @@ describe("I18nProvider", () => {
 
     expect(markup).toBe("<output>en:missing.translation</output>");
   });
+
+  it("falls back to the default locale when the browser reports no language", () => {
+    const original = window.navigator;
+    Object.defineProperty(window, "navigator", {
+      configurable: true,
+      value: { language: "", languages: [] },
+    });
+    container = document.createElement("div");
+    document.body.append(container);
+    root = createRoot(container);
+
+    act(() => {
+      root?.render(
+        <I18nProvider>
+          <TranslationProbe />
+        </I18nProvider>,
+      );
+    });
+
+    expect(container.textContent).toBe("en:Sign in");
+
+    Object.defineProperty(window, "navigator", {
+      configurable: true,
+      value: original,
+    });
+  });
 });

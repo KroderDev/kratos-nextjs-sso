@@ -24,14 +24,15 @@ const I18nContext = createContext<I18nContextType>({
   },
 });
 
-function getClientBrowserLocale(): Locale | undefined {
+export function getClientBrowserLocale(): Locale | undefined {
   if (typeof window === "undefined") return undefined;
   const navLang = window.navigator.language || (window.navigator.languages && window.navigator.languages[0]);
-  if (navLang) {
-    const primaryCode = navLang.toLowerCase().split("-")[0];
-    if (isValidLocale(primaryCode)) {
-      return primaryCode;
-    }
+  if (!navLang) {
+    return undefined;
+  }
+  const primaryCode = navLang.toLowerCase().split("-")[0];
+  if (isValidLocale(primaryCode)) {
+    return primaryCode;
   }
   return undefined;
 }
