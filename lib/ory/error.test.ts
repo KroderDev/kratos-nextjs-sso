@@ -61,6 +61,8 @@ describe("Ory flow error helpers", () => {
       "translated:auth.error.logoutUnavailable",
     );
     expect(getKnownOryErrorMessage("unknown_reason", translate)).toBeNull();
+    expect(getKnownOryErrorMessage("toString", translate)).toBeNull();
+    expect(getKnownOryErrorMessage("constructor", translate)).toBeNull();
     expect(getKnownOryErrorMessage(undefined, translate)).toBeNull();
   });
 

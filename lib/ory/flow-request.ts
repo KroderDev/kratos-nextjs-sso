@@ -17,6 +17,7 @@ import { appBaseUrl, orySdkUrl } from "@/ory.config";
 import {
   flowRequestHeaders,
   getForwardedOrigin,
+  isValidApplicationOrigin,
   validateForwardedOrigin,
 } from "./request";
 
@@ -34,12 +35,16 @@ type RawFlowFetcher<T extends object> = (
 ) => Promise<ApiResponse<T>>;
 
 /**
- * Builds an HTTP origin from the incoming request's host header.
+ * Uses the configured application origin or builds an HTTP origin from the incoming host header.
  *
  * @param incoming - The request headers containing the host value
- * @returns An HTTP origin using the host header or `localhost` when the header is unavailable
+ * @returns The configured origin, or an HTTP origin using the host header or `localhost`
  */
 function fallbackOrigin(incoming: Headers) {
+  if (appBaseUrl && isValidApplicationOrigin(appBaseUrl)) {
+    return new URL(appBaseUrl).origin;
+  }
+
   const host = incoming.get("host");
   return `http://${host || "localhost"}`;
 }

@@ -24,7 +24,10 @@ export function getKnownOryErrorMessage(
     invalid_request: "auth.error.invalidRequest",
     logout_unavailable: "auth.error.logoutUnavailable",
   };
-  const key = reason ? reasonKeys[reason] : undefined;
+  const key =
+    reason && Object.prototype.hasOwnProperty.call(reasonKeys, reason)
+      ? reasonKeys[reason]
+      : undefined;
 
   return key ? translate(key) : null;
 }

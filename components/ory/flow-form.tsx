@@ -76,6 +76,7 @@ const OTHER_SETTINGS_SECTION = {
  * @param formId - Optional identifier of the containing form
  * @param lookupSecretConfirmationNode - Optional lookup-secret confirmation node
  * @param onActionStart - Optional callback invoked when an action begins
+ * @param onTriggerStart - Optional callback invoked before an allowlisted trigger starts
  * @param formPending - Whether the containing form has started submitting
  * @param formSubmitter - Optional identifier of the control that submitted the form
  * @returns The rendered Ory node components
@@ -88,6 +89,7 @@ function renderNodes(
   formId?: string,
   lookupSecretConfirmationNode?: OryFlow["ui"]["nodes"][number],
   onActionStart?: () => void,
+  onTriggerStart?: (submitter: string) => boolean,
   formPending = false,
   formSubmitter?: string,
 ) {
@@ -102,6 +104,7 @@ function renderNodes(
       lookupSecretPending={lookupSecretPending}
       node={node}
       onActionStart={onActionStart}
+      onTriggerStart={onTriggerStart}
     />
   ));
 }
@@ -110,15 +113,33 @@ function renderNodes(
  * Tracks form submission state and identifies the control that initiated the submission.
  *
  * @param onSubmit - Optional callback invoked when the first submission begins.
- * @returns Submission capture handler, pending state, and submitting control identifier.
+ * @returns Submission handlers, pending state, and submitting control identifier.
  */
 function useFlowSubmissionState(onSubmit?: () => void) {
   const [pending, setPending] = useState(false);
   const [submitter, setSubmitter] = useState<string | undefined>();
   const pendingRef = useRef(false);
+  const triggerCompletionRef = useRef(false);
+
+  function handleTriggerStart(actionSubmitter: string) {
+    if (pendingRef.current) {
+      return false;
+    }
+
+    setSubmitter(actionSubmitter);
+    triggerCompletionRef.current = true;
+    pendingRef.current = true;
+    setPending(true);
+    return true;
+  }
 
   function handleSubmitCapture(event: FormEvent<HTMLFormElement>) {
     if (pendingRef.current) {
+      if (triggerCompletionRef.current) {
+        triggerCompletionRef.current = false;
+        return;
+      }
+
       event.preventDefault();
       return;
     }
@@ -135,7 +156,7 @@ function useFlowSubmissionState(onSubmit?: () => void) {
     onSubmit?.();
   }
 
-  return { handleSubmitCapture, pending, submitter };
+  return { handleSubmitCapture, handleTriggerStart, pending, submitter };
 }
 
 /**
@@ -184,7 +205,8 @@ function SettingsSectionCard({
   const showCardHeader = settingsArea !== "connections";
   const renderActionsInBody = settingsArea === "connections" || section.group === "lookup_secret";
   const handleActionStart = () => rememberSettingsAction(settingsArea);
-  const { handleSubmitCapture, pending, submitter } = useFlowSubmissionState(handleActionStart);
+  const { handleSubmitCapture, handleTriggerStart, pending, submitter } =
+    useFlowSubmissionState(handleActionStart);
   const hiddenNodes = [
     ...sharedNodes,
     ...section.nodes.filter(isHiddenInputNode),
@@ -223,6 +245,7 @@ function SettingsSectionCard({
             formId,
             lookupSecretConfirmationNode,
             undefined,
+            handleTriggerStart,
             pending,
             submitter,
           )}
@@ -235,7 +258,8 @@ function SettingsSectionCard({
                 lookupSecretPending,
                 formId,
                 lookupSecretConfirmationNode,
-                undefined,
+                handleActionStart,
+                handleTriggerStart,
                 pending,
                 submitter,
               )}
@@ -255,6 +279,7 @@ function SettingsSectionCard({
                 formId,
                 lookupSecretConfirmationNode,
                 handleActionStart,
+                handleTriggerStart,
                 pending,
                 submitter,
               )}
@@ -271,6 +296,7 @@ function SettingsSectionCard({
               formId,
               lookupSecretConfirmationNode,
               handleActionStart,
+              handleTriggerStart,
               pending,
               submitter,
             )}
@@ -401,7 +427,7 @@ export function FlowForm({
   settingsArea = "profile",
 }: FlowFormProps) {
   const { t } = useTranslation();
-  const { handleSubmitCapture, pending, submitter } = useFlowSubmissionState();
+  const { handleSubmitCapture, handleTriggerStart, pending, submitter } = useFlowSubmissionState();
   const method = flow.ui.method.toLowerCase() === "get" ? "get" : "post";
   const origins = allowedOryOrigins([appBaseUrl ?? "", orySdkUrl, oryCanonicalUrl]);
 
@@ -463,6 +489,7 @@ export function FlowForm({
           undefined,
           undefined,
           undefined,
+          handleTriggerStart,
           pending,
           submitter,
         )}
@@ -476,6 +503,7 @@ export function FlowForm({
               undefined,
               undefined,
               undefined,
+              handleTriggerStart,
               pending,
               submitter,
             )}
@@ -507,6 +535,7 @@ export function FlowForm({
                 node={node}
                 formPending={pending}
                 formSubmitter={submitter}
+                onTriggerStart={handleTriggerStart}
               />
             ))}
           </section>

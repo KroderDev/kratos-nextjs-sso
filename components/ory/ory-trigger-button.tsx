@@ -44,6 +44,7 @@ type OryTriggerButtonProps = Omit<
 > & {
   children?: ReactNode;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
+  onTriggerStart?: () => boolean;
   trigger?: string;
 };
 
@@ -51,6 +52,7 @@ type OryTriggerButtonProps = Omit<
  * Renders a button that invokes an allowed Ory trigger or submits its associated form.
  *
  * @param name - The form field name used when preserving the trigger or button value
+ * @param onTriggerStart - Callback that accepts or rejects an allowlisted trigger start
  * @param trigger - The Ory trigger to invoke when allowed
  * @param value - The value submitted with the form field
  * @returns A button configured with the supplied properties and trigger behavior
@@ -59,6 +61,7 @@ export function OryTriggerButton({
   children,
   name,
   onClick,
+  onTriggerStart,
   trigger,
   value,
   ...props
@@ -72,6 +75,9 @@ export function OryTriggerButton({
 
     if (isAllowedOryTrigger(trigger)) {
       event.preventDefault();
+      if (onTriggerStart && !onTriggerStart()) {
+        return;
+      }
       setFormValue(event.currentTarget.form, name, value?.toString());
       invokeOryTrigger(trigger);
       return;

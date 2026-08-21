@@ -91,6 +91,7 @@ type OryNodeProps = {
   lookupSecretPending?: boolean;
   node: UiNode;
   onActionStart?: () => void;
+  onTriggerStart?: (submitter: string) => boolean;
 };
 
 /**
@@ -115,6 +116,7 @@ function nodeId(node: UiNode) {
  * @param lookupSecretConfirmationNode - Optional node rendered as the lookup-secret confirmation action.
  * @param lookupSecretPending - Whether lookup-secret recovery codes are pending.
  * @param onActionStart - Callback invoked when an Ory action starts.
+ * @param onTriggerStart - Callback invoked before an allowlisted Ory trigger starts.
  */
 export function OryNode({
   compactProvider = false,
@@ -126,6 +128,7 @@ export function OryNode({
   lookupSecretPending = false,
   node,
   onActionStart,
+  onTriggerStart,
 }: OryNodeProps) {
   const { t, locale } = useTranslation();
   const [otpValue, setOtpValue] = useState<string | undefined>();
@@ -245,6 +248,7 @@ export function OryNode({
                       formNoValidate
                       name={name}
                       onClick={onActionStart}
+                      onTriggerStart={() => onTriggerStart?.(actionSubmitterKey) ?? true}
                       trigger={getString(attributes.onclickTrigger)}
                       type="submit"
                       value={stringValue}
@@ -271,6 +275,7 @@ export function OryNode({
           }
           name={name}
           onClick={onActionStart}
+          onTriggerStart={() => onTriggerStart?.(actionSubmitterKey) ?? true}
           form={formId}
           title={compactProvider ? providerAction : undefined}
           trigger={getString(attributes.onclickTrigger)}
@@ -429,6 +434,8 @@ export function OryNode({
                 formSubmitter={formSubmitter}
                 kind={kind}
                 node={lookupSecretConfirmationNode}
+                onActionStart={onActionStart}
+                onTriggerStart={onTriggerStart}
               />
             ) : undefined
           }

@@ -22,7 +22,7 @@ vi.mock("@/components/ui/dropdown-menu", () => ({
   DropdownMenuGroup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DropdownMenuLabel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DropdownMenuRadioGroup: ({ children, value }: { children: React.ReactNode; value?: string }) => (
-    <div data-value={value}>{children}</div>
+    <div data-selected-value={value}>{children}</div>
   ),
   DropdownMenuRadioItem: ({ children, value }: { children: React.ReactNode; value: string }) => (
     <div data-value={value}>{children}</div>
@@ -75,7 +75,7 @@ describe("ThemeToggle", () => {
       root?.render(<ThemeToggle />);
     });
 
-    expect(container.querySelector('[data-value="dark"]')).not.toBeNull();
+    expect(container.querySelector('[data-selected-value="dark"]')).not.toBeNull();
   });
 
   it("falls back to system when the theme provider has no current theme", () => {
@@ -88,6 +88,6 @@ describe("ThemeToggle", () => {
       root?.render(<ThemeToggle />);
     });
 
-    expect(container.querySelector('[data-value="system"]')).not.toBeNull();
+    expect(container.querySelector('[data-selected-value="system"]')).not.toBeNull();
   });
 });

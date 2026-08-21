@@ -169,4 +169,12 @@ describe("browser flow requests", () => {
 
     expect(state.factories[0]?.baseUrl).toBe("http://localhost");
   });
+
+  it("uses the configured HTTPS origin when forwarded headers are absent", async () => {
+    state.incoming = new Headers({ host: "nextjs:3000" });
+
+    await getLoginFlowWithRequestHeaders({ flow: "flow-id" });
+
+    expect(state.factories[0]?.baseUrl).toBe("https://auth.example.com");
+  });
 });

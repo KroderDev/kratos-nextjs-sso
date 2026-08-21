@@ -7,8 +7,9 @@ vi.mock("react", async (importOriginal) => {
     ...actual,
     useSyncExternalStore: (
       _subscribe: unknown,
-      getClientSnapshot: () => unknown,
-    ) => getClientSnapshot(),
+      _getClientSnapshot: () => unknown,
+      getServerSnapshot: () => unknown,
+    ) => getServerSnapshot(),
   };
 });
 
