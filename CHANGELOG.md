@@ -1,5 +1,58 @@
 # Changelog
 
+## [0.6.0](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.5.0...v0.6.0) (2026-08-21)
+
+
+### Features
+
+* **auth:** use canonical browser flow routes ([3dffef8](https://github.com/KroderDev/kratos-nextjs-sso/commit/3dffef895eadee16762bd6d6ec22a2f0994a5794))
+* **auth:** use canonical browser flow routes ([594cebc](https://github.com/KroderDev/kratos-nextjs-sso/commit/594cebc25c6181bd97547be5e76fcf8def62aae0))
+* **ory:** harden browser flows and settings UI ([0938392](https://github.com/KroderDev/kratos-nextjs-sso/commit/093839211fe88d3d70073b6279d2c5878bc09f7d))
+* **ory:** harden browser flows and settings UI ([fcd1672](https://github.com/KroderDev/kratos-nextjs-sso/commit/fcd16726c663956e8a1a5ecac60fc3b1ca116b5d))
+
+
+### Bug Fixes
+
+* **auth:** preserve internal handoff origins ([84cdd0a](https://github.com/KroderDev/kratos-nextjs-sso/commit/84cdd0a6f77c1a0f7c49613787b660d6cbdf9378))
+* **auth:** preserve internal handoff origins ([a40cea0](https://github.com/KroderDev/kratos-nextjs-sso/commit/a40cea08f8023b68eedccc394a4cc23a692d471d))
+* **auth:** preserve SSO origin for flow retries ([80b45ee](https://github.com/KroderDev/kratos-nextjs-sso/commit/80b45eeb3d6eb23ae8897e56ca092698f5e959aa))
+* **auth:** preserve SSO origin for flow retries ([5b839df](https://github.com/KroderDev/kratos-nextjs-sso/commit/5b839dfdab8b544b421f4dc56beb53f2bef556f3))
+* **auth:** remember consent and honor skip flag ([e2ac2f3](https://github.com/KroderDev/kratos-nextjs-sso/commit/e2ac2f32ead44e3b5cb3a9b7491fd553930c767b))
+* **auth:** remember consent and honor skip flag ([0b603fb](https://github.com/KroderDev/kratos-nextjs-sso/commit/0b603fbded3412dcb12f8d5ea867029981aceb0a))
+* **build:** conditionally disable standalone output on Vercel deployments ([cba8f14](https://github.com/KroderDev/kratos-nextjs-sso/commit/cba8f147eec76d878bd93baa8312380734b70c07))
+* **build:** conditionally disable standalone output on Vercel deployments ([7c9a308](https://github.com/KroderDev/kratos-nextjs-sso/commit/7c9a308b24989da7ce8901cd2c40002e0e6ad94b))
+* **deps:** patch vulnerable nanoid release ([54061da](https://github.com/KroderDev/kratos-nextjs-sso/commit/54061dad404fbce0d6d6ab68b3832ee459aba890))
+* **ory:** address CodeRabbit review findings ([eb49bf8](https://github.com/KroderDev/kratos-nextjs-sso/commit/eb49bf852fcc6a213eee7d20609fa493b4c497d4))
+* **security:** allow configured form redirect origins ([131bb38](https://github.com/KroderDev/kratos-nextjs-sso/commit/131bb38836e7e89352bcd1758930393fe33eea5d))
+* **security:** allow configured form redirect origins ([7477d28](https://github.com/KroderDev/kratos-nextjs-sso/commit/7477d2837d94049176092d3adebd83551b870d82))
+* **security:** validate provider callback handoffs ([4cfea19](https://github.com/KroderDev/kratos-nextjs-sso/commit/4cfea198c31089b41a455d6714d65d24ae42fb58))
+* **security:** validate provider callback handoffs ([0ac6468](https://github.com/KroderDev/kratos-nextjs-sso/commit/0ac64684e3acb10037d59b1be6fa5124ea6a613d))
+* **ui:** honor registration setting and restore link padding ([c5d67ba](https://github.com/KroderDev/kratos-nextjs-sso/commit/c5d67ba6486163081675b8fdf865f5f4617bcbec))
+* **ui:** honor registration setting and restore link padding ([3ff88e0](https://github.com/KroderDev/kratos-nextjs-sso/commit/3ff88e017cdb3c1d5ced2d5e68385b33a73f7f65))
+
+
+### Refactoring
+
+* **auth:** use shared consent checkbox ([514c33f](https://github.com/KroderDev/kratos-nextjs-sso/commit/514c33f0f7cdedc6f04833fc7e607e4cae333964))
+
+
+### Dependencies
+
+* **deps-dev:** bump the dev-dependencies group with 2 updates ([023c5e1](https://github.com/KroderDev/kratos-nextjs-sso/commit/023c5e11bad8ad0cf8eb109b1891f3d52ea240a1))
+
+
+### Tests
+
+* **auth:** align end-to-end routes ([06d1ec0](https://github.com/KroderDev/kratos-nextjs-sso/commit/06d1ec0d17fca18a4ca6ca0ce452a56a2db4172e))
+* **auth:** cover application origin fallbacks ([0428c3c](https://github.com/KroderDev/kratos-nextjs-sso/commit/0428c3c20a423965dd35570b977a1b7c504de212))
+* **auth:** cover consent form fallback ([a18cbfa](https://github.com/KroderDev/kratos-nextjs-sso/commit/a18cbfaa917bc2a8fb91357d395eb9117e5d28eb))
+* **auth:** cover logout handoff rejection ([bdf517b](https://github.com/KroderDev/kratos-nextjs-sso/commit/bdf517b06df02c3c68f0a27e128fe8f7eb396926))
+* **auth:** update Kratos fixture routes ([be1682b](https://github.com/KroderDev/kratos-nextjs-sso/commit/be1682b8ded7d56246f7b3e32dd95e13a6b7b352))
+* **auth:** use generic consent fixture data ([a5d2a6a](https://github.com/KroderDev/kratos-nextjs-sso/commit/a5d2a6a5e5e6869a237add30c8528af491dfc679))
+* **coverage:** cover remaining application branches ([759f18e](https://github.com/KroderDev/kratos-nextjs-sso/commit/759f18ef17c9f775f2461ddb84957b61738e5d50))
+* **coverage:** exercise destructive confirm and browser-locale branches ([c103408](https://github.com/KroderDev/kratos-nextjs-sso/commit/c103408cc43547c0cc6a239b2e90d1d462a457b6))
+* **security:** cover AAL1 step-up continue path ([14fe339](https://github.com/KroderDev/kratos-nextjs-sso/commit/14fe339fc32e709f266b28f033013a31f8910903))
+
 ## [0.5.0](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.4.0...v0.5.0) (2026-08-13)
 
 
