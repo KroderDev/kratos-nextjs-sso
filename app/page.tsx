@@ -13,12 +13,14 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { getTranslations } from "@/lib/i18n/server";
+import { isRegistrationEnabled } from "@/ory.config";
 
 type HomeProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export default async function Home({ searchParams }: HomeProps) {
+  const authActionHref = isRegistrationEnabled ? "/registration" : "/login";
   const { t } = await getTranslations(searchParams);
 
   return (
@@ -35,7 +37,7 @@ export default async function Home({ searchParams }: HomeProps) {
           >
             {t("common.navigation.signIn")}
           </ButtonLink>
-          <ButtonLink href="/registration" size="sm">
+          <ButtonLink href={authActionHref} size="sm">
             {t("common.navigation.getStarted")}
             <ArrowRight aria-hidden="true" data-icon="inline-end" />
           </ButtonLink>
@@ -63,7 +65,7 @@ export default async function Home({ searchParams }: HomeProps) {
               <ButtonLink
                 className="h-11 px-4"
                 variant="outline"
-                href="/registration"
+                href={authActionHref}
               >
                 {t("home.hero.createIdentity")}
                 <MoveUpRight aria-hidden="true" data-icon="inline-end" />

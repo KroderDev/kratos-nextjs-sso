@@ -58,7 +58,7 @@ function SettingsReturn() {
       <p className="hidden text-sm leading-6 text-muted-foreground lg:block">
         {t("dashboard.settings.navigation.help")}
       </p>
-      <ButtonLink className="px-0 lg:mt-4" href="/dashboard" size="sm" variant="link">
+      <ButtonLink className="lg:mt-4" href="/dashboard" size="sm" variant="link">
         {t("dashboard.settings.navigation.returnOverview")}
         <ArrowUpRight aria-hidden="true" data-icon="inline-end" />
       </ButtonLink>
