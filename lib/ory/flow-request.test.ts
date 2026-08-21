@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const state = vi.hoisted(() => ({
+  appBaseUrl: "https://auth.example.com" as string | undefined,
   incoming: new Headers(),
   requests: [] as Array<{ flow: string; id: string; cookie?: string }>,
   factories: [] as Array<{ flowType: string; baseUrl: string; route: string }>,
@@ -67,7 +68,9 @@ vi.mock("@ory/nextjs/app", () => ({
 }));
 
 vi.mock("@/ory.config", () => ({
-  appBaseUrl: "https://auth.example.com",
+  get appBaseUrl() {
+    return state.appBaseUrl;
+  },
   orySdkUrl: "https://ory.example.com",
 }));
 
@@ -81,6 +84,7 @@ import {
 
 describe("browser flow requests", () => {
   beforeEach(() => {
+    state.appBaseUrl = "https://auth.example.com";
     state.incoming = new Headers({
       cookie: "csrf_token=flow-cookie",
       host: "nextjs:3000",
@@ -141,5 +145,28 @@ describe("browser flow requests", () => {
 
     expect(flow).toBeNull();
     expect(state.requests).toHaveLength(0);
+  });
+
+  it("fails closed in production when the public application URL is missing", async () => {
+    state.appBaseUrl = undefined;
+    vi.stubEnv("NODE_ENV", "production");
+
+    try {
+      await expect(
+        getLoginFlowWithRequestHeaders({ flow: "flow-id" }),
+      ).rejects.toThrow("NEXT_PUBLIC_APP_URL must be configured");
+      expect(state.requests).toHaveLength(0);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("uses localhost when the incoming host header is missing", async () => {
+    state.appBaseUrl = undefined;
+    state.incoming = new Headers();
+
+    await getLoginFlowWithRequestHeaders({ flow: "flow-id" });
+
+    expect(state.factories[0]?.baseUrl).toBe("http://localhost");
   });
 });

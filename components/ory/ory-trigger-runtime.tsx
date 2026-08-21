@@ -16,10 +16,6 @@ export function isAllowedOryTrigger(trigger: string | undefined): trigger is str
 }
 
 function triggerFunction(trigger: string) {
-  if (!isAllowedOryTrigger(trigger)) {
-    return undefined;
-  }
-
   const candidate = (window as unknown as Record<string, unknown>)[trigger];
   return typeof candidate === "function" ? (candidate as () => void) : undefined;
 }

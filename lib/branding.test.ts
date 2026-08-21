@@ -39,6 +39,15 @@ describe("lib/branding", () => {
     expect(branding.brandLogoDark).toBe("/next-dark.svg");
   });
 
+  it("uses an explicitly configured dark logo", async () => {
+    vi.resetModules();
+    process.env.NEXT_PUBLIC_BRAND_LOGO_DARK = "/custom-dark.svg";
+
+    const branding = await import("./branding");
+
+    expect(branding.brandLogoDark).toBe("/custom-dark.svg");
+  });
+
   it("reads brandFaviconLight and brandFaviconDark when set", async () => {
     vi.resetModules();
     process.env.NEXT_PUBLIC_BRAND_FAVICON_LIGHT = "/favicon.ico";
@@ -70,5 +79,15 @@ describe("lib/branding", () => {
     const branding = await import("./branding");
 
     expect(branding.brandMark).toBe("CU");
+  });
+
+  it("uses the first two characters for a single-word brand name", async () => {
+    vi.resetModules();
+    process.env.NEXT_PUBLIC_BRAND_NAME = "A";
+    delete process.env.NEXT_PUBLIC_BRAND_MARK;
+
+    const branding = await import("./branding");
+
+    expect(branding.brandMark).toBe("A");
   });
 });

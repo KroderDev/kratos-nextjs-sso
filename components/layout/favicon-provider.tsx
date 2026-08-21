@@ -18,8 +18,6 @@ export function FaviconProvider() {
         ? brandFaviconDark
         : brandFaviconLight || brandFaviconDark;
 
-    if (!url) return;
-
     document.querySelectorAll('link[rel="icon"]').forEach((el) => el.remove());
 
     const link = document.createElement("link");

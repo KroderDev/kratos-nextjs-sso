@@ -402,6 +402,18 @@ describe("OryNode code input", () => {
     expect(markup).toContain("Authenticator code");
   });
 
+  it("uses the localized fallback label for an unlabeled code input", () => {
+    const node = inputNode({
+      type: "text",
+      name: "code",
+      maxlength: 6,
+      label: undefined,
+    });
+    const markup = renderToStaticMarkup(<OryNode node={node} />);
+
+    expect(markup).toContain(">code<");
+  });
+
   it("renders a lookup-secret login input as a text recovery-code field", () => {
     const node = inputNode({
       group: "lookup_secret",
@@ -431,6 +443,18 @@ describe("OryNode code input", () => {
     const markup = renderToStaticMarkup(<OryNode kind="login" node={node} />);
 
     expect(markup).toContain("Invalid recovery code");
+  });
+
+  it("uses the localized fallback label for an unlabeled lookup-secret input", () => {
+    const node = inputNode({
+      group: "lookup_secret",
+      name: "lookup_secret",
+      type: "text",
+      label: undefined,
+    });
+    const markup = renderToStaticMarkup(<OryNode kind="login" node={node} />);
+
+    expect(markup).toContain(">lookup_secret<");
   });
 });
 

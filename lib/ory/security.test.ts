@@ -10,6 +10,10 @@ const origins = allowedOryOrigins([
 ]);
 
 describe("provider URL security", () => {
+  it("only keeps HTTP(S) origins in the allowlist", () => {
+    expect(allowedOryOrigins(["ftp://project.oryapis.com"])).toEqual(new Set());
+  });
+
   it("allows relative URLs and configured origins", () => {
     expect(isSafeProviderUrl("/self-service/login", origins)).toBe(true);
     expect(isSafeProviderUrl("https://project.oryapis.com/self-service/login", origins)).toBe(true);
@@ -29,6 +33,7 @@ describe("provider URL security", () => {
     ]) {
       expect(isSafeProviderUrl(value, origins)).toBe(false);
     }
+    expect(isSafeProviderUrl("https://%", origins)).toBe(false);
   });
 
   it("rejects unapproved absolute form actions", () => {

@@ -39,6 +39,7 @@ describe("getConfiguredOrigins", () => {
 
   it("returns no origins when configuration is missing", () => {
     expect(getConfiguredOrigins(undefined)).toEqual([]);
+    expect(getConfiguredOrigins(" ,  ")).toEqual([]);
   });
 
   it("allows configured provider origins in form actions", () => {

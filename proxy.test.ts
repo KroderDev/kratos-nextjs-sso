@@ -85,6 +85,15 @@ describe("proxy", () => {
     );
   });
 
+  it("passes configured non-Ory paths through without invoking Ory middleware", async () => {
+    const request = new NextRequest("http://localhost:3000/dashboard");
+    const result = await proxy(request);
+
+    expect(result.status).toBe(200);
+    expect(state.middlewareCalls).toHaveLength(0);
+    expect(rewriteOryResponseLocation).not.toHaveBeenCalled();
+  });
+
   it("fails closed in production when Ory is configured without an app origin", async () => {
     vi.stubEnv("NODE_ENV", "production");
     state.appBaseUrl = undefined;

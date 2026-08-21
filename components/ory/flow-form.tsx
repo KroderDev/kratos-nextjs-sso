@@ -163,7 +163,7 @@ function SettingsSectionCard({
   const formId = `settings-${section.group}-form`;
   const lookupSecretCodeNode = section.nodes.find(isLookupSecretCodeNode);
   const hasRenderableRecoveryCodes = lookupSecretCodeNode
-    ? (getLookupSecretEntries(lookupSecretCodeNode)?.length ?? 0) > 0
+    ? getLookupSecretEntries(lookupSecretCodeNode)!.length > 0
     : false;
   const lookupSecretConfirmationNode = hasRenderableRecoveryCodes && lookupSecretCodeNode
     ? section.nodes.find((node) => getLookupSecretAction(node) === "lookup_secret_confirm")

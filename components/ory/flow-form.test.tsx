@@ -1,3 +1,7 @@
+// @vitest-environment jsdom
+
+import { act } from "react";
+import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { UiNode } from "@ory/client-fetch";
@@ -289,6 +293,60 @@ describe("FlowForm", () => {
     expect(markup).toContain('name="custom_value"');
   });
 
+  it("renders an empty-state card when a settings area has no nodes", () => {
+    const flow = buildFlow([]);
+    const markup = renderToStaticMarkup(
+      <FlowForm
+        flow={flow}
+        kind="settings"
+        separateProviders={false}
+        settingsArea="security"
+      />,
+    );
+
+    expect(markup).toContain('data-settings-empty="security"');
+    expect(markup).toContain("This area has no settings available for your account.");
+  });
+
+  it("remembers the settings area when an action starts", () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    const flow = buildFlow([
+      groupedNode("profile", {
+        name: "traits.email",
+        type: "email",
+      }),
+      groupedNode("profile", {
+        name: "action",
+        type: "submit",
+        value: "save",
+        label: { id: 2, text: "Save", type: "info" },
+      }),
+    ]);
+
+    act(() => {
+      root.render(
+        <FlowForm
+          flow={flow}
+          kind="settings"
+          separateProviders={false}
+          settingsArea="profile"
+        />,
+      );
+    });
+    const action = container.querySelector<HTMLButtonElement>(
+      '[data-settings-form="profile"] button[name="action"]',
+    );
+    expect(action).not.toBeNull();
+
+    act(() => action?.click());
+
+    expect(action?.form?.getAttribute("data-submitting")).toBe("true");
+    act(() => root.unmount());
+    container.remove();
+  });
+
   it("keeps a recovery confirmation action visible without structured codes", () => {
     const flow = buildFlow([
       groupedNode("default", { name: "csrf_token", type: "hidden" }),
@@ -336,6 +394,33 @@ describe("FlowForm", () => {
     expect(markup).not.toContain('id="settings-password-form-method"');
     expect((markup.match(/name="method"/g) ?? []).length).toBe(1);
     expect((markup.match(/name="csrf_token"/g) ?? []).length).toBe(2);
+  });
+
+  it("prevents a second submission after the flow starts submitting", () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(<FlowForm flow={buildFlow([inputNode()])} kind="login" />);
+    });
+
+    const form = container.querySelector("form");
+    expect(form).not.toBeNull();
+
+    const firstSubmit = new Event("submit", { bubbles: true, cancelable: true });
+    const secondSubmit = new Event("submit", { bubbles: true, cancelable: true });
+    act(() => {
+      form?.dispatchEvent(firstSubmit);
+      form?.dispatchEvent(secondSubmit);
+    });
+
+    expect(firstSubmit.defaultPrevented).toBe(false);
+    expect(secondSubmit.defaultPrevented).toBe(true);
+    expect(form?.getAttribute("aria-busy")).toBe("true");
+
+    act(() => root.unmount());
+    container.remove();
   });
 
   it("keeps hidden inputs from unknown groups in their additional form", () => {

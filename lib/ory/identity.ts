@@ -71,5 +71,5 @@ export function getIdentityInitials(identity: Identity) {
     .join("")
     .toUpperCase();
 
-  return initials || "KI";
+  return initials;
 }

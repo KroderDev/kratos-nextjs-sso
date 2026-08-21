@@ -88,12 +88,8 @@ export function validateForwardedOrigin(
     return false;
   }
 
-  try {
-    const trustedOrigin = new URL(trustedAppBaseUrl).origin;
-    return forwardedOrigin === trustedOrigin;
-  } catch {
-    return false;
-  }
+  const trustedOrigin = new URL(trustedAppBaseUrl).origin;
+  return forwardedOrigin === trustedOrigin;
 }
 
 /**

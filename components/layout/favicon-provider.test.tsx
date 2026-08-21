@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FaviconProvider } from "./favicon-provider";
 
 const mockUseTheme = vi.hoisted(() => vi.fn());
+const mockPrevTheme = vi.hoisted(() => ({ current: undefined as string | undefined }));
 
 vi.mock("next-themes", () => ({
   useTheme: mockUseTheme,
@@ -14,6 +15,7 @@ vi.mock("react", async (importOriginal) => {
   return {
     ...actual,
     useEffect: vi.fn((fn: () => void) => { fn(); }),
+    useRef: vi.fn(() => mockPrevTheme),
   };
 });
 
@@ -25,6 +27,7 @@ describe("FaviconProvider", () => {
   let mockRemove: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    mockPrevTheme.current = undefined;
     mockRemove = vi.fn();
     mockLink = { rel: "", href: "" };
     mockCE = vi.fn().mockReturnValue(mockLink);
@@ -126,6 +129,22 @@ describe("FaviconProvider", () => {
       await renderFresh("light");
 
       expect(mockQS).toHaveBeenCalledWith('link[rel="icon"]');
+    });
+
+    it("skips DOM work when the resolved theme has not changed", async () => {
+      vi.doMock("@/lib/branding", () => ({
+        brandFaviconLight: "/favicon.ico",
+        brandFaviconDark: "/favicon-dark.ico",
+      }));
+      mockUseTheme.mockReturnValue({ resolvedTheme: "light" });
+
+      vi.resetModules();
+      const { FaviconProvider: Fresh } = await import("./favicon-provider");
+      renderToStaticMarkup(<Fresh />);
+      mockCE.mockClear();
+      renderToStaticMarkup(<Fresh />);
+
+      expect(mockCE).not.toHaveBeenCalled();
     });
 
     it("appends the new favicon link to document head", async () => {

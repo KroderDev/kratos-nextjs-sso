@@ -47,6 +47,25 @@ describe("run-playwright-auth", () => {
     );
   });
 
+  it("uses the Windows pnpm command on Windows", async () => {
+    const platformDescriptor = Object.getOwnPropertyDescriptor(process, "platform");
+    Object.defineProperty(process, "platform", { configurable: true, value: "win32" });
+
+    try {
+      await import("./run-playwright-auth.mjs");
+
+      expect(spawn).toHaveBeenCalledWith(
+        "pnpm.cmd",
+        ["exec", "playwright", "test", "--project", "chromium"],
+        expect.objectContaining({ stdio: "inherit" }),
+      );
+    } finally {
+      if (platformDescriptor) {
+        Object.defineProperty(process, "platform", platformDescriptor);
+      }
+    }
+  });
+
   it("forwards a child exit code", async () => {
     const processExit = vi
       .spyOn(process, "exit")

@@ -13,7 +13,7 @@ function deriveBrandMark(name: string): string {
   if (words.length >= 2) {
     return (words[0][0] + words[1][0]).toUpperCase();
   }
-  return name.slice(0, 2).toUpperCase() || "YP";
+  return name.slice(0, 2).toUpperCase();
 }
 
 export const brandName = readBrandValue(
@@ -51,5 +51,4 @@ export const brandFaviconLight = readOptionalBrandValue(
 export const brandFaviconDark = readOptionalBrandValue(
   process.env.NEXT_PUBLIC_BRAND_FAVICON_DARK,
 );
-
 

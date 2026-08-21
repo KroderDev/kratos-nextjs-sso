@@ -1,10 +1,19 @@
+// @vitest-environment jsdom
+
+import { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ThemeToggle } from "./theme-toggle";
 
+const state = vi.hoisted(() => ({
+  setTheme: vi.fn(),
+  theme: "dark" as string | undefined,
+}));
+
 vi.mock("next-themes", () => ({
-  useTheme: () => ({ setTheme: vi.fn(), theme: "dark" }),
+  useTheme: () => ({ setTheme: state.setTheme, theme: state.theme }),
 }));
 
 vi.mock("@/components/ui/dropdown-menu", () => ({
@@ -24,6 +33,20 @@ vi.mock("@/components/ui/dropdown-menu", () => ({
 }));
 
 describe("ThemeToggle", () => {
+  let root: Root | undefined;
+  let container: HTMLDivElement | undefined;
+
+  afterEach(() => {
+    if (root) {
+      act(() => root?.unmount());
+    }
+    container?.remove();
+    root = undefined;
+    container = undefined;
+    state.setTheme.mockClear();
+    state.theme = "dark";
+  });
+
   it("renders the theme control and all available theme choices", () => {
     const markup = renderToStaticMarkup(<ThemeToggle />);
 
@@ -41,5 +64,30 @@ describe("ThemeToggle", () => {
     expect(markup).toContain('data-value="system"');
     expect(markup).toContain('data-value="light"');
     expect(markup).toContain('data-value="dark"');
+  });
+
+  it("subscribes on the client and uses the active theme", () => {
+    container = document.createElement("div");
+    document.body.append(container);
+    root = createRoot(container);
+
+    act(() => {
+      root?.render(<ThemeToggle />);
+    });
+
+    expect(container.querySelector('[data-value="dark"]')).not.toBeNull();
+  });
+
+  it("falls back to system when the theme provider has no current theme", () => {
+    state.theme = undefined;
+    container = document.createElement("div");
+    document.body.append(container);
+    root = createRoot(container);
+
+    act(() => {
+      root?.render(<ThemeToggle />);
+    });
+
+    expect(container.querySelector('[data-value="system"]')).not.toBeNull();
   });
 });
