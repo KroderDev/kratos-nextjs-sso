@@ -25,8 +25,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       '@iconify-icons/simple-icons':
-        specifier: ^1.2.74
-        version: 1.2.74
+        specifier: ^2.0.0
+        version: 2.0.0
       '@iconify/react':
         specifier: ^6.0.2
         version: 6.0.2(react@19.2.8)
@@ -465,8 +465,8 @@ packages:
   '@iconify-icons/logos@2.0.0':
     resolution: {integrity: sha512-+2g3obIntbmwwF/gsQUWCTOXJn3J/BK25qpESjE94bijMfBekJTpKbclbNM34ORVcXwVlVkeJiM97V1FCwT7Tw==}
 
-  '@iconify-icons/simple-icons@1.2.74':
-    resolution: {integrity: sha512-FWmuSbg+KDUreysuaE8DYu/jbv4+FtSY+ppAi8w8sgX9CKTP6watB+PLeMbklOL/G5PnBlHnvM/ihkZ+n96OZw==}
+  '@iconify-icons/simple-icons@2.0.0':
+    resolution: {integrity: sha512-30JOyzJ1U52uiH5tAR8hOZUOYDzdykzWtr6bMTPx9bkvdLTk+3zUIbrSh54TnLqO5dFhUwfef2V/3D3X7CqPhw==}
 
   '@iconify/react@6.0.2':
     resolution: {integrity: sha512-SMmC2sactfpJD427WJEDN6PMyznTFMhByK9yLW0gOTtnjzzbsi/Ke/XqsumsavFPwNiXs8jSiYeZTmLCLwO+Fg==}
@@ -4047,7 +4047,7 @@ snapshots:
     dependencies:
       '@iconify/types': 2.0.0
 
-  '@iconify-icons/simple-icons@1.2.74':
+  '@iconify-icons/simple-icons@2.0.0':
     dependencies:
       '@iconify/types': 2.0.0
 

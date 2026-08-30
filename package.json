@@ -21,7 +21,7 @@
   "dependencies": {
     "@base-ui/react": "^1.7.0",
     "@iconify-icons/logos": "^2.0.0",
-    "@iconify-icons/simple-icons": "^1.2.74",
+    "@iconify-icons/simple-icons": "^2.0.0",
     "@iconify/react": "^6.0.2",
     "@iconify/types": "^2.0.0",
     "@icons-pack/react-simple-icons": "^13.15.1",
