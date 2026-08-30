@@ -22,8 +22,8 @@ importers:
         specifier: ^1.7.0
         version: 1.7.0(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@iconify-icons/logos':
-        specifier: ^1.2.36
-        version: 1.2.36
+        specifier: ^2.0.0
+        version: 2.0.0
       '@iconify-icons/simple-icons':
         specifier: ^1.2.74
         version: 1.2.74
@@ -471,8 +471,8 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@iconify-icons/logos@1.2.36':
-    resolution: {integrity: sha512-VzF299ubR4SKCZzLJoAawxeSjszJV1Q6y+4chCIPQuAafqfjtDjZxagZxL3ILKCsRLNN/z3zmCOOAL83tC8kLw==}
+  '@iconify-icons/logos@2.0.0':
+    resolution: {integrity: sha512-+2g3obIntbmwwF/gsQUWCTOXJn3J/BK25qpESjE94bijMfBekJTpKbclbNM34ORVcXwVlVkeJiM97V1FCwT7Tw==}
 
   '@iconify-icons/simple-icons@1.2.74':
     resolution: {integrity: sha512-FWmuSbg+KDUreysuaE8DYu/jbv4+FtSY+ppAi8w8sgX9CKTP6watB+PLeMbklOL/G5PnBlHnvM/ihkZ+n96OZw==}
@@ -1818,6 +1818,7 @@ packages:
   eslint@9.39.5:
     resolution: {integrity: sha512-DgZS62aPLXKlnxILS/AYCoRvHaZeXceIzlXPkkGGzJWSow1aEk0lbTlxUSlyjC8jcaKxAdOnTDz+o1JFSBsyjw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -4045,7 +4046,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@iconify-icons/logos@1.2.36':
+  '@iconify-icons/logos@2.0.0':
     dependencies:
       '@iconify/types': 2.0.0
 
