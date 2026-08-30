@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.1](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.6.0...v0.6.1) (2026-08-30)
+
+
+### Dependencies
+
+* **deps-dev:** bump the dev-dependencies group with 3 updates ([2697cc2](https://github.com/KroderDev/kratos-nextjs-sso/commit/2697cc20950c472934a8e2c99412685f7956ebdb))
+* **deps:** bump @iconify-icons/logos from 1.2.36 to 2.0.0 ([b062408](https://github.com/KroderDev/kratos-nextjs-sso/commit/b062408d622c7ab506190d0439da67cc899c1314))
+* **deps:** bump @iconify-icons/simple-icons from 1.2.74 to 2.0.0 ([130b69a](https://github.com/KroderDev/kratos-nextjs-sso/commit/130b69ae4f547f2284bf2e2db10dd989b40cd604))
+* **deps:** bump the production-dependencies group with 5 updates ([a55a47d](https://github.com/KroderDev/kratos-nextjs-sso/commit/a55a47d8a9615d1f869e3deff0b6f47f0dcbd78f))
+
 ## [0.6.0](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.5.0...v0.6.0) (2026-08-21)
 
 
