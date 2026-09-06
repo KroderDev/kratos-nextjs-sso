@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.2](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.6.1...v0.6.2) (2026-09-06)
+
+
+### Dependencies
+
+* **deps-dev:** bump the dev-dependencies group across 1 directory with 3 updates ([6fd31f9](https://github.com/KroderDev/kratos-nextjs-sso/commit/6fd31f9feffc97014ac1324528c643ac26fa6c74))
+* **deps:** bump the production-dependencies group with 3 updates ([edce685](https://github.com/KroderDev/kratos-nextjs-sso/commit/edce685fdb70bc636b7d3a9213e7cc22e220d287))
+
 ## [0.6.1](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.6.0...v0.6.1) (2026-08-30)
 
 
