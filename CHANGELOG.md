@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.2](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.6.1...v0.6.2) (2026-09-15)
+
+
+### Dependencies
+
+* **deps-dev:** bump the dev-dependencies group across 1 directory with 3 updates ([582e489](https://github.com/KroderDev/kratos-nextjs-sso/commit/582e489d36bc6bc60924166e68abeda37b996edd))
+* **deps-dev:** bump the dev-dependencies group across 1 directory with 3 updates ([6fd31f9](https://github.com/KroderDev/kratos-nextjs-sso/commit/6fd31f9feffc97014ac1324528c643ac26fa6c74))
+* **deps:** bump pnpm/action-setup from 6.0.10 to 6.1.0 ([613b94c](https://github.com/KroderDev/kratos-nextjs-sso/commit/613b94c0cc2485331876acf49c7fccc603d1acd7))
+* **deps:** bump the production-dependencies group across 1 directory with 8 updates ([4839236](https://github.com/KroderDev/kratos-nextjs-sso/commit/4839236d06065528e13619dcd9b93e323d861ae6))
+* **deps:** bump the production-dependencies group with 3 updates ([edce685](https://github.com/KroderDev/kratos-nextjs-sso/commit/edce685fdb70bc636b7d3a9213e7cc22e220d287))
+
 ## [0.6.1](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.6.0...v0.6.1) (2026-08-30)
 
 
