@@ -1,25 +1,31 @@
+# Dependencies and build output
 node_modules
 .next
-.env*
-.git
-.gitattributes
-.github
-.agents
-.editorconfig
-.npmrc
-*.md
-!CLAUDE.md
-!AGENTS.md
-LICENSE
 coverage
 test-results
 playwright-report
-tests
-.vercel
 *.tsbuildinfo
 tsconfig.tsbuildinfo
 next-env.d.ts
-Dockerfile
-.dockerignore
+
+# Local configuration and tooling
+.env*
+.vercel
+.agents
+.editorconfig
+.eslintcache
+.npmrc
+*.log
+.DS_Store
+
+# Repository metadata and files not needed by the production build
+.git
+.gitattributes
+.github
+*.md
+LICENSE
+tests
 docker-compose*.yml
 vitest.config.ts
+Dockerfile
+.dockerignore
