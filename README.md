@@ -129,6 +129,17 @@ docker run --rm -p 3000:3000 \
   kratos-nextjs-sso:latest
 ```
 
+Release images are published to GHCR and signed with a keyless Cosign certificate:
+
+```bash
+IMAGE=ghcr.io/kroderdev/kratos-nextjs-sso:v0.6.1
+docker pull "$IMAGE"
+cosign verify \
+  --certificate-identity-regexp '^https://github.com/KroderDev/kratos-nextjs-sso/.github/workflows/release.yml@.*$' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  "$IMAGE"
+```
+
 Before going live, confirm:
 
 - **Set `NEXT_PUBLIC_APP_URL`** to the exact HTTPS origin users will visit.
