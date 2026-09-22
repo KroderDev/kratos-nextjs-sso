@@ -14,10 +14,6 @@ type BrandProps = {
 };
 
 export function Brand({ className, inverted = false }: BrandProps) {
-  const hasLogo = Boolean(brandLogoLight || brandLogoDark);
-
-  if (!hasLogo) return null;
-
   const logo = (
     <>
       {brandLogoLight ? (

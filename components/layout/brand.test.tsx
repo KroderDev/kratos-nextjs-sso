@@ -39,13 +39,15 @@ describe("Brand", () => {
     expect(markup).toContain('class="size-8 block"');
   });
 
-  it("renders nothing when no logo is configured", () => {
+  it("renders the brand name without an image when no logo is configured", () => {
     __brandLogoLight = "";
     __brandLogoDark = "";
 
     const markup = renderToStaticMarkup(<Brand />);
 
-    expect(markup).toBe("");
+    expect(markup).toContain('href="/"');
+    expect(markup).toContain("Kratos SSO");
+    expect(markup).not.toContain("<img");
   });
 
   it("does not render an image when one logo URL is empty", () => {
@@ -67,5 +69,4 @@ describe("Brand", () => {
     expect(markup).not.toContain('src=""');
     expect(markup).toContain('src="/custom-light.svg"');
   });
-
 });
