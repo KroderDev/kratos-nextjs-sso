@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   brandLogoDark,
   brandLogoLight,
-  brandMark,
   brandName,
 } from "@/lib/branding";
 import { cn } from "@/lib/utils";
@@ -16,6 +15,9 @@ type BrandProps = {
 
 export function Brand({ className, inverted = false }: BrandProps) {
   const hasLogo = Boolean(brandLogoLight || brandLogoDark);
+
+  if (!hasLogo) return null;
+
   const logo = (
     <>
       {brandLogoLight ? (
@@ -48,20 +50,7 @@ export function Brand({ className, inverted = false }: BrandProps) {
         className,
       )}
     >
-      {hasLogo ? (
-        logo
-      ) : (
-        <span
-          aria-hidden="true"
-          className={cn(
-            "text-sm font-bold tracking-normal",
-            !inverted &&
-              "grid size-9 place-items-center rounded-xl border border-primary/20 bg-primary",
-          )}
-        >
-          {brandMark}
-        </span>
-      )}
+      {logo}
       <span>{brandName}</span>
     </Link>
   );
