@@ -53,6 +53,16 @@ describe("Brand", () => {
     expect(markup).toContain('aria-hidden="true"');
   });
 
+  it("does not render an image when one logo URL is empty", () => {
+    __brandLogoLight = "";
+    __brandLogoDark = "/custom-dark.svg";
+
+    const markup = renderToStaticMarkup(<Brand />);
+
+    expect(markup).not.toContain('src=""');
+    expect(markup).toContain('src="/custom-dark.svg"');
+  });
+
   it("renders brand mark without decorative styling when no logo and inverted", () => {
     __brandLogoLight = "";
     __brandLogoDark = "";

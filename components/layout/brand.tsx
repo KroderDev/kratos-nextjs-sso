@@ -18,20 +18,24 @@ export function Brand({ className, inverted = false }: BrandProps) {
   const hasLogo = Boolean(brandLogoLight || brandLogoDark);
   const logo = (
     <>
-      <Image
-        src={brandLogoLight}
-        alt=""
-        width={32}
-        height={32}
-        className={cn("size-8", inverted ? "hidden" : "dark:hidden")}
-      />
-      <Image
-        src={brandLogoDark}
-        alt=""
-        width={32}
-        height={32}
-        className={cn("hidden size-8", inverted ? "block" : "dark:block")}
-      />
+      {brandLogoLight ? (
+        <Image
+          src={brandLogoLight}
+          alt=""
+          width={32}
+          height={32}
+          className={cn("size-8", inverted ? "hidden" : "dark:hidden")}
+        />
+      ) : null}
+      {brandLogoDark ? (
+        <Image
+          src={brandLogoDark}
+          alt=""
+          width={32}
+          height={32}
+          className={cn("hidden size-8", inverted ? "block" : "dark:block")}
+        />
+      ) : null}
     </>
   );
 
