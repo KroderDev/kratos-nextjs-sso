@@ -85,4 +85,65 @@ describe("ConsentForm", () => {
       HTMLFormElement.prototype.requestSubmit = originalRequestSubmit;
     }
   });
+
+  it("prevents duplicate submissions after the first submit starts", () => {
+    mountedContainer = document.createElement("div");
+    document.body.append(mountedContainer);
+    mountedRoot = createRoot(mountedContainer);
+
+    act(() => {
+      mountedRoot?.render(
+        <ConsentForm action="https://operator.example.com/consent" method="post">
+          <button type="submit">Allow</button>
+        </ConsentForm>,
+      );
+    });
+
+    const form = mountedContainer.querySelector("form");
+    const button = mountedContainer.querySelector("button");
+    expect(form).not.toBeNull();
+    expect(button).not.toBeNull();
+
+    const firstSubmit = new Event("submit", { bubbles: true, cancelable: true });
+    const secondSubmit = new Event("submit", { bubbles: true, cancelable: true });
+    act(() => {
+      form?.dispatchEvent(firstSubmit);
+      form?.dispatchEvent(secondSubmit);
+    });
+
+    expect(firstSubmit.defaultPrevented).toBe(false);
+    expect(secondSubmit.defaultPrevented).toBe(true);
+    expect(form?.getAttribute("aria-busy")).toBe("true");
+    expect(button?.hasAttribute("disabled")).toBe(true);
+  });
+
+  it("respects a submit handler that cancels the first submission", () => {
+    mountedContainer = document.createElement("div");
+    document.body.append(mountedContainer);
+    mountedRoot = createRoot(mountedContainer);
+
+    act(() => {
+      mountedRoot?.render(
+        <ConsentForm
+          action="https://operator.example.com/consent"
+          method="post"
+          onSubmitCapture={(event) => event.preventDefault()}
+        >
+          <button type="submit">Allow</button>
+        </ConsentForm>,
+      );
+    });
+
+    const form = mountedContainer.querySelector("form");
+    const button = mountedContainer.querySelector("button");
+    const submit = new Event("submit", { bubbles: true, cancelable: true });
+
+    act(() => {
+      form?.dispatchEvent(submit);
+    });
+
+    expect(submit.defaultPrevented).toBe(true);
+    expect(form?.getAttribute("aria-busy")).toBeNull();
+    expect(button?.hasAttribute("disabled")).toBe(false);
+  });
 });
