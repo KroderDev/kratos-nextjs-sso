@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   brandLogoDark,
   brandLogoLight,
-  brandMark,
   brandName,
 } from "@/lib/branding";
 import { cn } from "@/lib/utils";
@@ -15,23 +14,26 @@ type BrandProps = {
 };
 
 export function Brand({ className, inverted = false }: BrandProps) {
-  const hasLogo = Boolean(brandLogoLight || brandLogoDark);
   const logo = (
     <>
-      <Image
-        src={brandLogoLight}
-        alt=""
-        width={32}
-        height={32}
-        className={cn("size-8", inverted ? "hidden" : "dark:hidden")}
-      />
-      <Image
-        src={brandLogoDark}
-        alt=""
-        width={32}
-        height={32}
-        className={cn("hidden size-8", inverted ? "block" : "dark:block")}
-      />
+      {brandLogoLight ? (
+        <Image
+          src={brandLogoLight}
+          alt=""
+          width={32}
+          height={32}
+          className={cn("size-8", inverted ? "hidden" : "dark:hidden")}
+        />
+      ) : null}
+      {brandLogoDark ? (
+        <Image
+          src={brandLogoDark}
+          alt=""
+          width={32}
+          height={32}
+          className={cn("hidden size-8", inverted ? "block" : "dark:block")}
+        />
+      ) : null}
     </>
   );
 
@@ -44,20 +46,7 @@ export function Brand({ className, inverted = false }: BrandProps) {
         className,
       )}
     >
-      {hasLogo ? (
-        logo
-      ) : (
-        <span
-          aria-hidden="true"
-          className={cn(
-            "text-sm font-bold tracking-normal",
-            !inverted &&
-              "grid size-9 place-items-center rounded-xl border border-primary/20 bg-primary",
-          )}
-        >
-          {brandMark}
-        </span>
-      )}
+      {logo}
       <span>{brandName}</span>
     </Link>
   );

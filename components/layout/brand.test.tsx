@@ -7,7 +7,6 @@ let __brandLogoDark = "";
 vi.mock("@/lib/branding", () => ({
   get brandLogoLight() { return __brandLogoLight; },
   get brandLogoDark() { return __brandLogoDark; },
-  brandMark: "KS",
   brandName: "Kratos SSO",
   brandFaviconLight: "",
   brandFaviconDark: "",
@@ -40,29 +39,34 @@ describe("Brand", () => {
     expect(markup).toContain('class="size-8 block"');
   });
 
-  it("renders brand mark when no logo is configured", () => {
+  it("renders the brand name without an image when no logo is configured", () => {
     __brandLogoLight = "";
     __brandLogoDark = "";
 
     const markup = renderToStaticMarkup(<Brand />);
 
     expect(markup).toContain('href="/"');
-    expect(markup).not.toContain("<img");
-    expect(markup).toContain("KS");
     expect(markup).toContain("Kratos SSO");
-    expect(markup).toContain('aria-hidden="true"');
+    expect(markup).not.toContain("<img");
   });
 
-  it("renders brand mark without decorative styling when no logo and inverted", () => {
+  it("does not render an image when one logo URL is empty", () => {
     __brandLogoLight = "";
+    __brandLogoDark = "/custom-dark.svg";
+
+    const markup = renderToStaticMarkup(<Brand />);
+
+    expect(markup).not.toContain('src=""');
+    expect(markup).toContain('src="/custom-dark.svg"');
+  });
+
+  it("renders only the configured logo when the dark URL is empty", () => {
+    __brandLogoLight = "/custom-light.svg";
     __brandLogoDark = "";
 
-    const markup = renderToStaticMarkup(<Brand inverted />);
+    const markup = renderToStaticMarkup(<Brand />);
 
-    expect(markup).toContain('href="/"');
-    expect(markup).not.toContain("<img");
-    expect(markup).toContain("KS");
-    expect(markup).toContain("text-secondary-foreground");
-    expect(markup).not.toContain("place-items-center");
+    expect(markup).not.toContain('src=""');
+    expect(markup).toContain('src="/custom-light.svg"');
   });
 });
