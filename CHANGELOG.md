@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.6.2](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.6.1...v0.6.2) (2026-09-22)
+
+
+### Bug Fixes
+
+* **auth:** prevent duplicate consent submissions ([ba0e164](https://github.com/KroderDev/kratos-nextjs-sso/commit/ba0e1641e20024530fa5ad54475935193282fb4f))
+* **auth:** prevent duplicate consent submissions ([05b5d0a](https://github.com/KroderDev/kratos-nextjs-sso/commit/05b5d0afa88ad99c07c725b45c85f8241147009e))
+* **branding:** ship a neutral default brand instead of Next.js starter branding ([5a2cc48](https://github.com/KroderDev/kratos-nextjs-sso/commit/5a2cc488322dd97834978a26e24f74406caa67e3))
+* **branding:** ship a neutral default brand instead of Next.js starter branding ([e41060b](https://github.com/KroderDev/kratos-nextjs-sso/commit/e41060bf7417c0bd7e6d808298630fc5b3afeed3))
+
+
+### Dependencies
+
+* **deps-dev:** bump the dev-dependencies group across 1 directory with 3 updates ([582e489](https://github.com/KroderDev/kratos-nextjs-sso/commit/582e489d36bc6bc60924166e68abeda37b996edd))
+* **deps-dev:** bump the dev-dependencies group across 1 directory with 3 updates ([6fd31f9](https://github.com/KroderDev/kratos-nextjs-sso/commit/6fd31f9feffc97014ac1324528c643ac26fa6c74))
+* **deps-dev:** bump the dev-dependencies group with 2 updates ([683c481](https://github.com/KroderDev/kratos-nextjs-sso/commit/683c48176fd5d953f31bba259cfcbb8a812a76a9))
+* **deps:** bump pnpm/action-setup from 6.0.10 to 6.1.0 ([613b94c](https://github.com/KroderDev/kratos-nextjs-sso/commit/613b94c0cc2485331876acf49c7fccc603d1acd7))
+* **deps:** bump the production-dependencies group across 1 directory with 4 updates ([1f0cb3f](https://github.com/KroderDev/kratos-nextjs-sso/commit/1f0cb3fa117531710682b1439400ae70ba59faf9))
+* **deps:** bump the production-dependencies group across 1 directory with 8 updates ([4839236](https://github.com/KroderDev/kratos-nextjs-sso/commit/4839236d06065528e13619dcd9b93e323d861ae6))
+* **deps:** bump the production-dependencies group with 3 updates ([edce685](https://github.com/KroderDev/kratos-nextjs-sso/commit/edce685fdb70bc636b7d3a9213e7cc22e220d287))
+
+
+### Tests
+
+* **auth:** cover cancelled consent submissions ([a087e8e](https://github.com/KroderDev/kratos-nextjs-sso/commit/a087e8e465da7dbf9f97f7f48d122757d157da6b))
+
 ## [0.6.1](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.6.0...v0.6.1) (2026-08-30)
 
 
