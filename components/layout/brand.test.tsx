@@ -58,4 +58,14 @@ describe("Brand", () => {
     expect(markup).toContain('src="/custom-dark.svg"');
   });
 
+  it("renders only the configured logo when the dark URL is empty", () => {
+    __brandLogoLight = "/custom-light.svg";
+    __brandLogoDark = "";
+
+    const markup = renderToStaticMarkup(<Brand />);
+
+    expect(markup).not.toContain('src=""');
+    expect(markup).toContain('src="/custom-light.svg"');
+  });
+
 });

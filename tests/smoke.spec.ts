@@ -4,7 +4,7 @@ test("landing page loads", async ({ page }) => {
   const response = await page.goto("/");
   expect(response?.status()).toBe(200);
   await expect(page.locator("h1")).toContainText("A calmer way to enter the work");
-  await expect(page.getByRole("link", { name: "CI" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "CI" })).toHaveCount(0);
 });
 
 test("theme control switches between light and dark", async ({ page }) => {
