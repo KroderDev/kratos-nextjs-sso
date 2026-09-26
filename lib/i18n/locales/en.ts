@@ -1,8 +1,5 @@
 export const en = {
   common: {
-    brand: "CI / Kratos SSO",
-    brandAccess: "CI / access",
-    brandSubtitle: "Redefining Identity",
     theme: {
       label: "Theme",
       ariaLabel: "Change color theme",
@@ -23,36 +20,36 @@ export const en = {
       loadingNextPage: "Loading next page",
     },
     footer: {
-      identityInfrastructure: "Identity infrastructure for thoughtful teams.",
+      identityInfrastructure: "Secure identity and account access.",
       openSignIn: "Open sign in",
     },
   },
   home: {
     hero: {
       badge: "Secure account access",
-      title: "A calmer way to enter the work.",
-      description: "A considered, server-rendered entry point for sign-in, registration, recovery, and account settings.",
+      title: "Secure access to your workspace.",
+      description: "Sign in, create an account, recover access, and manage your security settings.",
       enterWorkspace: "Enter your workspace",
-      createIdentity: "Create an identity",
+      createIdentity: "Create an account",
     },
     card: {
-      tag: "identity access",
-      title: "One clear entry to private work.",
-      description: "Sign in, create an identity, or recover access without leaving the same considered surface.",
-      protectedSession: "Server-protected session",
+      tag: "account access",
+      title: "One place to manage account access.",
+      description: "Sign in or recover access from the same secure entry point.",
+      protectedSession: "Protected account access",
     },
     features: {
       secureByDefault: {
         title: "Secure by default",
-        description: "Security controls keep cookies, redirects, and session state close to the server boundary.",
+        description: "Security controls protect sign-in, account recovery, and session access.",
       },
       humanCenter: {
-        title: "Human at the center",
-        description: "The interface adapts to the identity methods your workspace actually enables.",
+        title: "Flexible authentication",
+        description: "Use the sign-in methods enabled for your workspace.",
       },
       readyNextStep: {
-        title: "Ready for the next step",
-        description: "Sign in, create an identity, or recover access without leaving the same deliberate surface.",
+        title: "Account recovery",
+        description: "Recover access securely if you lose your sign-in credentials.",
       },
     },
   },
@@ -62,10 +59,10 @@ export const en = {
       title: "Sign in to your workspace.",
       description: "Use your account to securely access your workspace.",
       sessionLabel: "Session",
-      sessionValue: "Protected authentication flow",
-      boundaryLabel: "Processing",
-      boundaryValue: "Server-rendered",
-      footerPrivate: "Secure access / 2026",
+      sessionValue: "Secure sign-in",
+      boundaryLabel: "Security",
+      boundaryValue: "Account protected",
+      footerPrivate: "Secure account access",
       footerProtected: "Protected browser session",
       loadingForm: "Loading authentication form",
     },
@@ -140,47 +137,47 @@ export const en = {
   dashboard: {
     loading: "Loading dashboard",
     overview: {
-      eyebrow: "Control room / overview",
+      eyebrow: "Account / Overview",
       title: "Good to see you, {name}.",
-      description: "Your identity is active and your private workspace is ready for the next considered move.",
+      description: "Your account is signed in and the current session is active.",
       sessionActive: "Session active",
       identityCard: {
-        title: "Verified presence",
-        description: "Your current session is recognized by the identity service.",
-        established: "Browser session established",
-        tag: "identity",
+        title: "Active session",
+        description: "Your account is signed in on this browser.",
+        established: "Session active",
+        tag: "session",
       },
       postureCard: {
-        title: "Quietly protected",
-        description: "Session cookies and flow state stay on the server boundary.",
+        title: "Account security",
+        description: "Review your sign-in methods and recovery options.",
         reviewSettings: "Review account settings",
-        tag: "posture",
+        tag: "security",
       },
       sessionDetails: {
         title: "Session details",
-        description: "The current browser session, without exposing credentials.",
-        serverChecked: "server checked",
-        email: "identity email",
-        issued: "session issued",
+        description: "Information about your current browser session.",
+        serverChecked: "Active",
+        email: "Email",
+        issued: "Signed in",
         expires: "Expires {date}",
         notAvailable: "Not available",
       },
       aside: {
-        tag: "Next move",
-        title: "Keep your identity details useful.",
-        description: "Add a verified address or update your credentials whenever the shape of your work changes.",
+        tag: "Account settings",
+        title: "Keep your account up to date.",
+        description: "Review your profile and security settings when needed.",
         openSettings: "Open settings",
       },
       unconfigured: {
-        eyebrow: "Protected workspace",
-        title: "Your control room is waiting.",
+        eyebrow: "Account access",
+        title: "Account access is unavailable.",
         description: "The authentication service is not ready to accept sessions yet.",
       },
     },
     settings: {
-      eyebrow: "Control room / settings",
-      title: "Keep your identity current.",
-      description: "Update the identity attributes and credentials you control.",
+      eyebrow: "Account / Settings",
+      title: "Manage your account.",
+      description: "Update your profile, sign-in methods, and recovery options.",
       badge: "Account controls",
       areas: {
         profile: {
@@ -193,7 +190,7 @@ export const en = {
         },
         connections: {
           label: "Connected accounts",
-          description: "Manage the external accounts connected to this identity.",
+          description: "Manage the external accounts connected to your account.",
         },
       },
       navigation: {
@@ -201,13 +198,13 @@ export const en = {
         title: "Account settings",
         selectLabel: "Choose a settings area",
         currentArea: "Current area",
-        help: "Changes are saved through your identity provider.",
+        help: "Changes are saved to your account.",
         returnOverview: "Return to overview",
       },
       cards: {
         profile: {
           title: "Profile",
-          description: "Update the identity details associated with your account.",
+          description: "Update the profile details associated with your account.",
         },
         password: {
           title: "Password",
@@ -226,7 +223,7 @@ export const en = {
           description: "Sign in securely with a passkey saved to your device or password manager.",
         },
         lookupSecret: {
-          title: "Backup recovery codes",
+          title: "Recovery codes",
           description: "Use these one-time codes if you lose access to your authenticator. Store them somewhere safe.",
         },
         oidc: {
@@ -235,12 +232,12 @@ export const en = {
         },
         other: {
           title: "Additional settings",
-          description: "Additional account controls provided by your identity service.",
+          description: "Additional account controls provided by your authentication service.",
         },
       },
       noSettings: "This area has no settings available for your account.",
       recoveryCodes: {
-        title: "Backup recovery codes",
+        title: "Recovery codes",
         description: "Use these one-time codes if you lose access to your authenticator. Store them somewhere safe.",
         pendingTitle: "Confirm your new codes",
         pendingDescription: "These codes are not active until you confirm that you have stored them.",
@@ -264,18 +261,18 @@ export const en = {
         disableTotp: {
           title: "Turn off two-factor authentication?",
           description: "Your account will return to password-only sign-in. You can set up an authenticator again later.",
-          confirm: "Turn off authentication",
+          confirm: "Turn off two-factor authentication",
         },
         disableRecovery: {
           title: "Disable recovery codes?",
-          description: "Any remaining backup codes will stop working. Generate a new set before disabling them if you still need recovery access.",
+          description: "Any remaining recovery codes will stop working. Generate a new set before disabling them if you still need recovery access.",
           confirm: "Disable recovery codes",
         },
       },
       aside: {
-        tag: "Next move",
-        title: "Keep your access useful.",
-        description: "Review your identity details and credentials whenever the shape of your work changes.",
+        tag: "Account settings",
+        title: "Review your account security.",
+        description: "Keep your profile, sign-in methods, and recovery options up to date.",
         returnOverview: "Return to overview",
       },
       returnOverview: "Return to overview",
@@ -284,11 +281,13 @@ export const en = {
   ory: {
     setup: {
       title: "Access is temporarily unavailable",
+      notConfigured: "Authentication is not configured for this application. Contact an administrator to enable access.",
+      unavailable: "The authentication service is unavailable. Contact an administrator or try again later.",
       returnHome: "Return home",
     },
     unavailable: {
       title: "This flow is no longer available",
-      description: "Start again from the beginning so the identity service can issue a fresh browser flow.",
+      description: "Start again to request a new authentication session.",
     },
     messages: {
       actionNeeded: "Action needed",
@@ -297,7 +296,7 @@ export const en = {
     },
     nodes: {
       continue: "Continue",
-      login: "Login",
+      login: "Sign in",
       continueWith: "Continue with {provider}",
       connectWith: "Connect with {provider}",
       unlinkWith: "Unlink {provider}",

@@ -2,9 +2,6 @@ import type { TranslationKeys } from "./en";
 
 export const es: TranslationKeys = {
   common: {
-    brand: "CI / Kratos SSO",
-    brandAccess: "CI / acceso",
-    brandSubtitle: "Redefiniendo la identidad",
     theme: {
       label: "Tema",
       ariaLabel: "Cambiar tema de color",
@@ -25,36 +22,36 @@ export const es: TranslationKeys = {
       loadingNextPage: "Cargando página siguiente",
     },
     footer: {
-      identityInfrastructure: "Infraestructura de identidad para equipos rigurosos.",
+      identityInfrastructure: "Acceso seguro para cuentas y sesiones.",
       openSignIn: "Abrir inicio de sesión",
     },
   },
   home: {
     hero: {
       badge: "Acceso seguro a la cuenta",
-      title: "Una forma más serena de ingresar al trabajo.",
-      description: "Un punto de entrada deliberado y renderizado en servidor para iniciar sesión, registrarse, recuperar accesos y configurar su cuenta.",
-      enterWorkspace: "Ingresar a tu espacio de trabajo",
-      createIdentity: "Crear una identidad",
+      title: "Acceso seguro a tu espacio de trabajo.",
+      description: "Inicia sesión, crea una cuenta, recupera el acceso y administra la seguridad de tu cuenta.",
+      enterWorkspace: "Entrar al espacio de trabajo",
+      createIdentity: "Crear una cuenta",
     },
     card: {
-      tag: "acceso a identidad",
-      title: "Una entrada clara al trabajo privado.",
-      description: "Inicia sesión, crea una identidad o recupera el acceso sin salir de la misma superficie concebida.",
-      protectedSession: "Sesión protegida por servidor",
+      tag: "acceso a la cuenta",
+      title: "Un único punto de acceso para tu cuenta.",
+      description: "Inicia sesión o recupera el acceso desde el mismo lugar.",
+      protectedSession: "Acceso de cuenta protegido",
     },
     features: {
       secureByDefault: {
         title: "Seguro por defecto",
-        description: "Los controles de seguridad mantienen las cookies, redirecciones y el estado de la sesión cerca del servidor.",
+        description: "Los controles de seguridad protegen el inicio de sesión, la recuperación de cuenta y las sesiones.",
       },
       humanCenter: {
-        title: "El ser humano en el centro",
-        description: "La interfaz se adapta a los métodos de identidad que tu espacio de trabajo realmente habilita.",
+        title: "Autenticación flexible",
+        description: "Usa los métodos de inicio de sesión habilitados para tu espacio de trabajo.",
       },
       readyNextStep: {
-        title: "Listo para el siguiente paso",
-        description: "Inicia sesión, crea una identidad o recupera el acceso sin abandonar la misma superficie deliberada.",
+        title: "Recuperación de cuenta",
+        description: "Recupera el acceso de forma segura si pierdes tus credenciales.",
       },
     },
   },
@@ -64,10 +61,10 @@ export const es: TranslationKeys = {
       title: "Inicia sesión en tu espacio de trabajo.",
       description: "Usa tu cuenta para acceder de forma segura a tu espacio de trabajo.",
       sessionLabel: "Sesión",
-      sessionValue: "Flujo de autenticación protegido",
-      boundaryLabel: "Procesamiento",
-      boundaryValue: "Renderizado en servidor",
-      footerPrivate: "Acceso seguro / 2026",
+      sessionValue: "Inicio de sesión seguro",
+      boundaryLabel: "Seguridad",
+      boundaryValue: "Cuenta protegida",
+      footerPrivate: "Acceso seguro a la cuenta",
       footerProtected: "Sesión de navegador protegida",
       loadingForm: "Cargando formulario de autenticación",
     },
@@ -88,7 +85,7 @@ export const es: TranslationKeys = {
     },
     consent: {
       title: "Continuar a {client}",
-      eyebrow: "Acceso de aplicación",
+      eyebrow: "Permisos de la aplicación",
       description: "Revisa el acceso solicitado por {client}.",
       defaultClient: "la aplicación",
       permissionsTitle: "Permisos solicitados",
@@ -142,47 +139,47 @@ export const es: TranslationKeys = {
   dashboard: {
     loading: "Cargando panel de control",
     overview: {
-      eyebrow: "Sala de control / resumen",
+      eyebrow: "Cuenta / Resumen",
       title: "Qué gusto verte, {name}.",
-      description: "Tu identidad está activa y tu espacio de trabajo privado está listo para el siguiente paso.",
+      description: "Tu cuenta tiene una sesión activa en este navegador.",
       sessionActive: "Sesión activa",
       identityCard: {
-        title: "Presencia verificada",
-        description: "Tu sesión actual es reconocida por el servicio de identidad.",
-        established: "Sesión de navegador establecida",
-        tag: "identidad",
+        title: "Sesión activa",
+        description: "Tu cuenta tiene una sesión iniciada en este navegador.",
+        established: "Sesión activa",
+        tag: "sesión",
       },
       postureCard: {
-        title: "Tranquilamente protegido",
-        description: "Las cookies de sesión y el estado del flujo permanecen en el servidor.",
+        title: "Seguridad de la cuenta",
+        description: "Revisa tus métodos de inicio de sesión y opciones de recuperación.",
         reviewSettings: "Revisar configuración de cuenta",
-        tag: "postura",
+        tag: "seguridad",
       },
       sessionDetails: {
         title: "Detalles de la sesión",
-        description: "La sesión actual del navegador, sin exponer credenciales.",
-        serverChecked: "verificado por servidor",
-        email: "correo de identidad",
-        issued: "emisión de sesión",
+        description: "Información de tu sesión actual en el navegador.",
+        serverChecked: "Activa",
+        email: "Correo electrónico",
+        issued: "Inicio de sesión",
         expires: "Expira el {date}",
         notAvailable: "No disponible",
       },
       aside: {
-        tag: "Siguiente paso",
-        title: "Mantén útiles tus datos de identidad.",
-        description: "Añade una dirección verificada o actualiza tus credenciales cuando cambie la dinámica de tu trabajo.",
+        tag: "Configuración de cuenta",
+        title: "Mantén tu cuenta al día.",
+        description: "Revisa tu perfil y configuración de seguridad cuando lo necesites.",
         openSettings: "Abrir configuración",
       },
       unconfigured: {
-        eyebrow: "Espacio de trabajo protegido",
-        title: "Tu sala de control está esperando.",
+        eyebrow: "Acceso a la cuenta",
+        title: "El acceso a la cuenta no está disponible.",
         description: "El servicio de autenticación aún no está listo para aceptar sesiones.",
       },
     },
     settings: {
-      eyebrow: "Sala de control / configuración",
-      title: "Mantén tu identidad al día.",
-      description: "Actualiza los atributos de identidad y las credenciales que controlas.",
+      eyebrow: "Cuenta / Configuración",
+      title: "Administra tu cuenta.",
+      description: "Actualiza tu perfil, métodos de inicio de sesión y opciones de recuperación.",
       badge: "Controles de cuenta",
       areas: {
         profile: {
@@ -195,7 +192,7 @@ export const es: TranslationKeys = {
         },
         connections: {
           label: "Cuentas conectadas",
-          description: "Administra las cuentas externas conectadas a esta identidad.",
+          description: "Administra las cuentas externas conectadas a tu cuenta.",
         },
       },
       navigation: {
@@ -203,13 +200,13 @@ export const es: TranslationKeys = {
         title: "Configuración de la cuenta",
         selectLabel: "Elige un área de configuración",
         currentArea: "Área actual",
-        help: "Los cambios se guardan a través de tu proveedor de identidad.",
+        help: "Los cambios se guardan en tu cuenta.",
         returnOverview: "Volver al resumen",
       },
       cards: {
         profile: {
           title: "Perfil",
-          description: "Actualiza los datos de identidad asociados a tu cuenta.",
+          description: "Actualiza los datos del perfil asociados a tu cuenta.",
         },
         password: {
           title: "Contraseña",
@@ -228,7 +225,7 @@ export const es: TranslationKeys = {
           description: "Inicia sesión de forma segura con una clave de acceso guardada en tu dispositivo o gestor de contraseñas.",
         },
         lookupSecret: {
-          title: "Códigos de recuperación de respaldo",
+          title: "Códigos de recuperación",
           description: "Usa estos códigos de un solo uso si pierdes acceso a tu autenticador. Guárdalos en un lugar seguro.",
         },
         oidc: {
@@ -237,12 +234,12 @@ export const es: TranslationKeys = {
         },
         other: {
           title: "Configuración adicional",
-          description: "Controles de cuenta adicionales proporcionados por tu servicio de identidad.",
+          description: "Controles adicionales proporcionados por el servicio de autenticación.",
         },
       },
       noSettings: "Esta área no tiene configuraciones disponibles para tu cuenta.",
       recoveryCodes: {
-        title: "Códigos de recuperación de respaldo",
+        title: "Códigos de recuperación",
         description: "Usa estos códigos de un solo uso si pierdes acceso a tu autenticador. Guárdalos en un lugar seguro.",
         pendingTitle: "Confirma tus nuevos códigos",
         pendingDescription: "Estos códigos no estarán activos hasta que confirmes que los has guardado.",
@@ -266,18 +263,18 @@ export const es: TranslationKeys = {
         disableTotp: {
           title: "¿Desactivar la autenticación de dos factores?",
           description: "Tu cuenta volverá a usar solo la contraseña para iniciar sesión. Puedes configurar un autenticador de nuevo más adelante.",
-          confirm: "Desactivar autenticación",
+          confirm: "Desactivar autenticación de dos factores",
         },
         disableRecovery: {
           title: "¿Desactivar los códigos de recuperación?",
-          description: "Los códigos de respaldo restantes dejarán de funcionar. Genera un conjunto nuevo antes de desactivarlos si aún necesitas recuperar el acceso.",
+          description: "Los códigos de recuperación restantes dejarán de funcionar. Genera un conjunto nuevo antes de desactivarlos si aún necesitas recuperar el acceso.",
           confirm: "Desactivar códigos de recuperación",
         },
       },
       aside: {
-        tag: "Siguiente paso",
-        title: "Mantén tu acceso útil.",
-        description: "Revisa tus datos de identidad y credenciales cuando cambie la dinámica de tu trabajo.",
+        tag: "Configuración de cuenta",
+        title: "Revisa la seguridad de tu cuenta.",
+        description: "Mantén al día tu perfil, métodos de inicio de sesión y opciones de recuperación.",
         returnOverview: "Volver al resumen",
       },
       returnOverview: "Volver al resumen",
@@ -286,11 +283,13 @@ export const es: TranslationKeys = {
   ory: {
     setup: {
       title: "El acceso no está disponible temporalmente",
+      notConfigured: "La autenticación no está configurada para esta aplicación. Contacta a un administrador para habilitar el acceso.",
+      unavailable: "El servicio de autenticación no está disponible. Contacta a un administrador o inténtalo de nuevo más tarde.",
       returnHome: "Volver al inicio",
     },
     unavailable: {
       title: "Este flujo ya no está disponible",
-      description: "Comienza de nuevo desde el principio para que el servicio de identidad emita un nuevo flujo.",
+      description: "Comienza de nuevo para solicitar una nueva sesión de autenticación.",
     },
     messages: {
       actionNeeded: "Acción requerida",
@@ -309,7 +308,7 @@ export const es: TranslationKeys = {
       recoveryCode: "Código de recuperación",
       value: "Valor",
       qrCodeAlt: "Código QR para configuración de autenticador",
-      identityImageAlt: "Imagen del servicio de identidad",
+      identityImageAlt: "Imagen del servicio de autenticación",
       socialLogin: "Iniciar sesión con una cuenta social",
       emailDivider: "O",
       emailDividerCompact: "O continúa con",

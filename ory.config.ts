@@ -61,8 +61,6 @@ export const isOryConfigured =
   Boolean(sdkUrl) && (!isOryNetworkUrl || hasProjectApiToken);
 export const isRegistrationEnabled =
   process.env.NEXT_PUBLIC_ORY_REGISTRATION_ENABLED !== "false";
-export const orySetupMessage = !sdkUrl
-  ? "The authentication service is not configured. Contact an administrator to enable access."
-  : "The authentication service is unavailable. Contact an administrator to enable access.";
+export const orySetupReason = !sdkUrl ? "notConfigured" : "unavailable";
 
 export default config;
