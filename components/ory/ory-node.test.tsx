@@ -325,7 +325,7 @@ describe("OryNode submit/button rendering", () => {
       <OryNode kind="login" node={submitNode({ name: "method", label: { id: 1, text: "Sign in" } })} />,
     );
 
-    expect(markup).toContain(">Login<");
+    expect(markup).toContain(">Sign in<");
   });
 
   it("bypasses browser validation when selecting a login method", () => {
