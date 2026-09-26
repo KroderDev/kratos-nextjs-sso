@@ -228,7 +228,7 @@ describe("FlowForm", () => {
     expect(markup).not.toContain(">Profile<");
     expect(markup).toContain(">Password<");
     expect(markup).toContain(">Authenticator app<");
-    expect(markup).toContain(">Backup recovery codes<");
+    expect(markup).toContain(">Recovery codes<");
     expect(markup).not.toContain(">Connected accounts<");
     expect(markup).toContain("Generate new backup recovery codes");
     expect(markup).toContain('data-settings-form="lookup_secret"');

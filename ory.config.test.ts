@@ -4,7 +4,7 @@ import config, {
   consentRememberMode,
   isRegistrationEnabled,
   orySdkUrl,
-  orySetupMessage,
+  orySetupReason,
   parseConsentRememberMode,
 } from "./ory.config";
 
@@ -89,12 +89,9 @@ describe("ory.config", () => {
     }
   });
 
-  it("provides appropriate setup message depending on configuration state", () => {
-    if (!orySdkUrl) {
-      expect(orySetupMessage).toContain("not configured");
-    } else {
-      expect(orySetupMessage).toContain("unavailable");
-    }
+  it("exposes a localization-safe setup reason instead of user-facing copy", () => {
+    expect(orySetupReason).toBe(orySdkUrl ? "unavailable" : "notConfigured");
+    expect(orySetupReason).not.toMatch(/\s/);
   });
 
   it("normalizes configured URLs and uses the project name", async () => {
@@ -112,7 +109,7 @@ describe("ory.config", () => {
       expect(configured.oryCanonicalUrl).toBe("https://ory.example");
       expect(configured.isOryConfigured).toBe(true);
       expect(configured.default.project.name).toBe("Example project");
-      expect(configured.orySetupMessage).toContain("unavailable");
+      expect(configured.orySetupReason).toBe("unavailable");
     } finally {
       vi.unstubAllEnvs();
     }

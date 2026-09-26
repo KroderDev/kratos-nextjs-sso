@@ -36,7 +36,7 @@ vi.mock("@/ory.config", () => ({
   },
   oryCanonicalUrl: "",
   orySdkUrl: "http://127.0.0.1:4010",
-  orySetupMessage: "unavailable",
+  orySetupReason: "notConfigured",
 }));
 
 vi.mock("@/lib/i18n/server", () => ({
