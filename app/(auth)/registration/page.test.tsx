@@ -29,7 +29,7 @@ vi.mock("@/ory.config", () => ({
   },
   oryCanonicalUrl: "",
   orySdkUrl: "",
-  orySetupMessage: "",
+  orySetupReason: "notConfigured",
 }));
 
 vi.mock("@/lib/i18n/server", () => ({
