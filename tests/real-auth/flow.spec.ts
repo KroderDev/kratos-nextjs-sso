@@ -18,7 +18,7 @@ async function registerIdentity(page: Page, email: string) {
   await page.locator('input[name="password"]').fill("ci-password-123");
   await page.locator('button[name="method"][value="password"]').click();
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByText(/session active/i)).toBeVisible();
+  await expect(page.getByText("Session active", { exact: true }).first()).toBeVisible();
 }
 
 async function enrollTotp(page: Page) {
@@ -76,7 +76,7 @@ test("registers an identity and loads the authenticated dashboard", async ({ pag
 
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByText(email)).toBeVisible();
-  await expect(page.getByText(/session active/i)).toBeVisible();
+  await expect(page.getByText("Session active", { exact: true }).first()).toBeVisible();
 });
 
 test("preserves a deep-linked settings area through the login redirect", async ({ page }) => {
@@ -101,7 +101,7 @@ test("renders settings for an authenticated identity", async ({ page }) => {
   await registerIdentity(page, email);
 
   await page.goto("/dashboard/settings");
-  await expect(page.getByRole("heading", { name: "Keep your identity current." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Manage your account." })).toBeVisible();
   expect(new URL(page.url()).pathname).toBe("/dashboard/settings");
   const flowId = new URL(page.url()).searchParams.get("flow");
   expect(flowId).toMatch(/^[0-9a-f-]+$/i);
@@ -134,7 +134,7 @@ test("renders settings for an authenticated identity", async ({ page }) => {
 
   await expect(page.getByRole("group", { name: "Password" })).toBeVisible();
   await expect(page.getByRole("group", { name: "Authenticator app" })).toBeVisible();
-  await expect(page.getByRole("group", { name: "Backup recovery codes" })).toBeVisible();
+  await expect(page.getByRole("group", { name: "Recovery codes" })).toBeVisible();
 });
 
 test("enrolls TOTP and renders the backup-code controls", async ({ page }) => {
@@ -155,7 +155,7 @@ test("enrolls TOTP and renders the backup-code controls", async ({ page }) => {
   await page.reload();
   await expect(page.getByText("Your changes have been saved!")).toHaveCount(0);
 
-  const recoverySection = page.getByRole("group", { name: "Backup recovery codes" });
+  const recoverySection = page.getByRole("group", { name: "Recovery codes" });
   await recoverySection.locator('button[name="lookup_secret_regenerate"]').click();
   const recoveryCodes = page.locator('[data-recovery-codes="true"]');
   await expect(recoveryCodes).toBeVisible();
@@ -183,7 +183,7 @@ test("uses a confirmed backup recovery code for login", async ({ page }) => {
   await registerIdentity(page, email);
   await enrollTotp(page);
 
-  const recoverySection = page.getByRole("group", { name: "Backup recovery codes" });
+  const recoverySection = page.getByRole("group", { name: "Recovery codes" });
   await recoverySection.locator('button[name="lookup_secret_regenerate"]').click();
   const recoveryCode = (await page.locator('[data-recovery-codes="true"] code').first().textContent())?.trim();
   expect(recoveryCode).toMatch(/^\S+$/);
@@ -240,7 +240,7 @@ test("keeps recovery-code utility buttons out of the settings submission flow", 
   await registerIdentity(page, `recovery-controls-${Date.now()}@example.com`);
   await enrollTotp(page);
 
-  const recoverySection = page.getByRole("group", { name: "Backup recovery codes" });
+  const recoverySection = page.getByRole("group", { name: "Recovery codes" });
   await recoverySection.locator('button[name="lookup_secret_regenerate"]').click();
   const recoveryCodes = page.locator('[data-recovery-codes="true"]');
   await expect(recoveryCodes).toBeVisible();
@@ -285,7 +285,7 @@ test("disables TOTP and returns password login to AAL1", async ({ page }) => {
     (request) =>
       request.method() === "POST" && request.url().includes("/self-service/settings"),
   );
-  await page.getByRole("alertdialog").getByRole("button", { name: "Turn off authentication" }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Turn off two-factor authentication" }).click();
   await settingsRequest;
   await expect(page.getByText("Your changes have been saved!")).toBeVisible();
   await expect(page).toHaveURL(/\/dashboard\/settings/);
