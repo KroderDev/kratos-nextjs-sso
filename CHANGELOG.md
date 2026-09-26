@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.6.3](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.6.2...v0.6.3) (2026-09-26)
+
+
+### Bug Fixes
+
+* **i18n:** polish product copy and localize Ory setup state ([7ed75d9](https://github.com/KroderDev/kratos-nextjs-sso/commit/7ed75d9a7bcba15abbc1273aabbc6a3fa2d4a717))
+* **i18n:** polish product copy and localize setup state ([db63c56](https://github.com/KroderDev/kratos-nextjs-sso/commit/db63c569356ede86c18203b1f9c1c1c628ffa5aa))
+
+
+### Tests
+
+* align assertions with polished copy ([13632cb](https://github.com/KroderDev/kratos-nextjs-sso/commit/13632cb4347527386de5e400802116e093a06853))
+* align assertions with polished copy ([6e19c66](https://github.com/KroderDev/kratos-nextjs-sso/commit/6e19c6648597d3148d40a85c1e47f9e009d7e87d))
+* align real auth assertions with polished copy ([393cc68](https://github.com/KroderDev/kratos-nextjs-sso/commit/393cc6882d656f6a45beea8551d45044260fb881))
+* update Ory setup mocks ([e4f0d8d](https://github.com/KroderDev/kratos-nextjs-sso/commit/e4f0d8d7de4d8a718a62523d50efd7a3b0de1357))
+* update Ory setup mocks ([3643b5e](https://github.com/KroderDev/kratos-nextjs-sso/commit/3643b5e17f8ff0a4e93be36f298a3c3cc198a73a))
+* update Ory setup mocks ([03d7717](https://github.com/KroderDev/kratos-nextjs-sso/commit/03d77171ec4424f423aae3abc6d5dbd73b93f595))
+* update Ory setup mocks ([980d806](https://github.com/KroderDev/kratos-nextjs-sso/commit/980d806637b9ca62867c7825f8326fb1227172f3))
+* update sign-in label assertion ([98be17f](https://github.com/KroderDev/kratos-nextjs-sso/commit/98be17ffd8cace3604c07012e7a479f02ca23414))
+
 ## [0.6.2](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.6.1...v0.6.2) (2026-09-22)
 
 
