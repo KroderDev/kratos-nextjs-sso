@@ -140,6 +140,16 @@ describe("OIDC login context hints", () => {
     expect(result).not.toBe(flow);
   });
 
+  it("prefills a null-valued identifier input", () => {
+    const nullIdentifier = inputNode("identifier", null);
+    const flow = loginFlow([nullIdentifier]);
+
+    const result = prefillLoginIdentifier(flow, "hint@example.com");
+
+    expect(result?.ui.nodes[0]?.attributes).toMatchObject({ value: "hint@example.com" });
+    expect(nullIdentifier.attributes).toMatchObject({ value: null });
+  });
+
   it("preserves all Kratos identifiers when any identifier is already non-empty", () => {
     const emptyIdentifier = inputNode("identifier", "");
     const existingIdentifier = inputNode("identifier", "kratos@example.com");
@@ -147,6 +157,12 @@ describe("OIDC login context hints", () => {
 
     expect(prefillLoginIdentifier(flow, "hint@example.com")).toBe(flow);
     expect(emptyIdentifier.attributes).not.toHaveProperty("value", "hint@example.com");
+  });
+
+  it("leaves the flow unchanged when no identifier input exists", () => {
+    const flow = loginFlow([inputNode("username", "existing")]);
+
+    expect(prefillLoginIdentifier(flow, "hint@example.com")).toBe(flow);
   });
 
   it("does not alter a flow when it has no empty identifier or no hint", () => {
