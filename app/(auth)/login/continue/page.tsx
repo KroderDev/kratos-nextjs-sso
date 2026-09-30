@@ -3,6 +3,7 @@ import { AuthenticatorAssuranceLevel } from "@ory/client-fetch";
 import { redirect } from "next/navigation";
 
 import { getTranslations } from "@/lib/i18n/server";
+import { stripLoginContextHints } from "@/lib/ory/login-context";
 import { validateProviderCallback } from "@/lib/ory/provider-handoff";
 import { applicationUrl } from "@/lib/ory/url";
 
@@ -58,7 +59,7 @@ export default async function LoginContinuePage({ searchParams }: LoginContinueP
   const session = await getServerSession();
   if (!session) {
     const loginSearch = new URLSearchParams();
-    for (const [key, value] of Object.entries(params)) {
+    for (const [key, value] of Object.entries(stripLoginContextHints(params))) {
       if (typeof value === "string") {
         loginSearch.set(key, value);
       }
@@ -72,7 +73,7 @@ export default async function LoginContinuePage({ searchParams }: LoginContinueP
   const aal = session.authenticator_assurance_level;
   if (aal !== AuthenticatorAssuranceLevel.Aal2 && aal !== AuthenticatorAssuranceLevel.Aal3) {
     const continueSearch = new URLSearchParams();
-    for (const [key, value] of Object.entries(params)) {
+    for (const [key, value] of Object.entries(stripLoginContextHints(params))) {
       if (typeof value === "string") {
         continueSearch.set(key, value);
       }
