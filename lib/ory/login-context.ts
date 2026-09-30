@@ -15,12 +15,14 @@ export type LoginContextHints = {
 };
 
 const loginContextParamNames = new Set(["login_hint", "ui_locales", "display"]);
-const loginHintMaxLength = 254;
+const loginHintMaxBytes = 256;
 const uiLocalesMaxLength = 256;
 const uiLocalesMaxCount = 16;
 const displayModes = new Set<LoginDisplayMode>(["page", "popup", "touch", "wap"]);
 const languageTagPattern = /^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$/;
 const controlCharacterPattern = /[\u0000-\u001f\u007f-\u009f]/;
+const loginHintFormatCharacterPattern = /\p{Cf}/u;
+const utf8Encoder = new TextEncoder();
 
 function singleParam(params: LoginContextParams, name: string) {
   const value = params[name];
@@ -30,9 +32,11 @@ function singleParam(params: LoginContextParams, name: string) {
 function parseLoginHint(value: string | undefined) {
   if (
     !value ||
-    value.length > loginHintMaxLength ||
+    value.length > loginHintMaxBytes ||
+    utf8Encoder.encode(value).byteLength > loginHintMaxBytes ||
     !value.trim() ||
-    controlCharacterPattern.test(value)
+    controlCharacterPattern.test(value) ||
+    loginHintFormatCharacterPattern.test(value)
   ) {
     return undefined;
   }

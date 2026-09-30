@@ -57,18 +57,24 @@ describe("OIDC login context hints", () => {
     expect(parseLoginContextHints({ ui_locales: "fr-CA EN-gb" }).uiLocale).toBe("en");
   });
 
-  it("ignores duplicate, empty, oversized, and control-character login hints", () => {
+  it("ignores duplicate, empty, oversized, and controlled login hints", () => {
     for (const login_hint of [
       ["one@example.com", "two@example.com"],
       "  ",
-      "a".repeat(255),
+      "a".repeat(257),
+      "é".repeat(129),
+      "😀".repeat(65),
       "person\u0000@example.com",
       "person\u0085@example.com",
+      "person\u202e@example.com",
+      "person\u2066@example.com",
     ]) {
       expect(parseLoginContextHints({ login_hint }).loginHint).toBeUndefined();
     }
 
-    expect(parseLoginContextHints({ login_hint: "a".repeat(254) }).loginHint).toHaveLength(254);
+    expect(parseLoginContextHints({ login_hint: "a".repeat(256) }).loginHint).toHaveLength(256);
+    expect(parseLoginContextHints({ login_hint: "é".repeat(128) }).loginHint).toHaveLength(128);
+    expect(parseLoginContextHints({ login_hint: "😀".repeat(64) }).loginHint).toHaveLength(128);
   });
 
   it("ignores ambiguous, malformed, unsupported, oversized, and controlled locale lists", () => {
