@@ -10,6 +10,12 @@ import { rewriteOryFlow } from "@/lib/ory/url";
 import { isOryConfigured, isRegistrationEnabled } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 import { getLoginFlowWithRequestHeaders } from "@/lib/ory/login";
+import {
+  getLoginLocaleOverride,
+  parseLoginContextHints,
+  prefillLoginIdentifier,
+  stripLoginContextHints,
+} from "@/lib/ory/login-context";
 import { isProviderHandoff, providerLoginParams } from "@/lib/ory/provider-handoff";
 import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
 import { buildCleanFlowUrl } from "@/lib/ory/params";
@@ -54,7 +60,8 @@ export function getLoginContext(
  */
 export async function generateMetadata({ searchParams }: OryPageParams) {
   const params = await searchParams;
-  const { t } = await getTranslations(params);
+  const hints = parseLoginContextHints(params);
+  const { t } = await getTranslations(params, getLoginLocaleOverride(params, hints));
   return { title: t(getLoginContext(params).titleKey) };
 }
 
@@ -64,8 +71,9 @@ export async function generateMetadata({ searchParams }: OryPageParams) {
  * @param searchParams - Request parameters used to load translations and determine the login flow.
  */
 export default async function LoginPage({ searchParams }: OryPageParams) {
-  const { t } = await getTranslations(searchParams);
   const params = await searchParams;
+  const hints = parseLoginContextHints(params);
+  const { t } = await getTranslations(params, getLoginLocaleOverride(params, hints));
   const initialLoginContext = getLoginContext(params);
 
   if (params.flow === "logout") {
@@ -100,7 +108,12 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
 
   let flow = null;
   try {
-    flow = rewriteOryFlow(await getLoginFlowWithRequestHeaders(flowParams ?? params)) || null;
+    const requestParams = stripLoginContextHints(flowParams ?? params);
+    flow =
+      prefillLoginIdentifier(
+        rewriteOryFlow(await getLoginFlowWithRequestHeaders(requestParams)),
+        hints.loginHint,
+      ) || null;
   } catch (e) {
     if (typeof flowParams?.flow === "string" && isOryFlowRestartRedirect(e, "login")) {
       redirect(buildCleanFlowUrl("/login", flowParams, ["return_to", "lang"]));

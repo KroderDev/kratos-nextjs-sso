@@ -20,6 +20,9 @@ describe("provider handoff", () => {
       csrf: "csrf-token",
       return_to: "https://auth.example.com/login/callback",
       lang: "es",
+      login_hint: "person@example.com",
+      ui_locales: "es-MX",
+      display: "popup",
     };
 
     const result = providerLoginParams(params);
@@ -33,6 +36,9 @@ describe("provider handoff", () => {
       "https://auth.example.com/login/callback",
     );
     expect(returnTo.searchParams.get("lang")).toBe("es");
+    expect(returnTo.searchParams.has("login_hint")).toBe(false);
+    expect(returnTo.searchParams.has("ui_locales")).toBe(false);
+    expect(returnTo.searchParams.has("display")).toBe(false);
     expect(result).toEqual({
       lang: "es",
       return_to:

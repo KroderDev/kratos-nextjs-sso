@@ -142,6 +142,9 @@ describe("LoginContinuePage", () => {
           csrf: "csrf-1",
           provider_callback: "https://auth.example.com/login/callback",
           lang: "es",
+          login_hint: "person@example.com",
+          ui_locales: "es-MX",
+          display: "popup",
         }),
       }),
     ).rejects.toThrow("redirect:/login");
@@ -158,6 +161,9 @@ describe("LoginContinuePage", () => {
     expect(decoded).toContain("transaction=txn-1");
     expect(decoded).toContain("csrf=csrf-1");
     expect(decoded).toContain("lang=es");
+    expect(decoded).not.toContain("login_hint");
+    expect(decoded).not.toContain("ui_locales");
+    expect(decoded).not.toContain("display");
   });
 
   it("redirects AAL1 sessions to a step-up login flow", async () => {
@@ -171,6 +177,9 @@ describe("LoginContinuePage", () => {
           transaction: "txn-1",
           csrf: "csrf-1",
           provider_callback: "https://auth.example.com/login/callback",
+          login_hint: "person@example.com",
+          ui_locales: "es-MX",
+          display: "touch",
         }),
       }),
     ).rejects.toThrow("redirect:/self-service/login/browser");
@@ -182,6 +191,9 @@ describe("LoginContinuePage", () => {
     expect(call).toContain("aal=aal2");
     expect(call).toContain("refresh=true");
     expect(call).toContain("return_to=");
+    expect(call).not.toContain("login_hint");
+    expect(call).not.toContain("ui_locales");
+    expect(call).not.toContain("display");
     expect(call).toContain(
       encodeURIComponent("https://sso.example.com/login/continue?"),
     );

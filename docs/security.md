@@ -206,6 +206,25 @@ provider's fixed `/logout` endpoint. The provider origin is derived from
 transaction, or CSRF value rejects the handoff instead of becoming a redirect
 or form target.
 
+### OIDC login context hints
+
+The login route accepts the OIDC `login_hint`, `ui_locales`, and `display`
+parameters when supplied by a login-consent provider (for example, the related
+[login context change](https://github.com/KroderDev/hydra-kratos-login-consent/pull/82)).
+Each hint must be a single bounded value; malformed, duplicated, unsupported,
+or overlong values are ignored. `login_hint` is used only to prefill an empty
+Kratos identifier input and never overrides an identifier already present in
+the Kratos flow. It is removed before flow parameters are sent to the Ory SDK
+and is not copied into `return_to` or provider callbacks, cookies, browser
+storage, logs, or unrelated flows.
+
+`ui_locales` is an ordered preference list for the current login page only;
+explicit `lang` wins, and supported English/Spanish tags are mapped to the
+application locale. Locale hints are not persisted. The recognized `display`
+values (`page`, `popup`, `touch`, and `wap`) are advisory and currently ignored,
+so login continues in the standard page presentation without changing
+authentication, MFA, or callback behavior.
+
 ## Multi-Factor Authentication
 
 Kratos owns TOTP and backup recovery-code validation. The UI only renders the

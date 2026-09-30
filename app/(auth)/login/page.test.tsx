@@ -2,8 +2,17 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { LoginFlow, UiNode } from "@ory/client-fetch";
 
-const { mockGetLoginFlow, mockIsRestartRedirect, mockRedirect, state } = vi.hoisted(() => ({
+const {
+  mockGetLoginFlow,
+  mockGetTranslations,
+  mockIsRestartRedirect,
+  mockRedirect,
+  state,
+} = vi.hoisted(() => ({
   mockGetLoginFlow: vi.fn(),
+  mockGetTranslations: vi.fn(async () => ({
+    t: (key: string) => key,
+  })),
   mockIsRestartRedirect: vi.fn(() => false),
   mockRedirect: vi.fn((destination: string): never => {
     throw new Error(`redirect:${destination}`);
@@ -40,9 +49,7 @@ vi.mock("@/ory.config", () => ({
 }));
 
 vi.mock("@/lib/i18n/server", () => ({
-  getTranslations: vi.fn(async () => ({
-    t: (key: string) => key,
-  })),
+  getTranslations: mockGetTranslations,
 }));
 
 vi.mock("@/lib/ory/redirect", () => ({
@@ -95,6 +102,7 @@ describe("LoginPage", () => {
     state.isRegistrationEnabled = true;
     state.rethrow = false;
     mockGetLoginFlow.mockReset();
+    mockGetTranslations.mockClear();
     mockIsRestartRedirect.mockReset();
     mockIsRestartRedirect.mockReturnValue(false);
     mockRedirect.mockClear();
@@ -256,6 +264,107 @@ describe("LoginPage", () => {
     expect(markup).toContain("auth.login.footer.recoverAccess");
     expect(markup).not.toContain("auth.login.footer.createOne");
     expect(markup).toContain("return_to=%2Fdashboard");
+  });
+
+  it("uses login hints only for an empty identifier and strips them from flow params", async () => {
+    const params = {
+      flow: "existing-flow",
+      login_hint: "person@example.com",
+      ui_locales: "es-MX en-US",
+      display: "popup",
+      return_to: "/dashboard",
+    };
+    mockGetLoginFlow.mockResolvedValueOnce(
+      buildLoginFlow([
+        buildFlowNode("default", { name: "identifier", type: "email", value: "" }),
+        buildFlowNode("password", { name: "password", type: "password" }),
+      ]),
+    );
+
+    const markup = renderToStaticMarkup(
+      await LoginPage({ searchParams: Promise.resolve(params) }),
+    );
+
+    expect(mockGetTranslations).toHaveBeenCalledWith(params, "es");
+    expect(mockGetLoginFlow).toHaveBeenCalledWith({
+      flow: "existing-flow",
+      return_to: "/dashboard",
+    });
+    expect(markup).toContain('name="identifier"');
+    expect(markup).toContain('value="person@example.com"');
+    expect(markup).not.toContain("login_hint");
+  });
+
+  it("prefills a provider login without adding hints to the provider continuation", async () => {
+    const params = {
+      flow: "login",
+      transaction: "txn-1",
+      csrf: "csrf-1",
+      return_to: "http://127.0.0.1:4010/login/callback",
+      login_hint: "person@example.com",
+      ui_locales: "es-MX",
+      display: "touch",
+    };
+    mockGetLoginFlow.mockResolvedValueOnce(
+      buildLoginFlow([buildFlowNode("default", { name: "identifier", type: "email" })]),
+    );
+
+    const markup = renderToStaticMarkup(
+      await LoginPage({ searchParams: Promise.resolve(params) }),
+    );
+
+    const flowParams = mockGetLoginFlow.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(flowParams.flow).toBeUndefined();
+    expect(flowParams.return_to).toContain("/login/continue?");
+    expect(JSON.stringify(flowParams)).not.toContain("login_hint");
+    expect(JSON.stringify(flowParams)).not.toContain("ui_locales");
+    expect(JSON.stringify(flowParams)).not.toContain("display");
+    expect(markup).toContain('value="person@example.com"');
+    expect(mockGetTranslations).toHaveBeenCalledWith(params, "es");
+  });
+
+  it("lets an existing Kratos identifier and explicit lang take precedence", async () => {
+    const params = {
+      login_hint: "hint@example.com",
+      ui_locales: "es-MX",
+      lang: "en",
+    };
+    mockGetLoginFlow.mockResolvedValueOnce(
+      buildLoginFlow([
+        buildFlowNode("default", {
+          name: "identifier",
+          type: "email",
+          value: "kratos@example.com",
+        }),
+      ]),
+    );
+
+    const markup = renderToStaticMarkup(
+      await LoginPage({ searchParams: Promise.resolve(params) }),
+    );
+
+    expect(mockGetTranslations).toHaveBeenCalledWith(params, undefined);
+    expect(markup).toContain('value="kratos@example.com"');
+    expect(markup).not.toContain('value="hint@example.com"');
+  });
+
+  it("ignores invalid and ambiguous hints while keeping locale fallback", async () => {
+    const params = {
+      login_hint: ["one@example.com", "two@example.com"],
+      ui_locales: "fr-CA",
+      display: "modal",
+    };
+    mockGetLoginFlow.mockResolvedValueOnce(
+      buildLoginFlow([buildFlowNode("default", { name: "identifier", type: "email" })]),
+    );
+
+    const markup = renderToStaticMarkup(
+      await LoginPage({ searchParams: Promise.resolve(params) }),
+    );
+
+    expect(mockGetTranslations).toHaveBeenCalledWith(params, undefined);
+    expect(markup).not.toContain("one@example.com");
+    expect(mockGetLoginFlow).toHaveBeenCalledWith({});
   });
 
   it("renders social-only flows without password recovery", async () => {
