@@ -21,6 +21,13 @@ const oryMiddleware = createOryMiddleware({
  * @returns The request response, including status `400` for an invalid application origin and status `503` for missing production configuration.
  */
 export async function proxy(request: NextRequest) {
+  if (
+    isDevPreviewRequest(request.nextUrl.pathname) &&
+    process.env.NODE_ENV !== "development"
+  ) {
+    return new NextResponse(null, { status: 404 });
+  }
+
   if (!isOryConfigured) {
     return NextResponse.next();
   }
@@ -91,8 +98,13 @@ function isOryRequest(pathname: string) {
   );
 }
 
+function isDevPreviewRequest(pathname: string) {
+  return pathname === "/dev/ui-preview" || pathname.startsWith("/dev/ui-preview/");
+}
+
 export const config = {
   matcher: [
+    "/dev/ui-preview/:path*",
     "/login/:path*",
     "/registration/:path*",
     "/recovery/:path*",

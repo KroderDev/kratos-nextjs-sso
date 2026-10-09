@@ -560,8 +560,8 @@ export function FlowForm({
   }
 
   return (
-    <Card className="border-border/70 bg-card/85 shadow-xl shadow-foreground/5 backdrop-blur-sm">
-      <CardContent className="px-6 py-4 sm:px-8 sm:py-5">
+    <Card className="gap-0 border-border/70 bg-card py-0 shadow-lg shadow-foreground/5">
+      <CardContent className="px-5 py-6 sm:px-7 sm:py-7">
         {needsWebAuthnScript ? (
           <Script
             id={`ory-webauthn-${flow.id}`}

@@ -9,6 +9,11 @@ test("landing page loads", async ({ page }) => {
   await expect(brand.locator("img")).toHaveCount(0);
 });
 
+test("local UI previews are not exposed in production", async ({ request }) => {
+  const response = await request.get("/dev/ui-preview");
+  expect(response.status()).toBe(404);
+});
+
 test("theme control switches between light and dark", async ({ page }) => {
   await page.goto("/");
 

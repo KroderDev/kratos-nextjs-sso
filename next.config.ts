@@ -30,6 +30,7 @@ function assertApplicationOrigin() {
 assertApplicationOrigin();
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["127.0.0.1"],
   output: process.env.VERCEL ? undefined : "standalone",
   devIndicators: { position: "bottom-left" },
   async redirects() {
