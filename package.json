@@ -1,6 +1,6 @@
 {
   "name": "kratos-nextjs-sso",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "private": true,
   "license": "MIT",
   "packageManager": "pnpm@12.10.1",
