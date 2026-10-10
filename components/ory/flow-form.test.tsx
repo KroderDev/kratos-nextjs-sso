@@ -143,6 +143,14 @@ describe("FlowForm", () => {
     expect(markup).not.toContain('aria-label="Sign in with a social account"');
   });
 
+  it("renders normally when the provider omits the flow message collection", () => {
+    const flow = buildFlow([inputNode()], { messages: undefined });
+    const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
+
+    expect(markup).toContain('name="identifier"');
+    expect(markup).toContain('data-slot="card"');
+  });
+
   it("renders TOTP guidance as an inline info alert inside the form", () => {
     const flow = buildFlow(
       [groupedNode("totp", { name: "totp_code", type: "text" })],

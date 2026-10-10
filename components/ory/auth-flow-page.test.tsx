@@ -145,6 +145,31 @@ describe("AuthFlowPage", () => {
     expect(markup).toContain('data-embedded="true"');
   });
 
+  it("falls back to the page title and omits a status action for sent-email flows", () => {
+    const flow = {
+      id: "flow-id",
+      state: "sent_email",
+      ui: {
+        action: "/self-service/recovery/browser",
+        method: "POST",
+        messages: [{ id: 1, text: "Check your inbox.", type: "info" }],
+        nodes: [],
+      },
+    } as unknown as OryFlow;
+    const markup = renderToStaticMarkup(
+      <AuthFlowPage
+        {...props}
+        flow={flow}
+        kind="recovery"
+        title="Recover access"
+      />,
+    );
+
+    expect(markup).toContain("Recover access");
+    expect(markup).toContain('data-flow-messages-mode="status"');
+    expect(markup).not.toContain("Back to sign in");
+  });
+
   it("renders the unavailable state when the provider returns a malformed flow", () => {
     const flow = { error: { id: "self_service_flow_disabled" } } as unknown as OryFlow;
     const markup = renderToStaticMarkup(<AuthFlowPage {...props} flow={flow} />);
