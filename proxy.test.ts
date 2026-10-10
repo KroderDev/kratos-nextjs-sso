@@ -71,6 +71,34 @@ describe("proxy", () => {
     nextSpy.mockRestore();
   });
 
+  it("only allows the local UI preview route in development", async () => {
+    const nextSpy = vi.spyOn(NextResponse, "next");
+
+    try {
+      vi.stubEnv("NODE_ENV", "production");
+      const productionResult = await proxy(
+        new NextRequest("http://localhost:3000/dev/ui-preview"),
+      );
+
+      expect(productionResult.status).toBe(404);
+      expect(state.middlewareCalls).toHaveLength(0);
+      expect(nextSpy).not.toHaveBeenCalled();
+
+      vi.stubEnv("NODE_ENV", "development");
+      state.isOryConfigured = false;
+      const developmentResult = await proxy(
+        new NextRequest("http://localhost:3000/dev/ui-preview"),
+      );
+
+      expect(developmentResult).toBe(nextSpy.mock.results[0]?.value);
+      expect(developmentResult.status).toBe(200);
+      expect(nextSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.unstubAllEnvs();
+      nextSpy.mockRestore();
+    }
+  });
+
   it("skips the origin check when no appBaseUrl is configured", async () => {
     state.appBaseUrl = undefined;
 

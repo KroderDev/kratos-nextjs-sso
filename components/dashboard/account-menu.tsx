@@ -22,7 +22,10 @@ type AccountMenuProps = {
   initials: string;
   label: string;
   logoutUrl: string;
+  onAction?: (action: AccountMenuAction) => void;
 };
+
+export type AccountMenuAction = "settings" | "signOut";
 
 function AccountAvatar({
   avatarUrl,
@@ -47,6 +50,7 @@ export function AccountMenu({
   initials,
   label,
   logoutUrl,
+  onAction,
 }: AccountMenuProps) {
   const { t } = useTranslation();
 
@@ -72,11 +76,31 @@ export function AccountMenu({
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem render={<Link href="/dashboard/settings" />}>
+          <DropdownMenuItem
+            onClick={
+              onAction
+                ? (event) => {
+                    event.preventDefault();
+                    onAction("settings");
+                  }
+                : undefined
+            }
+            render={<Link href="/dashboard/settings" />}
+          >
             <Settings2 aria-hidden="true" data-icon="inline-start" />
             {t("common.navigation.settings")}
           </DropdownMenuItem>
-          <DropdownMenuItem render={<a href={logoutUrl} rel="noopener noreferrer" />}>
+          <DropdownMenuItem
+            onClick={
+              onAction
+                ? (event) => {
+                    event.preventDefault();
+                    onAction("signOut");
+                  }
+                : undefined
+            }
+            render={<a href={logoutUrl} rel="noopener noreferrer" />}
+          >
             <LogOut aria-hidden="true" data-icon="inline-start" />
             {t("common.navigation.signOut")}
           </DropdownMenuItem>

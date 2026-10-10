@@ -6,6 +6,7 @@ import type { OryFlow, OryFlowKind, RenderableOryFlow } from "@/lib/ory/types";
 import {
   getLookupSecretAction,
   getLookupSecretEntries,
+  getMessageText,
   getNodeAttributes,
   getString,
   hasPasswordLogin,
@@ -45,6 +46,7 @@ type FlowFormProps = {
   flow: RenderableOryFlow;
   flowState?: string | null;
   kind: OryFlowKind;
+  showFlowMessages?: boolean;
   separateProviders?: boolean;
   settingsArea?: SettingsArea;
 };
@@ -423,10 +425,11 @@ export function FlowForm({
   flow,
   flowState,
   kind,
+  showFlowMessages = true,
   separateProviders = true,
   settingsArea = "profile",
 }: FlowFormProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { handleSubmitCapture, handleTriggerStart, pending, submitter } = useFlowSubmissionState();
   const method = flow.ui.method.toLowerCase() === "get" ? "get" : "post";
   const origins = allowedOryOrigins([appBaseUrl ?? "", orySdkUrl, oryCanonicalUrl]);
@@ -457,6 +460,14 @@ export function FlowForm({
       ? "grid-cols-1 sm:grid-cols-2"
       : "grid-cols-1";
   const socialOnly = separateProviders && isSocialOnlyLogin(nodes, providerNodes);
+  const hasVisibleMessages =
+    showFlowMessages &&
+    (flow.ui.messages ?? []).some((message) => getMessageText(message, locale));
+  const hasVisibleFlowContent =
+    kind === "settings" ||
+    visibleFormNodes.length > 0 ||
+    providerNodes.length > 0 ||
+    hasVisibleMessages;
 
   const form =
     kind === "settings" ? (
@@ -480,7 +491,9 @@ export function FlowForm({
         method={method}
         onSubmitCapture={handleSubmitCapture}
       >
-        <FlowMessages messages={flow.ui.messages} />
+        {showFlowMessages ? (
+          <FlowMessages flowState={flowState} messages={flow.ui.messages} />
+        ) : null}
         {renderNodes(
           formNodes.filter((node) => isHiddenInputNode(node)),
           kind,
@@ -545,7 +558,7 @@ export function FlowForm({
 
   if (embedded) {
     return (
-      <div className={kind === "settings" ? undefined : "border-t border-border/70 pt-8"}>
+      <>
         {needsWebAuthnScript ? (
           <Script
             id={`ory-webauthn-${flow.id}`}
@@ -555,23 +568,31 @@ export function FlowForm({
         ) : null}
         <OryTriggerRuntime triggers={onloadTriggers} />
         {form}
-      </div>
+      </>
     );
   }
 
+  const flowContent = (
+    <>
+      {needsWebAuthnScript ? (
+        <Script
+          id={`ory-webauthn-${flow.id}`}
+          src="/.well-known/ory/webauthn.js"
+          strategy="afterInteractive"
+        />
+      ) : null}
+      <OryTriggerRuntime triggers={onloadTriggers} />
+      {form}
+    </>
+  );
+
+  if (!hasVisibleFlowContent) {
+    return flowContent;
+  }
+
   return (
-    <Card className="border-border/70 bg-card/85 shadow-xl shadow-foreground/5 backdrop-blur-sm">
-      <CardContent className="px-6 py-4 sm:px-8 sm:py-5">
-        {needsWebAuthnScript ? (
-          <Script
-            id={`ory-webauthn-${flow.id}`}
-            src="/.well-known/ory/webauthn.js"
-            strategy="afterInteractive"
-          />
-        ) : null}
-        <OryTriggerRuntime triggers={onloadTriggers} />
-        {form}
-      </CardContent>
+    <Card className="gap-0 border-border/70 bg-card py-0 shadow-lg shadow-foreground/5">
+      <CardContent className="px-5 py-6 sm:px-7 sm:py-7">{flowContent}</CardContent>
     </Card>
   );
 

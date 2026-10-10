@@ -38,7 +38,6 @@ export default async function AuthErrorPage({ searchParams }: ErrorPageProps) {
   return (
     <AuthContent
       description={t("auth.error.description")}
-      eyebrow={t("auth.error.eyebrow")}
       title={t("auth.error.title")}
     >
       <Alert className="border-destructive/25 bg-destructive/5" variant="destructive">

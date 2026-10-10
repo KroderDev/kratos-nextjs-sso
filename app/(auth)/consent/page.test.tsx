@@ -89,7 +89,7 @@ describe("ConsentPage", () => {
           transaction: "txn-1",
           csrf: "csrf-1",
           client_name: "Example Client",
-          scope: "openid profile",
+          scope: "openid profile custom:read",
         }),
       }),
     );
@@ -97,8 +97,11 @@ describe("ConsentPage", () => {
     expect(markup).toContain("auth.consent.title");
     expect(markup).toContain("openid");
     expect(markup).toContain("profile");
+    expect(markup).toContain("custom:read");
     expect(markup).toContain('name="decision" value="accept"');
     expect(markup).toContain('name="decision" value="deny"');
+    expect((markup.match(/data-slot="card"/g) ?? []).length).toBe(1);
+    expect((markup.match(/<h1/g) ?? []).length).toBe(1);
   });
 
   it("renders basic access when no scopes or client name are provided", async () => {

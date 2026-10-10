@@ -221,4 +221,51 @@ describe("SettingsNavigation", () => {
     });
     expect(onAreaChange).not.toHaveBeenCalled();
   });
+
+  it("supports local previews without persisting the selected area", () => {
+    const originalCookie = Object.getOwnPropertyDescriptor(document, "cookie");
+    const cookieWrites: string[] = [];
+    const onAreaChange = vi.fn();
+
+    Object.defineProperty(document, "cookie", {
+      configurable: true,
+      get: () => "",
+      set: (value: string) => cookieWrites.push(value),
+    });
+
+    try {
+      mountedContainer = document.createElement("div");
+      document.body.append(mountedContainer);
+      mountedRoot = createRoot(mountedContainer);
+
+      act(() => {
+        mountedRoot?.render(
+          <SettingsNavigation
+            activeArea="profile"
+            areas={SETTINGS_AREA_DEFINITIONS}
+            onAreaChange={onAreaChange}
+            persistSelection={false}
+          />,
+        );
+      });
+
+      const securityLink = mountedContainer.querySelector<HTMLAnchorElement>(
+        'a[href="/dashboard/settings?section=security"]',
+      );
+      expect(securityLink).not.toBeNull();
+
+      act(() => {
+        securityLink?.dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }));
+      });
+
+      expect(onAreaChange).toHaveBeenCalledWith("security");
+      expect(cookieWrites).toEqual([]);
+    } finally {
+      if (originalCookie) {
+        Object.defineProperty(document, "cookie", originalCookie);
+      } else {
+        Reflect.deleteProperty(document, "cookie");
+      }
+    }
+  });
 });

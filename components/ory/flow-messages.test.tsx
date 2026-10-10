@@ -17,7 +17,7 @@ const message = (id: number, text: string, type: UiText["type"] = "info") =>
   ({ id, text, type } as UiText);
 
 describe("FlowMessages", () => {
-  it("renders translated titles for error, success, and informational messages", () => {
+  it("renders Ory info and success messages as compact notices and keeps errors urgent", () => {
     const markup = renderToStaticMarkup(
       <FlowMessages
         messages={[
@@ -29,10 +29,54 @@ describe("FlowMessages", () => {
     );
 
     expect(markup).toContain("Action needed");
-    expect(markup).toContain("Updated");
-    expect(markup).toContain("Note");
     expect(markup).toContain("Invalid code");
+    expect(markup).toContain("Email updated");
+    expect(markup).toContain("Remember this device");
+    expect(markup).toContain('data-flow-message="success"');
+    expect(markup).toContain('data-flow-message="info"');
+    expect(markup).toContain('role="alert"');
+    expect(markup).toContain('role="status"');
+    expect((markup.match(/role="status"/g) ?? []).length).toBe(2);
+    expect(markup).toContain("border-border/70 bg-muted/35");
     expect(markup).toContain("border-primary/25 bg-primary/5");
+    expect(markup).not.toContain("Note");
+    expect(markup).not.toContain(">Updated<");
+    expect((markup.match(/data-slot="alert"/g) ?? []).length).toBe(3);
+  });
+
+  it("integrates the Kratos TOTP challenge message as an inline info notice", () => {
+    const markup = renderToStaticMarkup(
+      <FlowMessages
+        messages={[
+          message(1, "Please complete the second authentication challenge.", "info"),
+        ]}
+      />,
+    );
+
+    expect(markup).toContain('data-flow-messages="inline"');
+    expect(markup).toContain('data-flow-message="info"');
+    expect(markup).toContain('role="status"');
+    expect(markup).toContain("Please complete the second authentication challenge.");
+    expect(markup).toContain("bg-muted/35");
+    expect(markup).not.toContain('role="alert"');
+    expect(markup).not.toContain("Note");
+  });
+
+  it("renders sent-email copy centered below the shared status icon", () => {
+    const markup = renderToStaticMarkup(
+      <FlowMessages
+        messages={[message(1, "An email with recovery instructions was sent.")]}
+        mode="status"
+      />,
+    );
+
+    expect(markup).toContain('data-flow-messages="status"');
+    expect(markup).toContain('role="status"');
+    expect(markup).toContain('class="flex flex-col items-center gap-2 text-center"');
+    expect(markup).toContain("An email with recovery instructions was sent.");
+    expect(markup).not.toContain('data-slot="alert"');
+    expect(markup).not.toContain("Note");
+    expect(markup).not.toContain("<svg");
   });
 
   it("renders nothing for missing or empty messages", () => {

@@ -90,7 +90,6 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
     return (
       <AuthContent
         description={t(initialLoginContext.descriptionKey)}
-        eyebrow={t("auth.login.eyebrow")}
         footer={
           <span>
             {t("auth.login.footer.needIdentity")}{" "}
@@ -141,7 +140,6 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
   return (
     <AuthFlowPage
       description={t(loginContext.descriptionKey)}
-      eyebrow={t("auth.login.eyebrow")}
       flow={flow}
       footer={
         <span>
