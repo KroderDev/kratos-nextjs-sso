@@ -6,6 +6,7 @@ import type { OryPageParams } from "@ory/nextjs/app";
 import { AuthContent } from "@/components/layout/auth-shell";
 import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
+import { ButtonLink } from "@/components/ui/button-link";
 import { rewriteOryFlow } from "@/lib/ory/url";
 import { isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
@@ -37,7 +38,6 @@ export default async function VerificationPage({
     return (
       <AuthContent
         description={t("auth.verification.description")}
-        eyebrow={t("auth.verification.eyebrow")}
         footer={
           <span>
             {t("auth.verification.footer.needStartOver")}{" "}
@@ -77,7 +77,7 @@ export default async function VerificationPage({
   return (
     <AuthFlowPage
       description={t("auth.verification.description")}
-      eyebrow={t("auth.verification.eyebrow")}
+      emailSentTitle={t("auth.verification.emailSentTitle")}
       flow={flow}
       footer={
         <span>
@@ -88,6 +88,11 @@ export default async function VerificationPage({
         </span>
       }
       kind="verification"
+      statusAction={
+        <ButtonLink className="w-full" href="/login">
+          {t("auth.verification.footer.returnSignIn")}
+        </ButtonLink>
+      }
       title={t("auth.verification.title")}
     />
   );

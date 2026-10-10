@@ -63,8 +63,11 @@ export const en = {
       boundaryLabel: "Security",
       boundaryValue: "Account protected",
       footerPrivate: "Secure account access",
-      footerProtected: "Protected browser session",
       loadingForm: "Loading authentication form",
+    },
+    legal: {
+      terms: "Terms of Service",
+      privacy: "Privacy Policy",
     },
     login: {
       title: "Welcome back",
@@ -124,6 +127,7 @@ export const en = {
       title: "Recover your account",
       eyebrow: "Account recovery",
       description: "Enter your email address to receive recovery instructions.",
+      emailSentTitle: "Check your email",
       footer: {
         rememberedDetails: "Remember your password?",
         returnSignIn: "Back to sign in",
@@ -133,6 +137,7 @@ export const en = {
       title: "Verify your email address",
       eyebrow: "Email verification",
       description: "Confirm your email address to continue.",
+      emailSentTitle: "Check your email",
       footer: {
         needStartOver: "Need to start over?",
         returnSignIn: "Back to sign in",
@@ -189,7 +194,6 @@ export const en = {
     verification: "Email verification",
     verificationSent: "Verification email sent",
     formSubmitBlocked: "Preview mode: submission was stopped; no request was sent to an identity provider.",
-    previewOnly: "Preview data only",
   },
   dashboard: {
     loading: "Loading dashboard",

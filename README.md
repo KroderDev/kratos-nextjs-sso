@@ -83,11 +83,9 @@ Set these values in `.env.local` or in your deployment build configuration:
 ```env
 # Neutral repository default (leave empty to use it):
 NEXT_PUBLIC_BRAND_NAME=
-NEXT_PUBLIC_BRAND_MARK=
 
 # Example customization for a downstream product:
 NEXT_PUBLIC_BRAND_NAME=Acme
-NEXT_PUBLIC_BRAND_MARK=AC
 NEXT_PUBLIC_BRAND_LOGO_LIGHT=/acme.svg
 NEXT_PUBLIC_BRAND_LOGO_DARK=/acme-dark.svg
 NEXT_PUBLIC_BRAND_FAVICON_LIGHT=/your-favicon.ico
@@ -123,7 +121,6 @@ The application builds as a Next.js standalone server and runs in Docker as the 
 docker build \
   --build-arg "NEXT_PUBLIC_APP_URL=https://auth.example.com" \
   --build-arg "NEXT_PUBLIC_BRAND_NAME=Kratos SSO" \
-  --build-arg "NEXT_PUBLIC_BRAND_MARK=KS" \
   --build-arg "NEXT_PUBLIC_ORY_SDK_URL=https://your-project.projects.oryapis.com" \
   --build-arg "NEXT_PUBLIC_ORY_OAUTH_ORIGINS=https://accounts.google.com" \
   --build-arg "NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS=https://your-client.example.com" \

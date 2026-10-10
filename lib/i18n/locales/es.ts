@@ -65,8 +65,11 @@ export const es: TranslationKeys = {
       boundaryLabel: "Seguridad",
       boundaryValue: "Cuenta protegida",
       footerPrivate: "Acceso seguro a la cuenta",
-      footerProtected: "Sesión de navegador protegida",
       loadingForm: "Cargando formulario de autenticación",
+    },
+    legal: {
+      terms: "Términos del servicio",
+      privacy: "Política de privacidad",
     },
     login: {
       title: "Bienvenido de nuevo",
@@ -126,6 +129,7 @@ export const es: TranslationKeys = {
       title: "Recupera tu cuenta",
       eyebrow: "Recuperación de cuenta",
       description: "Introduce tu correo electrónico para recibir instrucciones de recuperación.",
+      emailSentTitle: "Revisa tu correo",
       footer: {
         rememberedDetails: "¿Recuerdas tu contraseña?",
         returnSignIn: "Volver a iniciar sesión",
@@ -135,6 +139,7 @@ export const es: TranslationKeys = {
       title: "Verifica tu correo electrónico",
       eyebrow: "Verificación de correo electrónico",
       description: "Confirma tu correo electrónico para continuar.",
+      emailSentTitle: "Revisa tu correo electrónico",
       footer: {
         needStartOver: "¿Necesitas empezar de nuevo?",
         returnSignIn: "Volver a iniciar sesión",
@@ -191,7 +196,6 @@ export const es: TranslationKeys = {
     verification: "Verificación de correo",
     verificationSent: "Correo de verificación enviado",
     formSubmitBlocked: "Modo de vista previa: se detuvo el envío; no se envió ninguna solicitud al proveedor de identidad.",
-    previewOnly: "Solo datos de prueba",
   },
   dashboard: {
     loading: "Cargando panel de control",

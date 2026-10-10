@@ -6,6 +6,7 @@ import type { OryPageParams } from "@ory/nextjs/app";
 import { AuthContent } from "@/components/layout/auth-shell";
 import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
+import { ButtonLink } from "@/components/ui/button-link";
 import { rewriteOryFlow } from "@/lib/ory/url";
 import { isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
@@ -33,7 +34,6 @@ export default async function RecoveryPage({ searchParams }: OryPageParams) {
     return (
       <AuthContent
         description={t("auth.recovery.description")}
-        eyebrow={t("auth.recovery.eyebrow")}
         footer={
           <span>
             {t("auth.recovery.footer.rememberedDetails")}{" "}
@@ -73,7 +73,7 @@ export default async function RecoveryPage({ searchParams }: OryPageParams) {
   return (
     <AuthFlowPage
       description={t("auth.recovery.description")}
-      eyebrow={t("auth.recovery.eyebrow")}
+      emailSentTitle={t("auth.recovery.emailSentTitle")}
       flow={flow}
       footer={
         <span>
@@ -84,6 +84,11 @@ export default async function RecoveryPage({ searchParams }: OryPageParams) {
         </span>
       }
       kind="recovery"
+      statusAction={
+        <ButtonLink className="w-full" href="/login">
+          {t("auth.recovery.footer.returnSignIn")}
+        </ButtonLink>
+      }
       title={t("auth.recovery.title")}
     />
   );

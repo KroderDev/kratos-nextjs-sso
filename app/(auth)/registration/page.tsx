@@ -36,7 +36,6 @@ export default async function RegistrationPage({
     return (
       <AuthContent
         description={t("auth.registration.description")}
-        eyebrow={t("auth.registration.eyebrow")}
         footer={
           <span>
             {t("auth.registration.footer.alreadyAccess")}{" "}
@@ -79,7 +78,6 @@ export default async function RegistrationPage({
   return (
     <AuthFlowPage
       description={t("auth.registration.description")}
-      eyebrow={t("auth.registration.eyebrow")}
       flow={flow}
       footer={
         <span>

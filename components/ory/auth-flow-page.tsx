@@ -1,19 +1,22 @@
 import type { ReactNode } from "react";
+import { CircleCheck } from "lucide-react";
 
 import { toRenderableOryFlow, type OryFlow, type OryFlowKind } from "@/lib/ory/types";
 
 import { AuthContent } from "@/components/layout/auth-shell";
 
 import { FlowForm } from "./flow-form";
+import { FlowMessages } from "./flow-messages";
 import { FlowUnavailable } from "./flow-unavailable";
 
 type AuthFlowPageProps = {
   flow: OryFlow | null | undefined;
   kind: OryFlowKind;
-  eyebrow: string;
   title: string;
   description: string;
+  emailSentTitle?: string;
   footer?: ReactNode;
+  statusAction?: ReactNode;
 };
 
 function hasRenderableFlowUi(flow: OryFlow | null | undefined): flow is OryFlow {
@@ -39,7 +42,6 @@ function hasRenderableFlowUi(flow: OryFlow | null | undefined): flow is OryFlow 
  *
  * @param flow - The authentication flow to render.
  * @param kind - The kind of authentication flow.
- * @param eyebrow - The text displayed above the page title.
  * @param title - The page title.
  * @param description - The page description.
  * @param footer - Optional content displayed below the page.
@@ -48,20 +50,59 @@ function hasRenderableFlowUi(flow: OryFlow | null | undefined): flow is OryFlow 
 export function AuthFlowPage({
   flow,
   kind,
-  eyebrow,
   title,
   description,
+  emailSentTitle,
   footer,
+  statusAction,
 }: AuthFlowPageProps) {
+  const flowState =
+    hasRenderableFlowUi(flow) && typeof flow.state === "string" ? flow.state : undefined;
+  const isEmailSentState =
+    (kind === "recovery" || kind === "verification") && flowState === "sent_email";
+
   return (
     <AuthContent
-      description={description}
-      eyebrow={eyebrow}
-      footer={footer}
-      title={title}
+      description={isEmailSentState ? undefined : description}
+      footer={isEmailSentState ? undefined : footer}
+      statusIcon={
+        isEmailSentState ? (
+          <span
+            className="mx-auto flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary"
+            data-flow-status-icon
+          >
+            <CircleCheck aria-hidden="true" className="size-6" />
+          </span>
+        ) : undefined
+      }
+      title={isEmailSentState ? emailSentTitle ?? title : title}
     >
       {hasRenderableFlowUi(flow) ? (
-        <FlowForm flow={toRenderableOryFlow(flow)} kind={kind} />
+        isEmailSentState ? (
+          <div className="flex flex-col items-center gap-5">
+            <FlowMessages
+              flowState={flowState}
+              messages={flow.ui.messages}
+              mode="status"
+            />
+            <FlowForm
+              embedded
+              flow={toRenderableOryFlow(flow)}
+              flowState={flowState}
+              kind={kind}
+              showFlowMessages={false}
+            />
+            {statusAction ? <div className="w-full">{statusAction}</div> : null}
+          </div>
+        ) : (
+          <FlowForm
+            embedded
+            flow={toRenderableOryFlow(flow)}
+            flowState={flowState}
+            kind={kind}
+            showFlowMessages
+          />
+        )
       ) : (
         <FlowUnavailable />
       )}

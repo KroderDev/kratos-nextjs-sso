@@ -161,9 +161,15 @@ function backupCodeLoginNodes(): UiNode[] {
   ];
 }
 
-function previewFlow(id: string, nodes: UiNode[], messages: UiText[] = []): OryFlow {
+function previewFlow(
+  id: string,
+  nodes: UiNode[],
+  messages: UiText[] = [],
+  state?: string,
+): OryFlow {
   return {
     id,
+    ...(state ? { state } : {}),
     ui: {
       action: "/dev/ui-preview",
       method: "POST",
@@ -190,7 +196,6 @@ export const PREVIEW_AUTH_SCENARIOS = [
     id: "password-three-providers",
     labelKey: "devPreview.passwordThreeProviders",
     kind: "login",
-    eyebrowKey: "auth.login.eyebrow",
     titleKey: "auth.login.title",
     descriptionKey: "auth.login.description",
     flow: previewFlow("preview-password-three-providers", [
@@ -204,7 +209,6 @@ export const PREVIEW_AUTH_SCENARIOS = [
     id: "social-only",
     labelKey: "devPreview.socialOnly",
     kind: "login",
-    eyebrowKey: "auth.login.eyebrow",
     titleKey: "auth.login.title",
     descriptionKey: "auth.login.descriptionSocialOnly",
     flow: previewFlow("preview-social-only", [
@@ -217,7 +221,6 @@ export const PREVIEW_AUTH_SCENARIOS = [
     id: "password-two-providers",
     labelKey: "devPreview.passwordTwoProviders",
     kind: "login",
-    eyebrowKey: "auth.login.eyebrow",
     titleKey: "auth.login.title",
     descriptionKey: "auth.login.description",
     flow: previewFlow("preview-password-two-providers", [
@@ -230,7 +233,6 @@ export const PREVIEW_AUTH_SCENARIOS = [
     id: "password-many-providers",
     labelKey: "devPreview.passwordManyProviders",
     kind: "login",
-    eyebrowKey: "auth.login.eyebrow",
     titleKey: "auth.login.title",
     descriptionKey: "auth.login.description",
     flow: previewFlow("preview-password-many-providers", [
@@ -242,7 +244,6 @@ export const PREVIEW_AUTH_SCENARIOS = [
     id: "totp",
     labelKey: "devPreview.totp",
     kind: "login",
-    eyebrowKey: "auth.login.eyebrow",
     titleKey: "auth.login.titleAal2",
     descriptionKey: "auth.login.descriptionAal2",
     flow: previewFlow("preview-totp", [
@@ -266,7 +267,6 @@ export const PREVIEW_AUTH_SCENARIOS = [
     id: "email-code-request",
     labelKey: "devPreview.emailCodeRequest",
     kind: "login",
-    eyebrowKey: "auth.login.eyebrow",
     titleKey: "auth.login.title",
     descriptionKey: "devPreview.emailCodeDescription",
     flow: previewFlow("preview-email-code-request", emailCodeRequestNodes()),
@@ -275,7 +275,6 @@ export const PREVIEW_AUTH_SCENARIOS = [
     id: "email-code-challenge",
     labelKey: "devPreview.emailCodeChallenge",
     kind: "login",
-    eyebrowKey: "auth.login.eyebrow",
     titleKey: "auth.login.title",
     descriptionKey: "devPreview.emailCodeDescription",
     flow: previewFlow(
@@ -294,7 +293,6 @@ export const PREVIEW_AUTH_SCENARIOS = [
     id: "backup-code-login",
     labelKey: "devPreview.backupCodeLogin",
     kind: "login",
-    eyebrowKey: "auth.login.eyebrow",
     titleKey: "auth.login.titleAal2",
     descriptionKey: "devPreview.backupCodeDescription",
     flow: previewFlow("preview-backup-code-login", backupCodeLoginNodes()),
@@ -303,7 +301,6 @@ export const PREVIEW_AUTH_SCENARIOS = [
     id: "forgot-password",
     labelKey: "devPreview.forgotPassword",
     kind: "recovery",
-    eyebrowKey: "auth.recovery.eyebrow",
     titleKey: "auth.recovery.title",
     descriptionKey: "auth.recovery.description",
     flow: previewFlow("preview-forgot-password", recoveryNodes()),
@@ -312,7 +309,6 @@ export const PREVIEW_AUTH_SCENARIOS = [
     id: "recovery-success",
     labelKey: "devPreview.recoverySuccess",
     kind: "recovery",
-    eyebrowKey: "auth.recovery.eyebrow",
     titleKey: "auth.recovery.title",
     descriptionKey: "auth.recovery.description",
     flow: previewFlow("preview-recovery-success", [], [
@@ -321,13 +317,12 @@ export const PREVIEW_AUTH_SCENARIOS = [
         text: "An email containing a recovery link has been sent to the email address you provided.",
         type: "info",
       },
-    ]),
+    ], "sent_email"),
   },
   {
     id: "recovery-code-request",
     labelKey: "devPreview.recoveryCodeRequest",
     kind: "recovery",
-    eyebrowKey: "auth.recovery.eyebrow",
     titleKey: "auth.recovery.title",
     descriptionKey: "auth.recovery.description",
     flow: previewFlow("preview-recovery-code-request", recoveryCodeRequestNodes()),
@@ -336,7 +331,6 @@ export const PREVIEW_AUTH_SCENARIOS = [
     id: "recovery-code",
     labelKey: "devPreview.recoveryCode",
     kind: "recovery",
-    eyebrowKey: "auth.recovery.eyebrow",
     titleKey: "auth.recovery.title",
     descriptionKey: "auth.recovery.description",
     flow: previewFlow(
@@ -355,7 +349,6 @@ export const PREVIEW_AUTH_SCENARIOS = [
     id: "registration",
     labelKey: "devPreview.registration",
     kind: "registration",
-    eyebrowKey: "auth.registration.eyebrow",
     titleKey: "auth.registration.title",
     descriptionKey: "auth.registration.description",
     flow: previewFlow("preview-registration", registrationNodes()),
@@ -364,7 +357,6 @@ export const PREVIEW_AUTH_SCENARIOS = [
     id: "registration-social",
     labelKey: "devPreview.registrationSocial",
     kind: "registration",
-    eyebrowKey: "auth.registration.eyebrow",
     titleKey: "auth.registration.title",
     descriptionKey: "auth.registration.description",
     flow: previewFlow("preview-registration-social", [
@@ -378,7 +370,6 @@ export const PREVIEW_AUTH_SCENARIOS = [
     id: "verification",
     labelKey: "devPreview.verification",
     kind: "verification",
-    eyebrowKey: "auth.verification.eyebrow",
     titleKey: "auth.verification.title",
     descriptionKey: "auth.verification.description",
     flow: previewFlow("preview-verification", verificationNodes()),
@@ -387,7 +378,6 @@ export const PREVIEW_AUTH_SCENARIOS = [
     id: "verification-sent",
     labelKey: "devPreview.verificationSent",
     kind: "verification",
-    eyebrowKey: "auth.verification.eyebrow",
     titleKey: "auth.verification.title",
     descriptionKey: "auth.verification.description",
     flow: previewFlow("preview-verification-sent", [], [
@@ -396,7 +386,7 @@ export const PREVIEW_AUTH_SCENARIOS = [
         text: "An email containing a verification link has been sent to the email address you provided.",
         type: "info",
       },
-    ]),
+    ], "sent_email"),
   },
 ] as const;
 

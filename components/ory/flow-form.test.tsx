@@ -143,6 +143,53 @@ describe("FlowForm", () => {
     expect(markup).not.toContain('aria-label="Sign in with a social account"');
   });
 
+  it("renders TOTP guidance as an inline info alert inside the form", () => {
+    const flow = buildFlow(
+      [groupedNode("totp", { name: "totp_code", type: "text" })],
+      {
+        messages: [
+          {
+            id: 1,
+            text: "Please complete the second authentication challenge.",
+            type: "info",
+          },
+        ],
+      },
+    );
+    const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
+
+    expect(markup).toContain("Please complete the second authentication challenge.");
+    expect(markup).toContain('data-flow-message="info"');
+    expect(markup).toContain('role="status"');
+    expect(markup).toContain('data-slot="alert"');
+    expect(markup).toContain("border-border/70 bg-muted/35");
+    expect(markup).not.toContain("Note");
+  });
+
+  it("omits the generic card when only hidden nodes remain after moving status messages outside", () => {
+    const flow = buildFlow([groupedNode("default", { name: "csrf_token", type: "hidden" })]);
+    const markup = renderToStaticMarkup(
+      <FlowForm flow={flow} kind="recovery" showFlowMessages={false} />,
+    );
+
+    expect(markup).toContain('<form');
+    expect(markup).toContain('name="csrf_token"');
+    expect(markup).not.toContain('data-slot="card"');
+  });
+
+  it("keeps a card around visible resend or continuation actions", () => {
+    const flow = buildFlow([
+      groupedNode("default", { name: "csrf_token", type: "hidden" }),
+      groupedNode("code", { name: "method", type: "submit", value: "link" }),
+    ]);
+    const markup = renderToStaticMarkup(
+      <FlowForm flow={flow} kind="recovery" showFlowMessages={false} />,
+    );
+
+    expect(markup).toContain('data-slot="card"');
+    expect(markup).toContain('type="submit"');
+  });
+
   it("renders a single-column provider section with the 'Or' divider for one provider", () => {
     const flow = buildFlow([inputNode(), providerNode()]);
     const markup = renderToStaticMarkup(<FlowForm flow={flow} kind="login" />);
@@ -569,12 +616,13 @@ describe("FlowForm", () => {
     expect(markup).not.toContain('gap-5');
   });
 
-  it("wraps the form in a bordered container without a card when embedded", () => {
+  it("renders an embedded auth form without another card or divider", () => {
     const flow = buildFlow([inputNode()]);
     const markup = renderToStaticMarkup(<FlowForm embedded flow={flow} kind="login" />);
 
-    expect(markup).toContain("border-t border-border/70 pt-8");
+    expect(markup).toContain('<form');
     expect(markup).not.toContain('data-slot="card"');
+    expect(markup).not.toContain("border-t border-border/70 pt-8");
   });
 
   it("renders embedded settings flows without the authentication border", () => {

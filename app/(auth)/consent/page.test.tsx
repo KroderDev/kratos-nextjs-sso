@@ -99,6 +99,8 @@ describe("ConsentPage", () => {
     expect(markup).toContain("profile");
     expect(markup).toContain('name="decision" value="accept"');
     expect(markup).toContain('name="decision" value="deny"');
+    expect((markup.match(/data-slot="card"/g) ?? []).length).toBe(1);
+    expect((markup.match(/<h1/g) ?? []).length).toBe(1);
   });
 
   it("renders basic access when no scopes or client name are provided", async () => {

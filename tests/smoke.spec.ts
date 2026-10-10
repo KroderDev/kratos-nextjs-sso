@@ -176,6 +176,7 @@ test("sign-in page shows setup state when unconfigured", async ({ page }) => {
   await expect(page.getByText("Welcome back")).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
   await expect(page.getByText("Authentication is not configured for this application.")).toBeVisible();
+  await expect(page.locator('[data-slot="auth-legal-links"]')).toBeVisible();
 });
 
 test("sign-in page shows create-account link and hides password recovery when unconfigured", async ({
@@ -192,6 +193,9 @@ test("registration page shows setup state when unconfigured", async ({ page }) =
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
+  const legalLinks = page.locator('[data-slot="auth-legal-links"]');
+  await expect(legalLinks).toBeVisible();
+  await expect(page.locator('[data-slot="card"] [data-slot="auth-legal-links"]')).toHaveCount(0);
 });
 
 test("recovery page shows setup state when unconfigured", async ({ page }) => {
@@ -199,6 +203,7 @@ test("recovery page shows setup state when unconfigured", async ({ page }) => {
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("heading", { name: "Recover your account" })).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
+  await expect(page.locator('[data-slot="auth-legal-links"]')).toBeVisible();
 });
 
 test("verification page shows setup state when unconfigured", async ({ page }) => {
@@ -206,6 +211,7 @@ test("verification page shows setup state when unconfigured", async ({ page }) =
   expect(response?.status()).toBe(200);
   await expect(page.getByText("Verify your email address")).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
+  await expect(page.locator('[data-slot="auth-legal-links"]')).toBeVisible();
 });
 
 test("dashboard shows setup state when the service is unconfigured", async ({ page }) => {
@@ -244,6 +250,7 @@ test("error page loads", async ({ page }) => {
   const response = await page.goto("/error");
   expect(response?.status()).toBe(200);
   await expect(page.getByText("Unable to complete request")).toBeVisible();
+  await expect(page.locator('[data-slot="auth-legal-links"]')).toBeVisible();
 });
 
 test("health endpoint returns healthy", async ({ request }) => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent, type MouseEvent } from "react";
+import Link from "next/link";
 
 import type { AccountMenuAction } from "@/components/dashboard/account-menu";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
@@ -13,6 +14,7 @@ import {
   type SettingsArea,
 } from "@/components/ory/settings-sections";
 import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button-link";
 import {
   Card,
   CardContent,
@@ -21,8 +23,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { hasPasswordLogin } from "@/lib/ory/flow";
 import { useTranslation } from "@/lib/i18n/client";
 
+import { getAuthPreviewFooterPlan } from "./auth-preview-footer";
 import {
   PREVIEW_AUTH_SCENARIOS,
   type PreviewAuthScenarioId,
@@ -33,9 +37,7 @@ type PreviewSection = "menus" | "authentication";
 export function UiPreviewGallery() {
   const { t } = useTranslation();
   const [section, setSection] = useState<PreviewSection>("menus");
-  const [scenarioId, setScenarioId] = useState<PreviewAuthScenarioId>(
-    PREVIEW_AUTH_SCENARIOS[0].id,
-  );
+  const [scenarioId, setScenarioId] = useState<PreviewAuthScenarioId>("registration");
   const scenario = PREVIEW_AUTH_SCENARIOS.find((item) => item.id === scenarioId)!;
 
   return (
@@ -50,7 +52,7 @@ export function UiPreviewGallery() {
             >
               <Button
                 aria-pressed={section === "menus"}
-                className="h-8 px-2.5 text-xs"
+                className="h-8 px-2 text-[11px] sm:px-2.5 sm:text-xs"
                 onClick={() => setSection("menus")}
                 size="sm"
                 type="button"
@@ -60,7 +62,7 @@ export function UiPreviewGallery() {
               </Button>
               <Button
                 aria-pressed={section === "authentication"}
-                className="h-8 px-2.5 text-xs"
+                className="h-8 px-2 text-[11px] sm:px-2.5 sm:text-xs"
                 onClick={() => setSection("authentication")}
                 size="sm"
                 type="button"
@@ -76,7 +78,7 @@ export function UiPreviewGallery() {
                 </span>
                 <NativeSelect
                   aria-label={t("devPreview.authenticationTitle")}
-                  className="w-44"
+                  className="w-36 sm:w-44"
                   onChange={(event) => {
                     const nextScenario = PREVIEW_AUTH_SCENARIOS.find(
                       (item) => item.id === event.currentTarget.value,
@@ -222,6 +224,17 @@ function AuthenticationPreview({
 }) {
   const { t } = useTranslation();
   const [notice, setNotice] = useState("");
+  const isEmailSentStatus =
+    (scenario.kind === "recovery" || scenario.kind === "verification") &&
+    scenario.flow.state === "sent_email";
+  const emailSentTitle =
+    isEmailSentStatus
+      ? t(
+          scenario.kind === "recovery"
+            ? "auth.recovery.emailSentTitle"
+            : "auth.verification.emailSentTitle",
+        )
+      : undefined;
 
   function preventSubmission(event: FormEvent<HTMLDivElement>) {
     if (!(event.target instanceof HTMLFormElement)) {
@@ -238,6 +251,14 @@ function AuthenticationPreview({
       return;
     }
 
+    const previewNavigation = event.target.closest("a[data-preview-navigation]");
+    if (previewNavigation) {
+      event.preventDefault();
+      event.stopPropagation();
+      setNotice(t("devPreview.navigationBlocked"));
+      return;
+    }
+
     const action = event.target.closest(
       'form button[type="submit"], form button[type="button"], form input[type="submit"], form input[type="button"], form input[type="image"]',
     );
@@ -249,6 +270,47 @@ function AuthenticationPreview({
       return;
     }
   }
+
+  const footerPlan = getAuthPreviewFooterPlan({
+    kind: scenario.kind,
+    passwordAvailable: hasPasswordLogin(scenario.flow.ui.nodes),
+    registrationEnabled: process.env.NEXT_PUBLIC_ORY_REGISTRATION_ENABLED !== "false",
+    isEmailSentStatus,
+  });
+  const footer = footerPlan ? (
+    <span>
+      {footerPlan.introKey ? <>{t(footerPlan.introKey)}{" "}</> : null}
+      {footerPlan.links.map((link) => (
+        <span key={link.href}>
+          {link.separatorBefore ? (
+            <span aria-hidden="true" className="mx-2 text-border">/</span>
+          ) : null}
+          <Link
+            className="font-medium text-primary hover:underline"
+            data-preview-navigation
+            href={link.href}
+            prefetch={false}
+          >
+            {t(link.labelKey)}
+          </Link>
+        </span>
+      ))}
+    </span>
+  ) : undefined;
+  const statusAction = isEmailSentStatus ? (
+    <ButtonLink
+      className="w-full"
+      data-preview-navigation
+      href="/login"
+      prefetch={false}
+    >
+      {t(
+        scenario.kind === "recovery"
+          ? "auth.recovery.footer.returnSignIn"
+          : "auth.verification.footer.returnSignIn",
+      )}
+    </ButtonLink>
+  ) : undefined;
 
   return (
     <div>
@@ -262,10 +324,11 @@ function AuthenticationPreview({
         <AuthFrame>
           <AuthFlowPage
             description={t(scenario.descriptionKey)}
-            eyebrow={t(scenario.eyebrowKey)}
+            emailSentTitle={emailSentTitle}
             flow={scenario.flow}
-            footer={<span>{t("devPreview.previewOnly")}</span>}
+            footer={footer}
             kind={scenario.kind}
+            statusAction={statusAction}
             title={t(scenario.titleKey)}
           />
         </AuthFrame>

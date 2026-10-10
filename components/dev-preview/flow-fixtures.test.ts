@@ -96,6 +96,7 @@ describe("local authentication preview fixtures", () => {
     expect(nodesFor("forgot-password").some((node) => getNodeAttributes(node).name === "email")).toBe(true);
 
     expect(scenarioById["recovery-success"]?.kind).toBe("recovery");
+    expect(scenarioById["recovery-success"]?.flow.state).toBe("sent_email");
     expect(scenarioById["recovery-success"]?.flow.ui.messages).toContainEqual({
       id: 2,
       text: "An email containing a recovery link has been sent to the email address you provided.",
@@ -115,6 +116,7 @@ describe("local authentication preview fixtures", () => {
     expect(countProviders("registration-social")).toBe(3);
 
     expect(scenarioById.verification?.kind).toBe("verification");
+    expect(scenarioById["verification-sent"]?.flow.state).toBe("sent_email");
     expect(scenarioById["verification-sent"]?.flow.ui.messages).toContainEqual({
       id: 3,
       text: "An email containing a verification link has been sent to the email address you provided.",

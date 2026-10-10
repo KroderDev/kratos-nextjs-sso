@@ -17,7 +17,6 @@ const appServer = {
     HOSTNAME: "127.0.0.1",
     PORT: PORT.toString(),
     NEXT_PUBLIC_BRAND_NAME: "CI",
-    NEXT_PUBLIC_BRAND_MARK: "C",
     NEXT_PUBLIC_APP_URL: `http://127.0.0.1:${PORT}`,
     NEXT_PUBLIC_ORY_SDK_URL: isAuthMode ? `http://127.0.0.1:${KRATOS_PORT}` : "",
     NEXT_PUBLIC_ORY_OAUTH_ORIGINS: isRealKratosMode ? `http://127.0.0.1:${OIDC_PORT}` : "",

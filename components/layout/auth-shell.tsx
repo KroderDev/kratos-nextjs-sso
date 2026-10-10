@@ -2,12 +2,13 @@
 
 import type { ReactNode } from "react";
 import { Fingerprint, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { brandMark } from "@/lib/branding";
+import { privacyPolicyUrl, termsOfServiceUrl } from "@/lib/legal";
 import { useTranslation } from "@/lib/i18n/client";
 
 import { AuthContentReady } from "./auth-content-ready";
@@ -18,11 +19,11 @@ type AuthFrameProps = {
 };
 
 type AuthContentProps = {
-  eyebrow: string;
   title: string;
-  description: string;
+  description?: string;
   children: ReactNode;
   footer?: ReactNode;
+  statusIcon?: ReactNode;
 };
 
 export function AuthFrame({ children }: AuthFrameProps) {
@@ -99,16 +100,6 @@ export function AuthFrame({ children }: AuthFrameProps) {
             </div>
 
             <div className="my-auto py-9 sm:py-12 lg:py-14">{children}</div>
-
-            <div className="flex items-center justify-between gap-4 border-t border-border/70 pt-4 text-[11px] text-muted-foreground sm:pt-5">
-              <span className="flex items-center gap-2">
-                <ShieldCheck aria-hidden="true" className="size-3.5 text-primary" />
-                {t("auth.shell.footerProtected")}
-              </span>
-              <span className="font-mono uppercase tracking-[0.16em]">
-                {brandMark} / access
-              </span>
-            </div>
           </div>
         </main>
       </div>
@@ -117,35 +108,67 @@ export function AuthFrame({ children }: AuthFrameProps) {
 }
 
 export function AuthContent({
-  eyebrow,
   title,
   description,
   children,
   footer,
+  statusIcon,
 }: AuthContentProps) {
   return (
     <div className="mx-auto w-full max-w-lg">
       <AuthContentReady />
-      <div className="mb-7">
-        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-primary">
-          {eyebrow}
-        </p>
-        <h1 className="mt-3 text-[2rem] font-semibold leading-[1.08] tracking-[-0.045em] sm:text-4xl">
-          {title}
-        </h1>
-        <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-          {description}
-        </p>
-      </div>
+      <Card className="gap-0 border-border/70 bg-card py-0 shadow-lg shadow-foreground/5">
+        <CardHeader className="items-center gap-3 px-5 pt-6 text-center sm:px-7 sm:pt-7">
+          {statusIcon}
+          <h1 className="text-center text-2xl font-semibold leading-tight tracking-tight sm:text-[1.75rem]">
+            {title}
+          </h1>
+          {description ? (
+            <CardDescription className="max-w-md text-center text-sm leading-6 sm:text-base sm:leading-7">
+              {description}
+            </CardDescription>
+          ) : null}
+        </CardHeader>
 
-      {children}
+        <CardContent className="flex flex-col gap-5 px-5 pb-6 sm:px-7 sm:pb-7">
+          {children}
+        </CardContent>
 
-      {footer ? (
-        <div className="mt-6 text-center text-sm text-muted-foreground">
-          {footer}
-        </div>
-      ) : null}
+        {footer ? (
+          <CardFooter className="justify-center px-5 py-4 text-center text-sm text-muted-foreground sm:px-7">
+            {footer}
+          </CardFooter>
+        ) : null}
+      </Card>
+      <AuthLegalLinks />
     </div>
+  );
+}
+
+export function AuthLegalLinks() {
+  const { t } = useTranslation();
+
+  return (
+    <p
+      className="mx-auto mt-4 flex max-w-md flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-xs leading-5 text-muted-foreground"
+      data-slot="auth-legal-links"
+    >
+      {termsOfServiceUrl ? (
+        <Link className="underline underline-offset-4 hover:text-foreground" href={termsOfServiceUrl}>
+          {t("auth.legal.terms")}
+        </Link>
+      ) : (
+        <span>{t("auth.legal.terms")}</span>
+      )}{" "}
+      <span aria-hidden="true">·</span>
+      {privacyPolicyUrl ? (
+        <Link className="underline underline-offset-4 hover:text-foreground" href={privacyPolicyUrl}>
+          {t("auth.legal.privacy")}
+        </Link>
+      ) : (
+        <span>{t("auth.legal.privacy")}</span>
+      )}
+    </p>
   );
 }
 
@@ -153,23 +176,23 @@ export function AuthContentLoading() {
   const { t } = useTranslation();
 
   return (
-    <div className="mx-auto w-full max-w-lg" aria-label={t("auth.shell.loadingForm")} role="status">
-      <div className="mb-7">
-        <Skeleton className="h-3 w-28" />
-        <Skeleton className="mt-3 h-10 w-64 max-w-full" />
-        <Skeleton className="mt-4 h-5 w-full max-w-md" />
-        <Skeleton className="mt-2 h-5 w-4/5 max-w-sm" />
+    <div className="mx-auto flex w-full max-w-lg flex-col">
+      <div aria-label={t("auth.shell.loadingForm")} role="status">
+        <Card className="gap-0 border-border/70 bg-card py-0 shadow-lg shadow-foreground/5">
+          <CardHeader className="items-center gap-3 px-5 pt-6 sm:px-7 sm:pt-7">
+            <Skeleton className="h-8 w-64 max-w-full" />
+            <Skeleton className="h-5 w-full max-w-md" />
+            <Skeleton className="h-5 w-4/5 max-w-sm" />
+          </CardHeader>
+          <CardContent className="flex flex-col gap-5 px-5 pb-6 sm:px-7 sm:pb-7">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-11 w-full" />
+          </CardContent>
+        </Card>
       </div>
-      <Card className="gap-0 border-border/70 bg-card py-0 shadow-lg shadow-foreground/5">
-        <CardContent className="flex flex-col gap-5 px-5 py-6 sm:px-7 sm:py-7">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-11 w-full" />
-        </CardContent>
-      </Card>
-
-      <Skeleton className="mx-auto mt-6 h-4 w-48" />
+      <AuthLegalLinks />
     </div>
   );
 }
