@@ -19,6 +19,8 @@ const appServer = {
     NEXT_PUBLIC_BRAND_NAME: "CI",
     NEXT_PUBLIC_APP_URL: `http://127.0.0.1:${PORT}`,
     NEXT_PUBLIC_ORY_SDK_URL: isAuthMode ? `http://127.0.0.1:${KRATOS_PORT}` : "",
+    NEXT_PUBLIC_ORY_CANONICAL_URL: "",
+    NEXT_PUBLIC_ORY_REGISTRATION_ENABLED: "true",
     NEXT_PUBLIC_ORY_OAUTH_ORIGINS: isRealKratosMode ? `http://127.0.0.1:${OIDC_PORT}` : "",
     ORY_SDK_URL: "",
     NEXT_PUBLIC_ORY_PROJECT_NAME: "CI",

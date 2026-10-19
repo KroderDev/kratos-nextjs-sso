@@ -28,7 +28,7 @@ export const en = {
     hero: {
       badge: "Secure account access",
       title: "Secure access to your workspace.",
-      description: "Sign in, create an account, recover access, and manage your security settings.",
+      description: "Sign in, recover access, and manage your security settings.",
       enterWorkspace: "Enter your workspace",
       createIdentity: "Create an account",
     },

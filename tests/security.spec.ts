@@ -44,6 +44,7 @@ test("unconfigured dashboard does not accept external navigation input", async (
 
 test("auth and dashboard pages forbid caching", async ({ request }) => {
   const sensitivePaths = [
+    "/",
     "/login",
     "/registration",
     "/recovery",

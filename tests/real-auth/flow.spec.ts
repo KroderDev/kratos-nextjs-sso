@@ -77,6 +77,10 @@ test("registers an identity and loads the authenticated dashboard", async ({ pag
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByText(email)).toBeVisible();
   await expect(page.getByText("Session active", { exact: true }).first()).toBeVisible();
+
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.getByText(email)).toBeVisible();
 });
 
 test("preserves a deep-linked settings area through the login redirect", async ({ page }) => {
@@ -338,4 +342,7 @@ test("invalidates the Kratos session on logout", async ({ page }) => {
   await expect(page).toHaveURL(/\/$/);
   const sessionResponse = await page.request.get("/sessions/whoami");
   expect(sessionResponse.status()).toBe(401);
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("heading", { name: "Secure access to your workspace" })).toBeVisible();
 });

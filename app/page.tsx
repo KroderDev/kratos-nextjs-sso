@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getServerSession } from "@ory/nextjs/app";
 import { ArrowRight, Fingerprint, LockKeyhole, MoveUpRight } from "lucide-react";
 
 import { Brand } from "@/components/layout/brand";
@@ -13,14 +15,23 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { getTranslations } from "@/lib/i18n/server";
-import { isRegistrationEnabled } from "@/ory.config";
+import { cn } from "@/lib/utils";
+import oryConfig, { isOryConfigured, isRegistrationEnabled } from "@/ory.config";
+
+export const dynamic = "force-dynamic";
 
 type HomeProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export default async function Home({ searchParams }: HomeProps) {
-  const authActionHref = isRegistrationEnabled ? "/registration" : "/login";
+  if (isOryConfigured) {
+    const session = await getServerSession();
+    if (session?.identity) {
+      redirect(oryConfig.project.default_redirect_url);
+    }
+  }
+
   const { t } = await getTranslations(searchParams);
 
   return (
@@ -30,17 +41,19 @@ export default async function Home({ searchParams }: HomeProps) {
         <nav className="flex items-center gap-2 text-sm" aria-label={t("common.navigation.primary")}>
           <ThemeToggle />
           <ButtonLink
-            className="hidden sm:inline-flex"
+            className={cn(isRegistrationEnabled && "hidden sm:inline-flex")}
             href="/login"
             size="sm"
             variant="ghost"
           >
             {t("common.navigation.signIn")}
           </ButtonLink>
-          <ButtonLink href={authActionHref} size="sm">
-            {t("common.navigation.getStarted")}
-            <ArrowRight aria-hidden="true" data-icon="inline-end" />
-          </ButtonLink>
+          {isRegistrationEnabled ? (
+            <ButtonLink href="/registration" size="sm">
+              {t("common.navigation.getStarted")}
+              <ArrowRight aria-hidden="true" data-icon="inline-end" />
+            </ButtonLink>
+          ) : null}
         </nav>
       </header>
 
@@ -62,14 +75,16 @@ export default async function Home({ searchParams }: HomeProps) {
                 {t("home.hero.enterWorkspace")}
                 <ArrowRight aria-hidden="true" data-icon="inline-end" />
               </ButtonLink>
-              <ButtonLink
-                className="h-11 px-4"
-                variant="outline"
-                href={authActionHref}
-              >
-                {t("home.hero.createIdentity")}
-                <MoveUpRight aria-hidden="true" data-icon="inline-end" />
-              </ButtonLink>
+              {isRegistrationEnabled ? (
+                <ButtonLink
+                  className="h-11 px-4"
+                  variant="outline"
+                  href="/registration"
+                >
+                  {t("home.hero.createIdentity")}
+                  <MoveUpRight aria-hidden="true" data-icon="inline-end" />
+                </ButtonLink>
+              ) : null}
             </div>
           </div>
 
