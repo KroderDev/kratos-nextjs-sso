@@ -6,7 +6,6 @@ import { AuthContent } from "@/components/layout/auth-shell";
 import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
 import { hasPasswordLogin, isProviderNode, isSocialOnlyLogin } from "@/lib/ory/flow";
-import { rewriteOryFlow } from "@/lib/ory/url";
 import { isOryConfigured, isRegistrationEnabled } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 import { getLoginFlowWithRequestHeaders } from "@/lib/ory/login";
@@ -110,7 +109,7 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
     const requestParams = stripLoginContextHints(flowParams ?? params);
     flow =
       prefillLoginIdentifier(
-        rewriteOryFlow(await getLoginFlowWithRequestHeaders(requestParams)),
+        await getLoginFlowWithRequestHeaders(requestParams),
         hints.loginHint,
       ) || null;
   } catch (e) {

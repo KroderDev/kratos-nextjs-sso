@@ -1,4 +1,4 @@
-import { appBaseUrl, orySdkUrl } from "@/ory.config";
+import { appBaseUrl, oryProviderOrigin } from "@/ory.config";
 
 export type ProviderFlow = "login" | "consent" | "logout";
 type ProviderFlowValue = ProviderFlow | "logout";
@@ -70,19 +70,6 @@ function isOpaqueValue(value: string | undefined): value is string {
 }
 
 /**
- * Extracts the origin from the configured Ory SDK URL.
- *
- * @returns The URL origin, or `undefined` when the configured URL is invalid.
- */
-function providerOrigin() {
-  try {
-    return new URL(orySdkUrl).origin;
-  } catch {
-    return undefined;
-  }
-}
-
-/**
  * Validates a provider callback URL for the specified flow.
  *
  * @param value - The callback URL to validate
@@ -107,7 +94,7 @@ export function validateProviderCallback(
   try {
     const parsed = new URL(value);
     if (
-      parsed.origin !== providerOrigin() ||
+      parsed.origin !== oryProviderOrigin ||
       parsed.username ||
       parsed.password ||
       parsed.hash ||

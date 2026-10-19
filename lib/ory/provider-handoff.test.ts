@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/ory.config", () => ({
   appBaseUrl: "https://sso.example.com",
   orySdkUrl: "https://auth.example.com",
+  oryProviderOrigin: "https://auth.example.com",
 }));
 
 import {
@@ -296,11 +297,12 @@ describe("provider handoff", () => {
     ).toBeNull();
   });
 
-  it("covers provider origin catch when SDK URL is invalid", async () => {
+  it("rejects handoffs when the public provider origin is invalid", async () => {
     vi.resetModules();
     vi.doMock("@/ory.config", () => ({
       appBaseUrl: "https://sso.example.com",
       orySdkUrl: "",
+      oryProviderOrigin: undefined,
     }));
     const mod = await import("./provider-handoff");
 
@@ -354,6 +356,7 @@ describe("provider handoff", () => {
     vi.doMock("@/ory.config", () => ({
       appBaseUrl: "",
       orySdkUrl: "https://auth.example.com",
+      oryProviderOrigin: "https://auth.example.com",
     }));
     const mod = await import("./provider-handoff");
 
@@ -372,6 +375,7 @@ describe("provider handoff", () => {
     vi.doMock("@/ory.config", () => ({
       appBaseUrl: "",
       orySdkUrl: "https://auth.example.com",
+      oryProviderOrigin: "https://auth.example.com",
     }));
     const mod = await import("./provider-handoff");
 
@@ -388,5 +392,29 @@ describe("provider handoff", () => {
     expect(returnTo).toContain("transaction=transaction-id");
     expect(returnTo).toContain("csrf=csrf-token");
     expect(returnTo).toContain("provider_callback=https%3A%2F%2Fauth.example.com%2Flogin%2Fcallback");
+  });
+
+  it("accepts canonical callbacks rather than a private SDK origin for every handoff", async () => {
+    vi.resetModules();
+    vi.doMock("@/ory.config", () => ({
+      appBaseUrl: "https://sso.example.com",
+      orySdkUrl: "http://127.0.0.1:4433",
+      oryProviderOrigin: "https://auth.example.com",
+    }));
+    const { validateProviderCallback } = await import("./provider-handoff");
+    const credentials = { transaction: "transaction-id", csrf: "csrf-token" };
+
+    for (const [flow, path] of [
+      ["login", "/login/callback"],
+      ["consent", "/consent"],
+      ["logout", "/logout"],
+    ] as const) {
+      expect(validateProviderCallback(`https://auth.example.com${path}`, flow, credentials)?.origin)
+        .toBe("https://auth.example.com");
+      expect(validateProviderCallback(`http://127.0.0.1:4433${path}`, flow, credentials))
+        .toBeUndefined();
+      expect(validateProviderCallback(`https://attacker.example${path}`, flow, credentials))
+        .toBeUndefined();
+    }
   });
 });

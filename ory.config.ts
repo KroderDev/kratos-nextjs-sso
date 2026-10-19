@@ -1,4 +1,5 @@
 import { brandName } from "@/lib/branding";
+import { httpOrigin } from "@/lib/ory/security";
 
 export const consentRememberModes = ["always", "prompt", "never"] as const;
 export type ConsentRememberMode = (typeof consentRememberModes)[number];
@@ -54,6 +55,8 @@ const config = {
 export const appBaseUrl = configuredAppUrl;
 export const orySdkUrl = sdkUrl;
 export const oryCanonicalUrl = canonicalOryUrl;
+// An invalid explicit canonical URL must not fall back to a private SDK endpoint.
+export const oryProviderOrigin = httpOrigin(canonicalOryUrl || sdkUrl);
 export const consentRememberMode = parseConsentRememberMode(
   process.env.ORY_CONSENT_REMEMBER_MODE,
 );

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/ory.config", () => ({
   appBaseUrl: "https://auth.example.com",
   oryCanonicalUrl: "https://ory.example.com",
+  oryProviderOrigin: "https://ory.example.com",
   orySdkUrl: "http://127.0.0.1:4433",
 }));
 
@@ -27,6 +28,9 @@ describe("Ory URL rewriting", () => {
     ).toBe("https://auth.example.com/login?flow=123");
     expect(
       rewriteOryUrl("https://ory.example.com/self-service/login"),
+    ).toBe("https://auth.example.com/self-service/login");
+    expect(
+      rewriteOryUrl("http://127.0.0.1:4433/self-service/login"),
     ).toBe("https://auth.example.com/self-service/login");
   });
 
@@ -128,13 +132,19 @@ describe("Ory URL rewriting", () => {
     ).toBe("https://auth.example.com/auth/consent?transaction=opaque&csrf=token");
   });
 
-  it("rewrites nested flow values without changing primitive non-string values", () => {
+  it("rewrites only URL-bearing UI fields without mutating flow data", () => {
     const callbackUrl =
       "https://provider.example/login/callback?csrf=csrf-token&transaction=transaction-id&flow=login";
     const flow = {
       ui: {
         action: "https://ory.example.com/self-service/login",
-        nodes: [{ attributes: { href: "https://ory.example.com/login", count: 42, active: true } }],
+        nodes: [
+          { attributes: { node_type: "a", href: "https://ory.example.com/login", count: 42, active: true } },
+          { attributes: { node_type: "img", src: "https://ory.example.com/qr.png" } },
+          { attributes: { node_type: "script", src: "https://ory.example.com/ui/script.js" } },
+          { attributes: { node_type: "input", value: "https://ory.example.com/my-reference" } },
+          { attributes: { node_type: "text", text: "https://ory.example.com/message" } },
+        ],
       },
       id: "flow-id",
       return_to: callbackUrl,
@@ -142,19 +152,47 @@ describe("Ory URL rewriting", () => {
       active: false,
       tags: ["tag1", "https://ory.example.com/login"],
     };
+    const original = structuredClone(flow);
 
     expect(rewriteOryFlow(flow as never)).toEqual({
+      ...flow,
       ui: {
         action: "https://auth.example.com/self-service/login",
-        nodes: [{ attributes: { href: "https://auth.example.com/login", count: 42, active: true } }],
+        nodes: [
+          { attributes: { node_type: "a", href: "https://auth.example.com/login", count: 42, active: true } },
+          { attributes: { node_type: "img", src: "https://auth.example.com/qr.png" } },
+          { attributes: { node_type: "script", src: "https://auth.example.com/ui/script.js" } },
+          flow.ui.nodes[3],
+          flow.ui.nodes[4],
+        ],
       },
-      id: "flow-id",
-      return_to: callbackUrl,
-      count: 10,
-      active: false,
-      tags: ["tag1", "https://auth.example.com/login"],
     });
+    expect(flow).toEqual(original);
   });
+
+  it("keeps canonical callback and return URLs opaque", () => {
+    const callback = "https://ory.example.com/login/callback?transaction=id&csrf=token";
+    expect(rewriteOryUrl(callback)).toBe(callback);
+    const action = `https://ory.example.com/self-service/login?return_to=${encodeURIComponent(callback)}`;
+    const rewritten = new URL(rewriteOryUrl(action));
+    expect(rewritten.origin).toBe("https://auth.example.com");
+    expect(rewritten.searchParams.get("return_to")).toBe(callback);
+  });
+
+  it.each(["/login/callback", "/auth/login/callback", "/consent", "/logout"])(
+    "routes SDK-origin callbacks to the public provider: %s",
+    (path) => {
+      const response = new Response(null, {
+        status: 302,
+        headers: { location: `http://127.0.0.1:4433${path}?transaction=id&csrf=token` },
+      });
+      rewriteOryResponseLocation(response, "https://auth.example.com");
+      const expectedPath = path === "/auth/login/callback" ? "/login/callback" : path;
+      expect(response.headers.get("location")).toBe(
+        `https://ory.example.com${expectedPath}?transaction=id&csrf=token`,
+      );
+    },
+  );
 
   it("returns null when input is null or undefined in rewriteOryFlow", () => {
     expect(rewriteOryFlow(null)).toBeNull();
@@ -264,7 +302,7 @@ describe("Ory URL rewriting", () => {
     );
   });
 
-  it("does not rewrite URLs when the SDK is not local", async () => {
+  it("rewrites SDK URLs even when the SDK is not local", async () => {
     vi.resetModules();
     vi.doMock("@/ory.config", () => ({
       appBaseUrl: "https://auth.example.com",
@@ -274,7 +312,7 @@ describe("Ory URL rewriting", () => {
     const mod = await import("./url");
 
     expect(mod.rewriteOryUrl("https://ory.example.com/login")).toBe(
-      "https://ory.example.com/login",
+      "https://auth.example.com/login",
     );
   });
 });

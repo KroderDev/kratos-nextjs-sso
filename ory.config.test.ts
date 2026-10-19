@@ -107,6 +107,7 @@ describe("ory.config", () => {
       expect(configured.appBaseUrl).toBe("https://app.example");
       expect(configured.orySdkUrl).toBe("https://tenant.oryapis.com");
       expect(configured.oryCanonicalUrl).toBe("https://ory.example");
+      expect(configured.oryProviderOrigin).toBe("https://ory.example");
       expect(configured.isOryConfigured).toBe(true);
       expect(configured.default.project.name).toBe("Example project");
       expect(configured.orySetupReason).toBe("unavailable");
@@ -138,6 +139,25 @@ describe("ory.config", () => {
       const configured = await import("./ory.config");
       expect(configured.orySdkUrl).toBe("http://localhost:4010");
       expect(configured.isOryConfigured).toBe(true);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it.each([
+    ["https://auth.example:443/base/", "https://auth.example"],
+    ["", "http://127.0.0.1:4433"],
+    ["not-a-url", undefined],
+    ["ftp://auth.example", undefined],
+    ["https://user:password@auth.example", undefined],
+  ])("resolves the public provider origin from canonical %j", async (canonical, expected) => {
+    vi.resetModules();
+    vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "http://127.0.0.1:4433");
+    vi.stubEnv("NEXT_PUBLIC_ORY_CANONICAL_URL", canonical);
+    try {
+      const configured = await import("./ory.config");
+      expect(configured.oryProviderOrigin).toBe(expected);
+      expect(configured.orySdkUrl).toBe("http://127.0.0.1:4433");
     } finally {
       vi.unstubAllEnvs();
     }

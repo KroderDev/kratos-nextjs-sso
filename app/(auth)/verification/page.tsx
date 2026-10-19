@@ -7,7 +7,6 @@ import { AuthContent } from "@/components/layout/auth-shell";
 import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
 import { ButtonLink } from "@/components/ui/button-link";
-import { rewriteOryFlow } from "@/lib/ory/url";
 import { isOryConfigured } from "@/ory.config";
 import { getTranslations } from "@/lib/i18n/server";
 import { getVerificationFlowWithRequestHeaders } from "@/lib/ory/flow-request";
@@ -65,7 +64,7 @@ export default async function VerificationPage({
       redirect(`/error?${errorParams.toString()}`);
     }
 
-    flow = rewriteOryFlow(rawFlow) || null;
+    flow = rawFlow || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "verification")) {
       redirect(buildCleanFlowUrl("/verification", params, ["lang"]));

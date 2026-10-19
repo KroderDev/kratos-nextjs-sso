@@ -20,6 +20,7 @@ vi.mock("@ory/nextjs/app", () => ({
 vi.mock("@/ory.config", () => ({
   appBaseUrl: "https://sso.example.com",
   orySdkUrl: "https://operator.example.com",
+  oryProviderOrigin: "https://operator.example.com",
   get consentRememberMode() {
     return mockConfig.consentRememberMode;
   },

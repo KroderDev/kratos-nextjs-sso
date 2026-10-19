@@ -52,6 +52,7 @@ describe("getSafeLogoutFlow", () => {
     vi.doMock("@/ory.config", () => ({
       appBaseUrl: "https://app.example",
       orySdkUrl: "https://ory.example",
+      oryProviderOrigin: "https://ory.example",
     }));
 
     try {
@@ -101,6 +102,7 @@ describe("getSafeLogoutFlow", () => {
     vi.doMock("@/ory.config", () => ({
       appBaseUrl: "https://app.example",
       orySdkUrl: "https://ory.example",
+      oryProviderOrigin: "https://ory.example",
     }));
 
     try {
@@ -119,11 +121,36 @@ describe("getSafeLogoutFlow", () => {
     }
   });
 
+  it("uses application logout URLs with a local SDK and public canonical provider", async () => {
+    vi.resetModules();
+    vi.doMock("@/ory.config", () => ({
+      appBaseUrl: "https://app.example",
+      orySdkUrl: "http://127.0.0.1:4433",
+      oryProviderOrigin: "https://auth.example",
+    }));
+
+    try {
+      const { getSafeLogoutFlow: getConfiguredLogoutFlow } = await import("./logout");
+      const { getLogoutFlow: getConfiguredProviderLogoutFlow } = await import("@ory/nextjs/app");
+      for (const origin of ["http://127.0.0.1:4433", "https://auth.example"]) {
+        vi.mocked(getConfiguredProviderLogoutFlow).mockResolvedValueOnce({
+          logout_url: `${origin}/self-service/logout?token=123`,
+          logout_token: "123",
+        });
+        const flow = await getConfiguredLogoutFlow();
+        expect(flow.logout_url).toBe("https://app.example/self-service/logout?token=123");
+      }
+    } finally {
+      vi.doUnmock("@/ory.config");
+    }
+  });
+
   it("accepts provider logout URLs when no application origin is configured", async () => {
     vi.resetModules();
     vi.doMock("@/ory.config", () => ({
       appBaseUrl: undefined,
       orySdkUrl: "https://ory.example",
+      oryProviderOrigin: "https://ory.example",
     }));
 
     try {
