@@ -41,4 +41,22 @@ describe("provider callback CSP", () => {
     expect(csp).toContain("form-action 'self';");
     expect(csp).not.toContain("https://legacy.example.com");
   });
+
+  it.each([
+    ["https://public.example.com", "https://public.example.com"],
+    [undefined, "https://legacy.example.com"],
+  ])("uses the configured SDK origin when the canonical URL is unset (%j)", async (sdkUrl, expected) => {
+    vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", sdkUrl);
+    vi.stubEnv("ORY_SDK_URL", "https://legacy.example.com");
+    vi.stubEnv("NEXT_PUBLIC_ORY_CANONICAL_URL", undefined);
+    vi.stubEnv("NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS", "");
+    vi.stubEnv("NEXT_PUBLIC_ORY_OAUTH_ORIGINS", "");
+
+    const headers = await config.headers!();
+    const csp = headers[0].headers.find(({ key }) => key === "Content-Security-Policy")!.value;
+    expect(csp).toContain(`form-action 'self' ${expected};`);
+    if (sdkUrl) {
+      expect(csp).not.toContain("https://legacy.example.com");
+    }
+  });
 });

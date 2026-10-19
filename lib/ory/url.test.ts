@@ -57,6 +57,19 @@ describe("Ory URL rewriting", () => {
     ).toBe("not a valid url");
   });
 
+  it.each([
+    undefined,
+    "not a URL",
+    "ftp://ory.example.com",
+    "https://user:password@ory.example.com",
+  ])("does not restore a callback to an invalid provider origin: %j", (providerOrigin) => {
+    const callback = "https://auth.example.com/login/callback?transaction=opaque&csrf=token";
+
+    expect(
+      restoreOryProviderCallback(callback, "https://auth.example.com", providerOrigin),
+    ).toBe(callback);
+  });
+
   it("returns provider callback value unchanged when location origin differs", () => {
     expect(
       restoreOryProviderCallback(
@@ -301,6 +314,23 @@ describe("Ory URL rewriting", () => {
       "https://ory.example.com/login",
     );
   });
+
+  it.each(["", "not a URL"])(
+    "keeps provider URLs unchanged when the SDK endpoint is unavailable: %j",
+    async (sdkUrl) => {
+      vi.resetModules();
+      vi.doMock("@/ory.config", () => ({
+        appBaseUrl: "https://auth.example.com",
+        oryCanonicalUrl: "https://ory.example.com",
+        oryProviderOrigin: "https://ory.example.com",
+        orySdkUrl: sdkUrl,
+      }));
+      const mod = await import("./url");
+      const providerUrl = "https://ory.example.com/self-service/login?flow=123";
+
+      expect(mod.rewriteOryUrl(providerUrl)).toBe(providerUrl);
+    },
+  );
 
   it("rewrites SDK URLs even when the SDK is not local", async () => {
     vi.resetModules();
