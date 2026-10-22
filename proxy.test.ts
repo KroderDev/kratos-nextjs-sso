@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 const state = vi.hoisted(() => ({
   isOryConfigured: true,
   appBaseUrl: undefined as string | undefined,
+  orySdkUrl: "https://ory.example.com",
+  oryCanonicalUrl: "",
   middlewareResponse: undefined as Response | undefined,
   middlewareCalls: [] as NextRequest[],
   rewriteCalls: [] as Array<{ response: Response; fallbackOrigin: string }>,
@@ -21,11 +23,10 @@ vi.mock("./lib/ory/url", async () => {
 
   return {
     ...actual,
-    restoreOryProviderCallback: vi.fn(actual.restoreOryProviderCallback),
     rewriteOryResponseLocation: vi.fn(
       (response: Response, fallbackOrigin: string) => {
         state.rewriteCalls.push({ response, fallbackOrigin });
-        return response;
+        return actual.rewriteOryResponseLocation(response, fallbackOrigin);
       },
     ),
   };
@@ -39,20 +40,23 @@ vi.mock("./ory.config", () => ({
   get isOryConfigured() {
     return state.isOryConfigured;
   },
-  orySdkUrl: "https://ory.example.com",
+  get orySdkUrl() { return state.orySdkUrl; },
+  get oryCanonicalUrl() { return state.oryCanonicalUrl; },
+  get oryProviderOrigin() { return state.oryCanonicalUrl || state.orySdkUrl; },
 }));
 
-import { restoreOryProviderCallback, rewriteOryResponseLocation } from "./lib/ory/url";
+import { rewriteOryResponseLocation } from "./lib/ory/url";
 import { proxy } from "./proxy";
 
 describe("proxy", () => {
   beforeEach(() => {
     state.isOryConfigured = true;
     state.appBaseUrl = undefined;
+    state.orySdkUrl = "https://ory.example.com";
+    state.oryCanonicalUrl = "";
     state.middlewareResponse = undefined;
     state.middlewareCalls = [];
     state.rewriteCalls = [];
-    vi.mocked(restoreOryProviderCallback).mockClear();
     vi.mocked(rewriteOryResponseLocation).mockClear();
   });
 
@@ -257,27 +261,37 @@ describe("proxy", () => {
     expect(nextResult.headers.get("set-cookie")).toContain("SameSite=Lax");
   });
 
-  it("sets rewritten location header when restoreOryProviderCallback modifies the location", async () => {
-    vi.mocked(restoreOryProviderCallback).mockImplementationOnce(
-      (value: string) => `${value}/restored`,
-    );
-    state.appBaseUrl = undefined;
+  it.each(["/auth/login/callback", "/login/callback", "/consent", "/logout"])(
+    "restores %s to the canonical provider without rewriting it back to the app",
+    async (path) => {
+      state.orySdkUrl = "http://127.0.0.1:4433";
+      state.oryCanonicalUrl = "https://ory.example.com";
+      const callbackPath = path === "/auth/login/callback" ? "/login/callback" : path;
+      for (const source of ["http://localhost:3000", "https://ory.example.com"]) {
+        state.middlewareResponse = new Response(null, {
+          status: 303,
+          headers: { location: `${source}${path}?transaction=id&csrf=token` },
+        });
+        const result = await proxy(new NextRequest("http://localhost:3000/self-service/login/browser"));
+        expect(result.headers.get("location")).toBe(
+          `https://ory.example.com${source === "http://localhost:3000" ? callbackPath : path}?transaction=id&csrf=token`,
+        );
+      }
+    },
+  );
+
+  it("rewrites ordinary canonical UI locations while preserving a nested provider callback", async () => {
+    state.orySdkUrl = "http://127.0.0.1:4433";
+    state.oryCanonicalUrl = "https://ory.example.com";
+    const callback = "https://ory.example.com/login/callback?transaction=id&csrf=token";
     state.middlewareResponse = new Response(null, {
       status: 303,
-      headers: { location: "https://auth.example.com/auth/login/callback" },
+      headers: { location: `https://ory.example.com/login?return_to=${encodeURIComponent(callback)}` },
     });
-
-    const request = new NextRequest("http://localhost:3000/self-service/login/browser");
-    const result = await proxy(request);
-
-    expect(result.headers.get("location")).toBe(
-      "https://auth.example.com/auth/login/callback/restored",
-    );
-    expect(restoreOryProviderCallback).toHaveBeenCalledWith(
-      "https://auth.example.com/auth/login/callback",
-      "http://localhost:3000",
-      "https://ory.example.com",
-    );
+    const result = await proxy(new NextRequest("http://localhost:3000/self-service/login/browser"));
+    const location = new URL(result.headers.get("location")!);
+    expect(location.origin).toBe("http://localhost:3000");
+    expect(location.searchParams.get("return_to")).toBe(callback);
   });
 
   it("preserves an internal consent handoff on the application origin", async () => {

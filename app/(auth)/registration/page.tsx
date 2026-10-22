@@ -6,7 +6,6 @@ import type { OryPageParams } from "@ory/nextjs/app";
 import { AuthContent } from "@/components/layout/auth-shell";
 import { AuthFlowPage } from "@/components/ory/auth-flow-page";
 import { OrySetupState } from "@/components/ory/setup-state";
-import { rewriteOryFlow } from "@/lib/ory/url";
 import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
 import { buildCleanFlowUrl } from "@/lib/ory/params";
 import { isOryConfigured } from "@/ory.config";
@@ -73,7 +72,7 @@ export default async function RegistrationPage({
     redirect(`/error?${errorParams.toString()}`);
   }
 
-  const flow = rewriteOryFlow(rawFlow) || null;
+  const flow = rawFlow || null;
 
   return (
     <AuthFlowPage

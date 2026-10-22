@@ -1,8 +1,10 @@
 import type { OryFlow } from "./types";
+import { httpOrigin } from "./security";
 
 import {
   appBaseUrl,
   oryCanonicalUrl,
+  oryProviderOrigin,
   orySdkUrl,
 } from "@/ory.config";
 
@@ -52,38 +54,19 @@ function isLocalSdkUrl() {
 }
 
 function canonicalOrigin() {
-  try {
-    return new URL(oryCanonicalUrl).origin;
-  } catch {
-    return undefined;
-  }
+  return httpOrigin(oryCanonicalUrl);
 }
 
 function destinationOrigin(fallback?: string) {
-  if (fallback) {
-    try {
-      return new URL(fallback).origin;
-    } catch {
-      return undefined;
-    }
-  }
-
-  try {
-    return appBaseUrl ? new URL(appBaseUrl).origin : undefined;
-  } catch {
-    return undefined;
-  }
+  return httpOrigin(fallback || appBaseUrl);
 }
 
 export function rewriteOryUrl(value: string, fallbackOrigin?: string) {
-  if (!isLocalSdkUrl()) {
-    return value;
-  }
-
-  const sourceOrigin = canonicalOrigin();
+  const sdkOrigin = httpOrigin(orySdkUrl);
+  const sourceOrigin = isLocalSdkUrl() ? canonicalOrigin() : undefined;
   const targetOrigin = destinationOrigin(fallbackOrigin);
 
-  if (!sourceOrigin || !targetOrigin) {
+  if ((!sdkOrigin && !sourceOrigin) || !targetOrigin) {
     return value;
   }
 
@@ -95,16 +78,37 @@ export function rewriteOryUrl(value: string, fallbackOrigin?: string) {
     return value;
   }
 
-  if (url.origin !== sourceOrigin) {
+  if (url.origin !== sourceOrigin && url.origin !== sdkOrigin) {
+    return value;
+  }
+
+  if (isProviderCallback(url)) {
+    if (url.origin === sdkOrigin && oryProviderOrigin && url.origin !== oryProviderOrigin) {
+      const provider = new URL(oryProviderOrigin);
+      url.protocol = provider.protocol;
+      url.host = provider.host;
+      url.port = provider.port;
+      url.pathname = providerCallbackPathMap[url.pathname];
+      return url.toString();
+    }
     return value;
   }
 
   const targetUrl = new URL(targetOrigin);
   url.protocol = targetUrl.protocol;
   url.host = targetUrl.host;
+  url.port = targetUrl.port;
   url.pathname = uiPathMap[url.pathname] ?? url.pathname;
 
   return url.toString();
+}
+
+function isProviderCallback(url: URL) {
+  const handoffQuery = applicationHandoffQueryMap[url.pathname];
+  return Boolean(
+    providerCallbackPathMap[url.pathname] &&
+      !(handoffQuery && url.searchParams.has(handoffQuery)),
+  );
 }
 
 /**
@@ -118,7 +122,7 @@ export function rewriteOryUrl(value: string, fallbackOrigin?: string) {
 export function restoreOryProviderCallback(
   value: string,
   applicationOrigin: string,
-  providerOrigin: string,
+  providerOrigin: string | undefined,
 ) {
   let location: URL;
   let application: URL;
@@ -127,6 +131,9 @@ export function restoreOryProviderCallback(
   try {
     location = new URL(value);
     application = new URL(applicationOrigin);
+    if (!providerOrigin || !httpOrigin(providerOrigin)) {
+      return value;
+    }
     provider = new URL(providerOrigin);
   } catch {
     return value;
@@ -155,35 +162,40 @@ export function restoreOryProviderCallback(
   return restored.toString();
 }
 
-function rewriteValue(value: unknown, fallbackOrigin?: string): unknown {
-  if (typeof value === "string") {
-    return rewriteOryUrl(value, fallbackOrigin);
-  }
-
-  if (Array.isArray(value)) {
-    return value.map((item) => rewriteValue(item, fallbackOrigin));
-  }
-
-  if (typeof value === "object" && value !== null) {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, item]) => [
-        key,
-        rewriteValue(item, fallbackOrigin),
-      ]),
-    );
-  }
-
-  return value;
-}
-
 export function rewriteOryFlow<T extends OryFlow>(
   flow: T | null | undefined | void,
-): T | null | undefined {
-  if (!flow || !isLocalSdkUrl()) {
+  fallbackOrigin?: string,
+): T | null {
+  // The SDK can return a disabled-flow payload without a UI container.
+  if (!flow?.ui) {
     return flow ?? null;
   }
 
-  return rewriteValue(flow) as T;
+  return {
+    ...flow,
+    ui: {
+      ...flow.ui,
+      action: rewriteOryUrl(flow.ui.action, fallbackOrigin),
+      nodes: flow.ui.nodes.map((node) => {
+        const attributes = node.attributes;
+        switch (attributes.node_type) {
+          case "a":
+            return {
+              ...node,
+              attributes: { ...attributes, href: rewriteOryUrl(attributes.href, fallbackOrigin) },
+            };
+          case "img":
+          case "script":
+            return {
+              ...node,
+              attributes: { ...attributes, src: rewriteOryUrl(attributes.src, fallbackOrigin) },
+            };
+          default:
+            return node;
+        }
+      }),
+    },
+  };
 }
 
 export function rewriteOryResponseLocation(
@@ -196,7 +208,15 @@ export function rewriteOryResponseLocation(
     return response;
   }
 
-  const rewrittenLocation = rewriteOryUrl(location, fallbackOrigin);
+  // Callback restoration is the final routing decision, not an app UI rewrite.
+  const restoredLocation = restoreOryProviderCallback(
+    location,
+    fallbackOrigin,
+    oryProviderOrigin,
+  );
+  const rewrittenLocation = restoredLocation !== location
+    ? restoredLocation
+    : rewriteOryUrl(location, fallbackOrigin);
 
   if (rewrittenLocation !== location) {
     response.headers.set("location", rewrittenLocation);

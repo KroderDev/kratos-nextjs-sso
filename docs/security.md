@@ -166,6 +166,10 @@ The session check only runs when Ory is configured (`isOryConfigured` is
 `true`). In unconfigured environments (local development without an Ory
 project, E2E smoke tests), the dashboard renders without authentication.
 
+The root page checks the session per request when Ory is configured and redirects
+users with an identity to the configured default destination (`/dashboard`).
+Anonymous and unconfigured requests render the landing page.
+
 ### Nested `return_to` URLs
 
 `return_to` is an opaque URL value. When a consent provider includes callback
@@ -186,6 +190,11 @@ Do not concatenate the callback URL into the outer query string. Unescaped
 ampersands are parsed as outer parameters before Next.js or Kratos can process
 the flow, and the original nested query boundaries cannot be recovered safely.
 
+Browser flows disable the SDK's recursive string rewriting. Only known UI URL
+fields (`ui.action`, anchor `href`, and image/script `src`) are rewritten to the
+application origin. Input values, labels, messages, identity data, and nested
+callback values remain unchanged.
+
 ### Hydra provider handoffs
 
 The Hydra login-consent provider uses `flow=login` and `flow=consent` to
@@ -202,7 +211,12 @@ callback. Consent carries them through the authenticated internal
 the provider's fixed `/consent` endpoint. Logout clears the Kratos session
 through [`/logout`](../app/(auth)/logout/page.tsx) before returning to the
 provider's fixed `/logout` endpoint. The provider origin is derived from
-`NEXT_PUBLIC_ORY_SDK_URL`. An untrusted `return_to`, callback path,
+`NEXT_PUBLIC_ORY_CANONICAL_URL`, falling back to `NEXT_PUBLIC_ORY_SDK_URL` when
+the canonical URL is unset. It must be HTTP(S) without credentials; an invalid
+explicit canonical URL rejects handoffs instead of falling back to an internal
+SDK endpoint. SDK requests continue to use the SDK URL. Restored provider
+callbacks retain the public provider origin through proxy response processing.
+An untrusted `return_to`, callback path,
 transaction, or CSRF value rejects the handoff instead of becoming a redirect
 or form target.
 

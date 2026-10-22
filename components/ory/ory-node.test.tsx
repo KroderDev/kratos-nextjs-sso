@@ -7,7 +7,8 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { UiNode } from "@ory/client-fetch";
 
-vi.mock("@/lib/ory/security", () => ({
+vi.mock("@/lib/ory/security", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/ory/security")>(),
   allowedOryOrigins: () => ["https://example.com"],
   isSafeProviderUrl: (href: string | undefined) => {
     if (!href) return false;

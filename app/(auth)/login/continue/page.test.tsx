@@ -19,6 +19,7 @@ vi.mock("@ory/nextjs/app", () => ({
 vi.mock("@/ory.config", () => ({
   appBaseUrl: "https://sso.example.com",
   orySdkUrl: "https://auth.example.com",
+  oryProviderOrigin: "https://auth.example.com",
 }));
 
 vi.mock("@/lib/i18n/server", () => ({

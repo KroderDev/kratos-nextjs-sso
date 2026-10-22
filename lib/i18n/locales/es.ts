@@ -30,7 +30,7 @@ export const es: TranslationKeys = {
     hero: {
       badge: "Acceso seguro a la cuenta",
       title: "Acceso seguro a tu espacio de trabajo.",
-      description: "Inicia sesión, crea una cuenta, recupera el acceso y administra la seguridad de tu cuenta.",
+      description: "Inicia sesión, recupera el acceso y administra la seguridad de tu cuenta.",
       enterWorkspace: "Entrar al espacio de trabajo",
       createIdentity: "Crear una cuenta",
     },

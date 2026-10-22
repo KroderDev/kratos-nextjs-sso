@@ -1,7 +1,8 @@
 import { getLogoutFlow } from "@ory/nextjs/app";
 import type { LogoutFlow } from "@ory/client-fetch";
 
-import { appBaseUrl, orySdkUrl } from "@/ory.config";
+import { appBaseUrl, oryProviderOrigin, orySdkUrl } from "@/ory.config";
+import { httpOrigin } from "./security";
 
 /**
  * Rewrites a provider logout URL to use the application's protocol and host.
@@ -15,16 +16,19 @@ function rewriteLogoutUrl(value: string) {
   }
 
   try {
-    const providerUrl = new URL(orySdkUrl);
     const applicationUrl = new URL(appBaseUrl);
     const logoutUrl = new URL(value);
 
-    if (logoutUrl.origin !== providerUrl.origin) {
+    if (
+      logoutUrl.origin !== httpOrigin(orySdkUrl) &&
+      logoutUrl.origin !== oryProviderOrigin
+    ) {
       return value;
     }
 
     logoutUrl.protocol = applicationUrl.protocol;
     logoutUrl.host = applicationUrl.host;
+    logoutUrl.port = applicationUrl.port;
     return logoutUrl.toString();
   } catch {
     return value;
@@ -43,11 +47,13 @@ function isSafeLogoutUrl(value: string) {
   }
 
   try {
-    const providerOrigin = new URL(orySdkUrl).origin;
     const applicationOrigin = appBaseUrl ? new URL(appBaseUrl).origin : undefined;
     const parsed = new URL(value, appBaseUrl ?? orySdkUrl);
 
-    return parsed.origin === providerOrigin || parsed.origin === applicationOrigin;
+    return Boolean(
+      httpOrigin(parsed.href) &&
+      (parsed.origin === oryProviderOrigin || parsed.origin === applicationOrigin),
+    );
   } catch {
     return false;
   }

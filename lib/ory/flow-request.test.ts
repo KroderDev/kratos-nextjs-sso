@@ -4,7 +4,7 @@ const state = vi.hoisted(() => ({
   appBaseUrl: "https://auth.example.com" as string | undefined,
   incoming: new Headers(),
   requests: [] as Array<{ flow: string; id: string; cookie?: string }>,
-  factories: [] as Array<{ flowType: string; baseUrl: string; route: string }>,
+  factories: [] as Array<{ flowType: string; baseUrl: string; route: string; options?: { disableRewrite?: boolean } }>,
 }));
 
 vi.mock("next/headers", () => ({
@@ -26,7 +26,15 @@ vi.mock("@ory/client-fetch", () => ({
     private getFlow(flow: string, request: { id: string; cookie?: string }) {
       state.requests.push({ flow, ...request });
       return Promise.resolve({
-        value: async () => ({ flow, id: request.id }),
+        value: async () => ({
+          flow,
+          id: request.id,
+          ui: {
+            action: "https://ory.example.com/self-service/login",
+            nodes: [{ attributes: { node_type: "input", value: "https://ory.example.com/my-reference" } }],
+          },
+          return_to: "https://ory.example.com/login/callback?transaction=id&csrf=token",
+        }),
       });
     }
 
@@ -52,26 +60,34 @@ vi.mock("@ory/client-fetch", () => ({
   },
 }));
 
-vi.mock("@ory/nextjs/app", () => ({
-  getFlowFactory: vi.fn(
-    async (
-      params: Record<string, string | string[] | undefined>,
-      fetchFlow: () => Promise<{ value: () => Promise<unknown> }>,
-      flowType: string,
-      baseUrl: string,
-      route: string,
-    ) => {
-      state.factories.push({ baseUrl, flowType, route });
-      return params.flow ? (await fetchFlow()).value() : null;
-    },
-  ),
-}));
+vi.mock("@ory/nextjs/app", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@ory/nextjs/app")>();
+  return {
+    getFlowFactory: vi.fn(
+      async (
+        params: Record<string, string | string[] | undefined>,
+        fetchFlow: Parameters<typeof actual.getFlowFactory>[1],
+        flowType: Parameters<typeof actual.getFlowFactory>[2],
+        baseUrl: string,
+        route: string,
+        options?: { disableRewrite?: boolean },
+      ) => {
+        state.factories.push({ baseUrl, flowType, route, options });
+        return params.flow
+          ? actual.getFlowFactory(params, fetchFlow, flowType, baseUrl, route, options)
+          : null;
+      },
+    ),
+  };
+});
 
 vi.mock("@/ory.config", () => ({
   get appBaseUrl() {
     return state.appBaseUrl;
   },
   orySdkUrl: "https://ory.example.com",
+  oryCanonicalUrl: "",
+  oryProviderOrigin: "https://ory.example.com",
 }));
 
 import {
@@ -124,6 +140,16 @@ describe("browser flow requests", () => {
     expect(new Set(state.factories.map((factory) => factory.baseUrl))).toEqual(
       new Set(["https://auth.example.com"]),
     );
+    for (const flow of flows) {
+      expect(flow && "ui" in flow && flow.ui).toMatchObject({
+        action: "https://auth.example.com/self-service/login",
+        nodes: [{ attributes: { value: "https://ory.example.com/my-reference" } }],
+      });
+      expect(flow && "return_to" in flow && flow.return_to).toBe(
+        "https://ory.example.com/login/callback?transaction=id&csrf=token",
+      );
+    }
+    expect(state.factories.every(({ options }) => options?.disableRewrite)).toBe(true);
   });
 
   it("rejects a spoofed forwarded origin before calling Ory", async () => {
