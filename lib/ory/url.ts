@@ -47,7 +47,15 @@ export function applicationUrl(path: string) {
 
 function isLocalSdkUrl() {
   try {
-    return localHosts.has(new URL(orySdkUrl).hostname);
+    const hostname = new URL(orySdkUrl).hostname;
+    return (
+      localHosts.has(hostname) ||
+      hostname.endsWith(".cluster.local") ||
+      hostname.endsWith(".svc") ||
+      hostname.endsWith(".internal") ||
+      hostname.endsWith(".local") ||
+      !hostname.includes(".")
+    );
   } catch {
     return false;
   }
