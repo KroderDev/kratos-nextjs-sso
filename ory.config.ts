@@ -15,14 +15,16 @@ export function parseConsentRememberMode(value: string | undefined): ConsentReme
     : "always";
 }
 
-const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
+const configuredAppUrl = (
+  process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? ""
+).replace(/\/$/, "");
 
 const sdkUrl = (
-  process.env.NEXT_PUBLIC_ORY_SDK_URL ?? process.env.ORY_SDK_URL ?? ""
+  process.env.ORY_SDK_URL ?? process.env.NEXT_PUBLIC_ORY_SDK_URL ?? ""
 ).replace(/\/$/, "");
 
 const canonicalOryUrl = (
-  process.env.NEXT_PUBLIC_ORY_CANONICAL_URL ?? ""
+  process.env.ORY_CANONICAL_URL ?? process.env.NEXT_PUBLIC_ORY_CANONICAL_URL ?? ""
 ).replace(/\/$/, "");
 
 const pageUrl = (path: string) => path;

@@ -53,12 +53,12 @@ jobs:
 
       - name: Build & Push
         env:
-          APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL || inputs.next_public_app_url || '' }}
-          SDK_URL: ${{ vars.NEXT_PUBLIC_ORY_SDK_URL || inputs.next_public_ory_sdk_url || '' }}
-          CANONICAL_URL: ${{ vars.NEXT_PUBLIC_ORY_CANONICAL_URL || inputs.next_public_ory_canonical_url || '' }}
-          OAUTH_ORIGINS: ${{ vars.NEXT_PUBLIC_ORY_OAUTH_ORIGINS || inputs.next_public_ory_oauth_origins || '' }}
-          FORM_ACTION_ORIGINS: ${{ vars.NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS || inputs.next_public_ory_form_action_origins || '' }}
-          PROJECT_NAME: ${{ vars.NEXT_PUBLIC_ORY_PROJECT_NAME || inputs.next_public_ory_project_name || '' }}
+          APP_URL: ${{ inputs.next_public_app_url || vars.NEXT_PUBLIC_APP_URL || '' }}
+          SDK_URL: ${{ inputs.next_public_ory_sdk_url || vars.NEXT_PUBLIC_ORY_SDK_URL || '' }}
+          CANONICAL_URL: ${{ inputs.next_public_ory_canonical_url || vars.NEXT_PUBLIC_ORY_CANONICAL_URL || '' }}
+          OAUTH_ORIGINS: ${{ inputs.next_public_ory_oauth_origins || vars.NEXT_PUBLIC_ORY_OAUTH_ORIGINS || '' }}
+          FORM_ACTION_ORIGINS: ${{ inputs.next_public_ory_form_action_origins || vars.NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS || '' }}
+          PROJECT_NAME: ${{ inputs.next_public_ory_project_name || vars.NEXT_PUBLIC_ORY_PROJECT_NAME || '' }}
         run: |
           TAG="${{ github.event.release.tag_name || inputs.tag }}"
           if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
