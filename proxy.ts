@@ -13,26 +13,44 @@ const oryMiddleware = createOryMiddleware({
 });
 
 /**
+ * Checks whether an incoming host candidate matches the configured application host,
+ * accounting for ports, MagicDNS short names, and internal cluster service names.
+ */
+function isMatchingAppHost(candidate: string | null | undefined, appUrl: URL): boolean {
+  if (!candidate) return false;
+  const clean = candidate.split(",", 1)[0].trim().replace(/:\d+$/, "").toLowerCase();
+  const appHostname = appUrl.hostname.toLowerCase();
+  const shortHostname = appHostname.split(".")[0];
+  return (
+    clean === appHostname ||
+    clean === appUrl.host.toLowerCase() ||
+    clean === shortHostname ||
+    clean === "aquanit-sso" ||
+    clean.startsWith("aquanit-sso.")
+  );
+}
+
+/**
  * Resolves the effective request origin, taking into account trusted ingress TLS termination
- * when client forwarding headers are absent.
+ * and internal proxy host rewrites.
  */
 function resolveRequestOrigin(request: NextRequest, trustedAppBaseUrl: string | undefined): string {
-  let fallback = request.nextUrl.origin;
-
   if (trustedAppBaseUrl && isValidApplicationOrigin(trustedAppBaseUrl)) {
     try {
       const appUrl = new URL(trustedAppBaseUrl);
-      const hostHeader = request.headers.get("host")?.split(",", 1)[0]?.trim();
-      const host = hostHeader || request.nextUrl.host;
-      if (host === appUrl.host || host === appUrl.hostname) {
-        fallback = appUrl.origin;
+      const forwardedHost = request.headers.get("x-forwarded-host");
+      const hostHeader = request.headers.get("host");
+      const rawHost = forwardedHost || hostHeader || request.nextUrl.host;
+
+      if (isMatchingAppHost(rawHost, appUrl)) {
+        return appUrl.origin;
       }
     } catch {
-      // Keep raw origin on malformed configuration
+      // Fall through on error
     }
   }
 
-  return getForwardedOrigin(request.headers, fallback);
+  return getForwardedOrigin(request.headers, request.nextUrl.origin);
 }
 
 /**
@@ -61,6 +79,7 @@ export async function proxy(request: NextRequest) {
   if (appBaseUrl) {
     try {
       if (new URL(appBaseUrl).origin !== requestOrigin) {
+        console.error(`[SSO Origin Mismatch] appBaseUrl=${new URL(appBaseUrl).origin} requestOrigin=${requestOrigin} host=${request.headers.get("host")} x-f-host=${request.headers.get("x-forwarded-host")} x-f-proto=${request.headers.get("x-forwarded-proto")} nextUrl=${request.nextUrl.toString()}`);
         return new NextResponse("Invalid application origin", { status: 400 });
       }
     } catch {
