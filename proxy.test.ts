@@ -165,6 +165,28 @@ describe("proxy", () => {
     );
   });
 
+  it("allows the request when the host header matches appBaseUrl without forwarding headers", async () => {
+    state.appBaseUrl = "https://auth.example.com";
+
+    const request = new NextRequest(
+      "http://internal:3000/self-service/login/browser",
+      {
+        headers: {
+          host: "auth.example.com",
+        },
+      },
+    );
+
+    const result = await proxy(request);
+
+    expect(state.middlewareCalls).toHaveLength(1);
+    expect(result.status).toBe(200);
+    expect(rewriteOryResponseLocation).toHaveBeenCalledWith(
+      expect.anything(),
+      "https://auth.example.com",
+    );
+  });
+
   it("rejects the request with 400 when the request origin does not match appBaseUrl", async () => {
     state.appBaseUrl = "https://auth.example.com";
 

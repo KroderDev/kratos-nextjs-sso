@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { rewriteOryResponseLocation } from "./lib/ory/url";
-import { getForwardedOrigin } from "./lib/ory/request";
+import { getForwardedOrigin, isValidApplicationOrigin } from "./lib/ory/request";
 import { formatSettingsAreaCookie } from "./lib/ory/settings-state";
 import { getSettingsArea } from "./components/ory/settings-sections";
 import oryConfig, { appBaseUrl, isOryConfigured } from "./ory.config";
@@ -11,6 +11,29 @@ import oryConfig, { appBaseUrl, isOryConfigured } from "./ory.config";
 const oryMiddleware = createOryMiddleware({
   project: oryConfig.project,
 });
+
+/**
+ * Resolves the effective request origin, taking into account trusted ingress TLS termination
+ * when client forwarding headers are absent.
+ */
+function resolveRequestOrigin(request: NextRequest, trustedAppBaseUrl: string | undefined): string {
+  let fallback = request.nextUrl.origin;
+
+  if (trustedAppBaseUrl && isValidApplicationOrigin(trustedAppBaseUrl)) {
+    try {
+      const appUrl = new URL(trustedAppBaseUrl);
+      const hostHeader = request.headers.get("host")?.split(",", 1)[0]?.trim();
+      const host = hostHeader || request.nextUrl.host;
+      if (host === appUrl.host || host === appUrl.hostname) {
+        fallback = appUrl.origin;
+      }
+    } catch {
+      // Keep raw origin on malformed configuration
+    }
+  }
+
+  return getForwardedOrigin(request.headers, fallback);
+}
 
 /**
  * Processes authentication-related requests through Ory middleware and handles dashboard settings requests.
@@ -33,7 +56,7 @@ export async function proxy(request: NextRequest) {
     return new NextResponse("Invalid application configuration", { status: 503 });
   }
 
-  const requestOrigin = getForwardedOrigin(request.headers, request.nextUrl.origin);
+  const requestOrigin = resolveRequestOrigin(request, appBaseUrl);
 
   if (appBaseUrl) {
     try {
