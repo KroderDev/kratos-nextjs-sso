@@ -6,6 +6,8 @@ import config, {
   orySdkUrl,
   orySetupReason,
   parseConsentRememberMode,
+  parseRequiredAal,
+  requiredAal,
 } from "./ory.config";
 
 describe("ory.config", () => {
@@ -33,6 +35,27 @@ describe("ory.config", () => {
     expect(parseConsentRememberMode(" NEVER ")).toBe("never");
     expect(parseConsentRememberMode("unsupported")).toBe("always");
     expect(parseConsentRememberMode(undefined)).toBe("always");
+  });
+
+  it("normalizes required AAL settings and defaults to aal1", () => {
+    expect(requiredAal).toBe("aal1");
+    expect(parseRequiredAal("aal2")).toBe("aal2");
+    expect(parseRequiredAal(" AAL3 ")).toBe("aal3");
+    expect(parseRequiredAal("aal1")).toBe("aal1");
+    expect(parseRequiredAal("invalid")).toBe("aal1");
+    expect(parseRequiredAal(undefined)).toBe("aal1");
+  });
+
+  it("reads required AAL from environment variables", async () => {
+    vi.resetModules();
+    vi.stubEnv("ORY_REQUIRED_AAL", "aal2");
+
+    try {
+      const configured = await import("./ory.config");
+      expect(configured.requiredAal).toBe("aal2");
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("reads the consent remember mode from the server environment", async () => {

@@ -15,6 +15,14 @@ export function parseConsentRememberMode(value: string | undefined): ConsentReme
     : "always";
 }
 
+export function parseRequiredAal(value: string | undefined): "aal1" | "aal2" | "aal3" {
+  const normalized = value?.trim().toLowerCase();
+  if (normalized === "aal2" || normalized === "aal3") {
+    return normalized;
+  }
+  return "aal1";
+}
+
 const configuredAppUrl = (
   process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? ""
 ).replace(/\/$/, "");
@@ -61,6 +69,11 @@ export const oryCanonicalUrl = canonicalOryUrl;
 export const oryProviderOrigin = httpOrigin(canonicalOryUrl || sdkUrl);
 export const consentRememberMode = parseConsentRememberMode(
   process.env.ORY_CONSENT_REMEMBER_MODE,
+);
+export const requiredAal = parseRequiredAal(
+  process.env.ORY_REQUIRED_AAL ??
+    process.env.NEXT_PUBLIC_ORY_REQUIRED_AAL ??
+    process.env.REQUIRED_AAL,
 );
 export const isOryConfigured =
   Boolean(sdkUrl) && (!isOryNetworkUrl || hasProjectApiToken);

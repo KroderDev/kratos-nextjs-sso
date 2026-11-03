@@ -1,11 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthenticatorAssuranceLevel } from "@ory/client-fetch";
 
-const { mockGetServerSession, mockRedirect } = vi.hoisted(() => ({
+const { mockGetServerSession, mockRedirect, mockConfig } = vi.hoisted(() => ({
   mockGetServerSession: vi.fn(),
   mockRedirect: vi.fn((destination: string): never => {
     throw new Error(`redirect:${destination}`);
   }),
+  mockConfig: {
+    appBaseUrl: "https://sso.example.com",
+    orySdkUrl: "https://auth.example.com",
+    oryProviderOrigin: "https://auth.example.com",
+    requiredAal: "aal1",
+  },
 }));
 
 vi.mock("next/navigation", () => ({
@@ -16,11 +22,7 @@ vi.mock("@ory/nextjs/app", () => ({
   getServerSession: mockGetServerSession,
 }));
 
-vi.mock("@/ory.config", () => ({
-  appBaseUrl: "https://sso.example.com",
-  orySdkUrl: "https://auth.example.com",
-  oryProviderOrigin: "https://auth.example.com",
-}));
+vi.mock("@/ory.config", () => mockConfig);
 
 vi.mock("@/lib/i18n/server", () => ({
   getTranslations: vi.fn(async () => ({
@@ -167,7 +169,29 @@ describe("LoginContinuePage", () => {
     expect(decoded).not.toContain("display");
   });
 
-  it("redirects AAL1 sessions to a step-up login flow", async () => {
+  it("redirects AAL1 sessions to the provider callback when requiredAal is aal1", async () => {
+    mockConfig.requiredAal = "aal1";
+    mockGetServerSession.mockResolvedValue({
+      authenticator_assurance_level: AuthenticatorAssuranceLevel.Aal1,
+    });
+
+    await expect(
+      LoginContinuePage({
+        searchParams: Promise.resolve({
+          transaction: "txn-1",
+          csrf: "csrf-1",
+          provider_callback: "https://auth.example.com/login/callback",
+        }),
+      }),
+    ).rejects.toThrow("redirect:https://auth.example.com/login/callback");
+
+    expect(mockRedirect).toHaveBeenCalledWith(
+      "https://auth.example.com/login/callback?transaction=txn-1&csrf=csrf-1",
+    );
+  });
+
+  it("redirects AAL1 sessions to a step-up login flow when requiredAal is aal2", async () => {
+    mockConfig.requiredAal = "aal2";
     mockGetServerSession.mockResolvedValue({
       authenticator_assurance_level: AuthenticatorAssuranceLevel.Aal1,
     });
