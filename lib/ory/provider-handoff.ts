@@ -301,13 +301,20 @@ export function providerLoginParams(params: FlowSearchParams): FlowSearchParams 
   return clean;
 }
 
+export type LogoutHandoff = {
+  csrf: string;
+  locale?: LocaleParam;
+  providerReturnTo: string;
+  transaction: string;
+};
+
 /**
  * Validates the logout handoff before the UI starts the Kratos logout flow.
  *
  * @param params - Query parameters from the login-consent provider
  * @returns The validated provider callback data, or `null` for an invalid handoff
  */
-export function providerLogoutParams(params: FlowSearchParams) {
+export function providerLogoutParams(params: FlowSearchParams): LogoutHandoff | null {
   if (providerFlow(params) !== "logout") {
     return null;
   }
@@ -327,8 +334,11 @@ export function providerLogoutParams(params: FlowSearchParams) {
     return null;
   }
 
+  const locale = localeFromParams(params);
+
   return {
     csrf,
+    ...(locale ? { locale } : {}),
     providerReturnTo: providerReturnTo.toString(),
     transaction,
   };

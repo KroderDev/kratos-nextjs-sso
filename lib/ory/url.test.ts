@@ -138,6 +138,14 @@ describe("Ory URL rewriting", () => {
 
     expect(
       restoreOryProviderCallback(
+        "https://auth.example.com/logout/complete",
+        "https://auth.example.com",
+        "https://ory.example.com",
+      ),
+    ).toBe("https://auth.example.com/logout/complete");
+
+    expect(
+      restoreOryProviderCallback(
         "https://auth.example.com/auth/consent?transaction=opaque&csrf=token",
         "https://auth.example.com",
         "https://ory.example.com",

@@ -49,6 +49,8 @@ test("auth and dashboard pages forbid caching", async ({ request }) => {
     "/registration",
     "/recovery",
     "/verification",
+    "/logout",
+    "/logout/complete",
     "/error",
     "/dashboard",
     "/dashboard/settings",
@@ -62,6 +64,17 @@ test("auth and dashboard pages forbid caching", async ({ request }) => {
       `${path} must include no-store to prevent auth flow data from being cached`,
     ).toContain("no-store");
   }
+
+  const logoutResponse = await request.get("/logout", { maxRedirects: 0 });
+  expect(logoutResponse.headers()["referrer-policy"]).toBe("no-referrer");
+
+  const logoutCompleteResponse = await request.get("/logout/complete", {
+    maxRedirects: 0,
+  });
+  expect(logoutCompleteResponse.headers()["referrer-policy"]).toBe("strict-origin");
+  expect(logoutCompleteResponse.headers()["set-cookie"]).toContain(
+    "kratos_logout_handoff=; Max-Age=0",
+  );
 });
 
 test("CSP form-action directive is present and restricted", async ({ request }) => {

@@ -37,6 +37,34 @@ export function ConsentForm({ autoSubmit = false, ...props }: ConsentFormProps) 
   }
 
   useEffect(() => {
+    function handlePageShow(event: PageTransitionEvent) {
+      if (!event.persisted) {
+        return;
+      }
+
+      submittedRef.current = true;
+      const form = formRef.current;
+      if (!form) {
+        return;
+      }
+
+      form.setAttribute("aria-busy", "true");
+      form
+        .querySelectorAll<HTMLButtonElement | HTMLInputElement>(
+          'button[type="submit"], input[type="submit"]',
+        )
+        .forEach((control) => {
+          control.disabled = true;
+        });
+    }
+
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!autoSubmit || submittedRef.current) {
       return;
     }

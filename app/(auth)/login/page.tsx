@@ -76,7 +76,9 @@ export default async function LoginPage({ searchParams }: OryPageParams) {
   const initialLoginContext = getLoginContext(params);
 
   if (params.flow === "logout") {
-    redirect(buildCleanFlowUrl("/logout", params, ["flow", "transaction", "csrf", "return_to"]));
+    redirect(
+      buildCleanFlowUrl("/logout", params, ["flow", "transaction", "csrf", "return_to", "lang"]),
+    );
   }
 
   const flowParams = providerLoginParams(params);

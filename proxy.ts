@@ -4,6 +4,11 @@ import { NextResponse } from "next/server";
 
 import { rewriteOryResponseLocation } from "./lib/ory/url";
 import { getForwardedOrigin, isValidApplicationOrigin } from "./lib/ory/request";
+import {
+  formatClearLogoutContinuationCookie,
+  isSecureOrigin,
+  LOGOUT_COMPLETE_PATH,
+} from "./lib/ory/logout-continuation";
 import { formatSettingsAreaCookie } from "./lib/ory/settings-state";
 import { getSettingsArea } from "./components/ory/settings-sections";
 import oryConfig, { appBaseUrl, isOryConfigured } from "./ory.config";
@@ -53,6 +58,20 @@ function resolveRequestOrigin(request: NextRequest, trustedAppBaseUrl: string | 
   return getForwardedOrigin(request.headers, request.nextUrl.origin);
 }
 
+function applyLogoutCompleteHeaders(response: NextResponse, secure: boolean) {
+  response.headers.append(
+    "Set-Cookie",
+    formatClearLogoutContinuationCookie(secure),
+  );
+  response.headers.set(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, max-age=0",
+  );
+  response.headers.set("Pragma", "no-cache");
+  response.headers.set("Referrer-Policy", "strict-origin");
+  return response;
+}
+
 /**
  * Processes authentication-related requests through Ory middleware and handles dashboard settings requests.
  *
@@ -67,6 +86,11 @@ export async function proxy(request: NextRequest) {
   }
 
   if (!isOryConfigured) {
+    if (request.nextUrl.pathname === LOGOUT_COMPLETE_PATH) {
+      const origin = resolveRequestOrigin(request, appBaseUrl);
+      return applyLogoutCompleteHeaders(NextResponse.next(), isSecureOrigin(origin));
+    }
+
     return NextResponse.next();
   }
 
@@ -79,12 +103,19 @@ export async function proxy(request: NextRequest) {
   if (appBaseUrl) {
     try {
       if (new URL(appBaseUrl).origin !== requestOrigin) {
-        console.error(`[SSO Origin Mismatch] appBaseUrl=${new URL(appBaseUrl).origin} requestOrigin=${requestOrigin} host=${request.headers.get("host")} x-f-host=${request.headers.get("x-forwarded-host")} x-f-proto=${request.headers.get("x-forwarded-proto")} nextUrl=${request.nextUrl.toString()}`);
+        console.error(`[SSO Origin Mismatch] appBaseUrl=${new URL(appBaseUrl).origin} requestOrigin=${requestOrigin} host=${request.headers.get("host")} x-f-host=${request.headers.get("x-forwarded-host")} x-f-proto=${request.headers.get("x-forwarded-proto")} pathname=${request.nextUrl.pathname}`);
         return new NextResponse("Invalid application origin", { status: 400 });
       }
     } catch {
       return new NextResponse("Invalid application origin", { status: 400 });
     }
+  }
+
+  if (request.nextUrl.pathname === LOGOUT_COMPLETE_PATH) {
+    return applyLogoutCompleteHeaders(
+      NextResponse.next(),
+      isSecureOrigin(requestOrigin),
+    );
   }
 
   if (request.nextUrl.pathname === "/dashboard/settings") {
@@ -137,7 +168,7 @@ export const config = {
     "/recovery/:path*",
     "/verification/:path*",
     "/consent",
-    "/logout",
+    "/logout/:path*",
     "/error",
     "/dashboard/:path*",
     "/self-service/:path*",

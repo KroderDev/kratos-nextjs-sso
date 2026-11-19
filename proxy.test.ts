@@ -209,6 +209,7 @@ describe("proxy", () => {
       "/verification",
       "/consent",
       "/logout",
+      "/logout/complete",
       "/error",
       "/dashboard/settings",
     ]) {
@@ -358,5 +359,84 @@ describe("proxy", () => {
     const result = await proxy(request);
 
     expect((result as NextResponse).headers.get("set-cookie")).toBeNull();
+  });
+
+  it("clears the logout continuation cookie and disables caching on /logout/complete", async () => {
+    state.appBaseUrl = "https://sso.example";
+
+    const request = new NextRequest("http://internal:3000/logout/complete", {
+      headers: {
+        "x-forwarded-host": "sso.example",
+        "x-forwarded-proto": "https",
+      },
+    });
+    const result = await proxy(request);
+
+    expect(result.status).toBe(200);
+    expect(state.middlewareCalls).toHaveLength(0);
+    expect(result.headers.get("set-cookie")).toContain("kratos_logout_handoff=; Max-Age=0");
+    expect(result.headers.get("set-cookie")).toContain("Path=/logout/complete");
+    expect(result.headers.get("set-cookie")).toContain("HttpOnly");
+    expect(result.headers.get("set-cookie")).toContain("SameSite=Lax");
+    expect(result.headers.get("set-cookie")).toContain("Secure");
+    expect(result.headers.get("cache-control")).toContain("no-store");
+    expect(result.headers.get("pragma")).toBe("no-cache");
+    expect(result.headers.get("referrer-policy")).toBe("strict-origin");
+  });
+
+  it("clears the logout continuation cookie on /logout/complete even when Ory is unconfigured", async () => {
+    state.isOryConfigured = false;
+
+    const request = new NextRequest("http://localhost:3000/logout/complete");
+    const result = await proxy(request);
+
+    expect(result.status).toBe(200);
+    expect(result.headers.get("set-cookie")).toContain("kratos_logout_handoff=; Max-Age=0");
+    expect(result.headers.get("cache-control")).toContain("no-store");
+    expect(result.headers.get("referrer-policy")).toBe("strict-origin");
+  });
+
+  it("keeps Kratos logout redirects to /logout/complete on the application origin", async () => {
+    state.appBaseUrl = "https://sso.example";
+    state.orySdkUrl = "http://127.0.0.1:4433";
+    state.oryCanonicalUrl = "https://provider.example";
+    state.middlewareResponse = new Response(null, {
+      status: 303,
+      headers: { location: "https://sso.example/logout/complete" },
+    });
+
+    const request = new NextRequest(
+      "http://internal:3000/self-service/logout?token=demo-token",
+      {
+        headers: {
+          "x-forwarded-host": "sso.example",
+          "x-forwarded-proto": "https",
+        },
+      },
+    );
+    const result = await proxy(request);
+
+    expect(result.headers.get("location")).toBe("https://sso.example/logout/complete");
+  });
+
+  it("does not log raw handoff query fields on origin mismatch", async () => {
+    state.appBaseUrl = "https://sso.example";
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    try {
+      const request = new NextRequest(
+        "http://localhost:3000/logout?flow=logout&transaction=secret-txn-demo&csrf=secret-csrf-demo&return_to=https%3A%2F%2Fprovider.example%2Flogout",
+      );
+      const result = await proxy(request);
+
+      expect(result.status).toBe(400);
+      const logged = errorSpy.mock.calls.flat().join(" ");
+      expect(logged).toContain("pathname=/logout");
+      expect(logged).not.toContain("secret-txn-demo");
+      expect(logged).not.toContain("secret-csrf-demo");
+      expect(logged).not.toContain("provider.example");
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 });

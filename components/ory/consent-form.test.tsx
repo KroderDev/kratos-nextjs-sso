@@ -146,4 +146,36 @@ describe("ConsentForm", () => {
     expect(form?.getAttribute("aria-busy")).toBeNull();
     expect(button?.hasAttribute("disabled")).toBe(false);
   });
+
+  it("blocks replay if the page is restored from bfcache", () => {
+    mountedContainer = document.createElement("div");
+    document.body.append(mountedContainer);
+    mountedRoot = createRoot(mountedContainer);
+
+    act(() => {
+      mountedRoot?.render(
+        <ConsentForm action="https://provider.example/logout" method="post">
+          <button type="submit">Continue</button>
+        </ConsentForm>,
+      );
+    });
+
+    const form = mountedContainer.querySelector("form");
+    const button = mountedContainer.querySelector("button");
+    const persistedEvent = new Event("pageshow") as PageTransitionEvent;
+    Object.defineProperty(persistedEvent, "persisted", { value: true });
+
+    act(() => {
+      window.dispatchEvent(persistedEvent);
+    });
+
+    const submit = new Event("submit", { bubbles: true, cancelable: true });
+    act(() => {
+      form?.dispatchEvent(submit);
+    });
+
+    expect(submit.defaultPrevented).toBe(true);
+    expect(form?.getAttribute("aria-busy")).toBe("true");
+    expect(button?.hasAttribute("disabled")).toBe(true);
+  });
 });
