@@ -226,9 +226,12 @@ standalone Kratos dashboard sign-out separate:
 3. [`/logout`](../app/(auth)/logout/route.ts) calls Kratos `/sessions/whoami`
    directly with `cache: "no-store"`, `redirect: "error"`, and a bounded
    request timeout, distinguishing an active session (`200` active or `403`
-   `error.id="session_aal2_required"`), a confirmed Kratos `401` JSON
-   `error.id="session_inactive"` response, and upstream/network errors. Empty
-   or generic `401` responses fail closed.
+   `error.id="session_aal2_required"`), a verified Kratos `401` JSON no-session
+   response (`error.id="session_inactive"` or Kratos v26.2.0
+   `ErrNoSessionFound` payload with `code=401`, `status="Unauthorized"`,
+   `message="The request could not be authorized"`, and
+   `reason="No valid session credentials found in the request."`), and
+   upstream/network errors. Empty or generic `401` responses fail closed.
    - If a Kratos session is active, it initializes Kratos browser logout with
      `redirect: "error"`, a bounded timeout, and the fixed application return
      URL `https://sso.example/logout/complete` (with no fallback that drops
@@ -238,10 +241,10 @@ standalone Kratos dashboard sign-out separate:
      `Path=/logout/complete`, HMAC-SHA256-signed continuation cookie, and
      responds with `303` plus `Cache-Control: no-store` and
      `Referrer-Policy: no-referrer`.
-   - If Kratos `/sessions/whoami` confirms `401` `session_inactive` (already
-     signed out), it sets the same continuation cookie and redirects `303`
-     directly to `/logout/complete` so handoff credentials are stripped from
-     the URL before rendering.
+   - If Kratos `/sessions/whoami` confirms a verified Kratos `401` no-session
+     response (already signed out), it sets the same continuation cookie and
+     redirects `303` directly to `/logout/complete` so handoff credentials are
+     stripped from the URL before rendering.
    - If Kratos `/sessions/whoami` or logout-flow creation fails with an
      unexpected error (for example `5xx`, timeout, upstream redirect, non-AAL2
      `403`, empty/generic `401`, or unallowed/mismatched `return_to`), the
@@ -251,13 +254,13 @@ standalone Kratos dashboard sign-out separate:
    cookie (`Max-Age=0`) and sets `Cache-Control: no-store`, `Pragma: no-cache`,
    and `Referrer-Policy: strict-origin`. The route verifies the HMAC signature,
    expiry, provider callback origin/path, per-instance `jti` replay state, and
-   real Kratos `/sessions/whoami` confirmation (`401` `session_inactive` or
-   inactive session) that no active session remains. Only then does it render a
-   native browser POST form (with `Referrer-Policy: strict-origin`, automatic
-   single-submit, bfcache replay protection, and manual button fallback)
-   targeting the validated provider `/logout` endpoint with `transaction` and
-   `csrf` form fields so the browser sends the configured external UI `Origin`
-   and the adapter's browser cookie.
+   real Kratos `/sessions/whoami` confirmation (verified Kratos `401`
+   no-session contract or inactive session) that no active session remains. Only
+   then does it render a native browser POST form (with
+   `Referrer-Policy: strict-origin`, automatic single-submit, bfcache replay
+   protection, and manual button fallback) targeting the validated provider
+   `/logout` endpoint with `transaction` and `csrf` form fields so the browser
+   sends the configured external UI `Origin` and the adapter's browser cookie.
 
    Note: The UI's in-memory `jti` consumption table is **per-instance and
    best-effort** defense-in-depth alongside immediate cookie clearing and

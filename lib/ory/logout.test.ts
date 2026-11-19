@@ -243,22 +243,39 @@ describe("checkKratosSessionStatus", () => {
     });
   });
 
-  it("returns no_session only for genuine Kratos 401 session_inactive JSON responses", async () => {
+  it("returns no_session for verified Kratos 401 session_inactive and v26.2.0 ErrNoSessionFound JSON responses", async () => {
     const mod = await importConfiguredLogout();
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          error: {
-            code: 401,
-            id: "session_inactive",
-            status: "Unauthorized",
-          },
-        }),
-        { status: 401, headers: { "content-type": "application/json; charset=utf-8" } },
-      ),
-    );
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            error: {
+              code: 401,
+              id: "session_inactive",
+              status: "Unauthorized",
+            },
+          }),
+          { status: 401, headers: { "content-type": "application/json; charset=utf-8" } },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            error: {
+              code: 401,
+              status: "Unauthorized",
+              reason: "No valid session credentials found in the request.",
+              message: "The request could not be authorized",
+            },
+          }),
+          { status: 401, headers: { "content-type": "application/json" } },
+        ),
+      );
 
     await expect(mod.checkKratosSessionStatus(undefined)).resolves.toEqual({
+      state: "no_session",
+    });
+    await expect(mod.checkKratosSessionStatus("ory_kratos_session=expired")).resolves.toEqual({
       state: "no_session",
     });
   });
@@ -305,6 +322,33 @@ describe("checkKratosSessionStatus", () => {
       )
       .mockResolvedValueOnce(
         new Response(
+          JSON.stringify({
+            error: {
+              code: 401,
+              status: "Unauthorized",
+              reason: "Different upstream auth failure.",
+              message: "The request could not be authorized",
+            },
+          }),
+          { status: 401, headers: { "content-type": "application/json" } },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            error: {
+              code: 401,
+              id: "other_error",
+              status: "Unauthorized",
+              reason: "No valid session credentials found in the request.",
+              message: "The request could not be authorized",
+            },
+          }),
+          { status: 401, headers: { "content-type": "application/json" } },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
           JSON.stringify({ error: { code: 401, id: "session_inactive" } }),
           { status: 401 },
         ),
@@ -331,7 +375,7 @@ describe("checkKratosSessionStatus", () => {
         ),
       );
 
-    for (let i = 0; i < 11; i += 1) {
+    for (let i = 0; i < 13; i += 1) {
       await expect(mod.checkKratosSessionStatus("ory_kratos_session=demo")).resolves.toEqual({
         state: "error",
       });

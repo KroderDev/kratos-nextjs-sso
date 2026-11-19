@@ -74,12 +74,26 @@ async function readErrorJson(response: Response): Promise<Record<string, unknown
   }
 }
 
-function extractOryErrorField(
-  payload: Record<string, unknown>,
-): { code?: unknown; id?: unknown } {
+const KRATOS_NO_SESSION_MESSAGE = "The request could not be authorized";
+const KRATOS_NO_SESSION_REASON =
+  "No valid session credentials found in the request.";
+
+function extractOryErrorField(payload: Record<string, unknown>): {
+  code?: unknown;
+  id?: unknown;
+  message?: unknown;
+  reason?: unknown;
+  status?: unknown;
+} {
   const inner = payload.error;
   if (typeof inner === "object" && inner !== null) {
-    return inner as { code?: unknown; id?: unknown };
+    return inner as {
+      code?: unknown;
+      id?: unknown;
+      message?: unknown;
+      reason?: unknown;
+      status?: unknown;
+    };
   }
   return {};
 }
@@ -103,9 +117,24 @@ async function isKratosNoSessionResponse(response: Response): Promise<boolean> {
     return false;
   }
 
-  // Kratos /sessions/whoami and session checks return 401 JSON with error.id = "session_inactive".
-  // Fail closed on empty or generic upstream 401 responses.
-  return extractOryErrorField(parsed).id === "session_inactive";
+  const error = extractOryErrorField(parsed);
+
+  // Kratos ErrNoActiveSessionFound (session/manager.go, returned by /self-service/logout/browser
+  // and documented whoami responses) carries error.id = "session_inactive".
+  if (error.id === "session_inactive") {
+    return true;
+  }
+
+  // Kratos v26.2.0 /sessions/whoami (session/handler.go + session/error.go + herodot v0.10.8)
+  // wraps ErrNoActiveSessionFound inside ErrNoSessionFound (herodot.ErrUnauthorized with empty
+  // IDField), omitting error.id and serializing these exact fields. Fail closed on any other 401.
+  return (
+    (error.id === undefined || error.id === "") &&
+    error.code === 401 &&
+    error.status === "Unauthorized" &&
+    error.message === KRATOS_NO_SESSION_MESSAGE &&
+    error.reason === KRATOS_NO_SESSION_REASON
+  );
 }
 
 async function isKratosAal2RequiredResponse(response: Response): Promise<boolean> {
