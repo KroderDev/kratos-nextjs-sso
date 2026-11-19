@@ -74,6 +74,9 @@ describe("playwright.config.ts", () => {
     expect(appServer?.env?.NEXT_PUBLIC_ORY_SDK_URL).toBe(
       "http://127.0.0.1:4010",
     );
+    expect(appServer?.env?.ORY_SDK_URL).toBe(
+      "http://127.0.0.1:4010",
+    );
     expect(servers.every((server) => server.reuseExistingServer === false)).toBe(true);
   });
 
@@ -96,6 +99,9 @@ describe("playwright.config.ts", () => {
     expect(oidcServer?.port).toBe(4020);
     expect(appServer?.port).toBe(3002);
     expect(appServer?.env?.NEXT_PUBLIC_ORY_SDK_URL).toBe(
+      "http://127.0.0.1:4010",
+    );
+    expect(appServer?.env?.ORY_SDK_URL).toBe(
       "http://127.0.0.1:4010",
     );
     expect(appServer?.env?.NEXT_PUBLIC_ORY_OAUTH_ORIGINS).toBe(

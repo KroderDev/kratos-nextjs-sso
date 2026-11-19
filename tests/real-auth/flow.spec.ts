@@ -346,3 +346,154 @@ test("invalidates the Kratos session on logout", async ({ page }) => {
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("heading", { name: "Secure access to your workspace" })).toBeVisible();
 });
+
+test("completes provider-mediated browser logout with real Kratos via /logout -> /logout/complete -> cross-origin POST", async ({
+  page,
+}) => {
+  const appOrigin = `http://127.0.0.1:${process.env.PLAYWRIGHT_APP_PORT ?? "3002"}`;
+  const providerOrigin = `http://127.0.0.1:${process.env.PLAYWRIGHT_KRATOS_PORT ?? "4010"}`;
+  const capturedPosts: Array<{
+    method: string;
+    origin: string | undefined;
+    referer: string | undefined;
+    transaction: string | null;
+    csrf: string | null;
+  }> = [];
+
+  await page.route(`${providerOrigin}/logout`, async (route) => {
+    const req = route.request();
+    const form = new URLSearchParams(req.postData() ?? "");
+    capturedPosts.push({
+      method: req.method(),
+      origin: req.headers()["origin"],
+      referer: req.headers()["referer"],
+      transaction: form.get("transaction"),
+      csrf: form.get("csrf"),
+    });
+
+    await route.fulfill({
+      status: 200,
+      contentType: "text/html; charset=utf-8",
+      body: "<!doctype html><html><body><h1>Provider logout finalized</h1></body></html>",
+    });
+  });
+
+  await registerIdentity(page, `provider-logout-${Date.now()}@example.com`);
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  const handoff = new URL("/logout", appOrigin);
+  handoff.searchParams.set("flow", "logout");
+  handoff.searchParams.set("transaction", "txn-real-demo-1");
+  handoff.searchParams.set("csrf", "csrf-real-demo-1");
+  handoff.searchParams.set("return_to", `${providerOrigin}/logout`);
+
+  await page.goto(handoff.toString());
+
+  await expect(
+    page.getByRole("heading", { name: "Provider logout finalized" }),
+  ).toBeVisible();
+
+  const sessionResponse = await page.request.get("/sessions/whoami");
+  expect(sessionResponse.status()).toBe(401);
+
+  expect(capturedPosts).toHaveLength(1);
+  expect(capturedPosts[0]).toEqual({
+    method: "POST",
+    origin: appOrigin,
+    referer: `${appOrigin}/`,
+    transaction: "txn-real-demo-1",
+    csrf: "csrf-real-demo-1",
+  });
+
+  await page.goto("/logout/complete");
+  await expect(page).toHaveURL(/\/error\?reason=invalid_request$/);
+  expect(capturedPosts).toHaveLength(1);
+});
+
+test("finalizes provider-mediated logout when real Kratos already has no active session", async ({
+  page,
+}) => {
+  const appOrigin = `http://127.0.0.1:${process.env.PLAYWRIGHT_APP_PORT ?? "3002"}`;
+  const providerOrigin = `http://127.0.0.1:${process.env.PLAYWRIGHT_KRATOS_PORT ?? "4010"}`;
+  const capturedPosts: Array<{
+    method: string;
+    origin: string | undefined;
+    referer: string | undefined;
+    transaction: string | null;
+    csrf: string | null;
+  }> = [];
+
+  await page.route(`${providerOrigin}/logout`, async (route) => {
+    const req = route.request();
+    const form = new URLSearchParams(req.postData() ?? "");
+    capturedPosts.push({
+      method: req.method(),
+      origin: req.headers()["origin"],
+      referer: req.headers()["referer"],
+      transaction: form.get("transaction"),
+      csrf: form.get("csrf"),
+    });
+
+    await route.fulfill({
+      status: 200,
+      contentType: "text/html; charset=utf-8",
+      body: "<!doctype html><html><body><h1>Provider logout finalized</h1></body></html>",
+    });
+  });
+
+  const handoff = new URL("/logout", appOrigin);
+  handoff.searchParams.set("flow", "logout");
+  handoff.searchParams.set("transaction", "txn-real-demo-2");
+  handoff.searchParams.set("csrf", "csrf-real-demo-2");
+  handoff.searchParams.set("return_to", `${providerOrigin}/logout`);
+
+  await page.goto(handoff.toString());
+
+  await expect(
+    page.getByRole("heading", { name: "Provider logout finalized" }),
+  ).toBeVisible();
+  expect(capturedPosts).toHaveLength(1);
+  expect(capturedPosts[0]).toEqual({
+    method: "POST",
+    origin: appOrigin,
+    referer: `${appOrigin}/`,
+    transaction: "txn-real-demo-2",
+    csrf: "csrf-real-demo-2",
+  });
+});
+
+test("refuses provider-mediated logout handoff when real Kratos session is still active on /logout/complete", async ({
+  page,
+}) => {
+  const appOrigin = `http://127.0.0.1:${process.env.PLAYWRIGHT_APP_PORT ?? "3002"}`;
+  const providerOrigin = `http://127.0.0.1:${process.env.PLAYWRIGHT_KRATOS_PORT ?? "4010"}`;
+  let providerPostCount = 0;
+
+  await page.route(`${providerOrigin}/logout`, async (route) => {
+    providerPostCount += 1;
+    await route.fulfill({ status: 200, body: "unexpected" });
+  });
+
+  await registerIdentity(page, `provider-logout-active-${Date.now()}@example.com`);
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  // Skip the actual Kratos logout call so the browser arrives at /logout/complete
+  // with a valid continuation cookie while the Kratos session is still active.
+  await page.route(`${appOrigin}/self-service/logout?*`, async (route) => {
+    await route.fulfill({
+      status: 303,
+      headers: { location: `${appOrigin}/logout/complete` },
+    });
+  });
+
+  const handoff = new URL("/logout", appOrigin);
+  handoff.searchParams.set("flow", "logout");
+  handoff.searchParams.set("transaction", "txn-real-demo-3");
+  handoff.searchParams.set("csrf", "csrf-real-demo-3");
+  handoff.searchParams.set("return_to", `${providerOrigin}/logout`);
+
+  await page.goto(handoff.toString());
+
+  await expect(page).toHaveURL(/\/error\?reason=logout_unavailable$/);
+  expect(providerPostCount).toBe(0);
+});
