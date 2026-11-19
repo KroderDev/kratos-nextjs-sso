@@ -208,7 +208,7 @@ describe("checkKratosSessionStatus", () => {
       ),
     );
 
-    const result = await mod.checkKratosSessionStatus("ory_kratos_session=demo");
+    const result = await mod.checkKratosSessionStatus("kratos_logout_handoff=secret; ory_kratos_session=demo; other=needed");
 
     expect(result.state).toBe("active");
     expect(fetchSpy).toHaveBeenCalledTimes(1);
@@ -220,7 +220,7 @@ describe("checkKratosSessionStatus", () => {
       redirect: "error",
       headers: expect.objectContaining({
         Accept: "application/json",
-        Cookie: "ory_kratos_session=demo",
+        Cookie: "ory_kratos_session=demo; other=needed",
       }),
     });
     expect(init?.signal).toBeInstanceOf(AbortSignal);
@@ -382,7 +382,7 @@ describe("createProviderLogoutFlow", () => {
 
     const result = await mod.createProviderLogoutFlow(
       expectedReturnTo,
-      "ory_kratos_session=demo",
+      "kratos_logout_handoff=secret; ory_kratos_session=demo; other=needed",
     );
 
     expect(result).toEqual({
@@ -400,7 +400,7 @@ describe("createProviderLogoutFlow", () => {
       redirect: "error",
       headers: expect.objectContaining({
         Accept: "application/json",
-        cookie: "ory_kratos_session=demo",
+        cookie: "ory_kratos_session=demo; other=needed",
       }),
     });
     expect(init?.signal).toBeInstanceOf(AbortSignal);

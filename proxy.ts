@@ -137,7 +137,41 @@ export async function proxy(request: NextRequest) {
   }
 
   const response = await oryMiddleware(request);
-  return rewriteOryResponseLocation(response, requestOrigin);
+  const rewritten = rewriteOryResponseLocation(response, requestOrigin);
+  const completionUrl = new URL(LOGOUT_COMPLETE_PATH, requestOrigin).href;
+  const params = request.nextUrl.searchParams;
+  // Kratos v26.2.0 forwards an error when the session disappears between
+  // flow creation and browser logout. Resume only the fixed completion route;
+  // it independently verifies the signed cookie and confirms session inactivity.
+  if (
+    request.method === "GET" &&
+    request.nextUrl.pathname === "/self-service/logout" &&
+    params.getAll("return_to").length === 1 &&
+    params.get("return_to") === completionUrl &&
+    params.getAll("token").length === 1 &&
+    params.get("token")?.trim()
+  ) {
+    let errorRedirect = false;
+    const location = rewritten.headers.get("location");
+    if (location && rewritten.status >= 300 && rewritten.status < 400) {
+      try {
+        const target = new URL(location, requestOrigin);
+        errorRedirect = target.origin === requestOrigin && target.pathname === "/error";
+      } catch {
+        // An invalid upstream destination cannot trigger recovery.
+      }
+    }
+    if (rewritten.status >= 400 || errorRedirect) {
+      const recovery = NextResponse.redirect(completionUrl, 303);
+      for (const cookie of rewritten.headers.getSetCookie()) {
+        recovery.headers.append("Set-Cookie", cookie);
+      }
+      recovery.headers.set("Cache-Control", "no-store");
+      recovery.headers.set("Referrer-Policy", "no-referrer");
+      return recovery;
+    }
+  }
+  return rewritten;
 }
 
 /**

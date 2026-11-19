@@ -19,7 +19,8 @@ const isAllowedReturnTo = (target) => {
   if (!target) return false;
   try {
     const parsed = new URL(target, `http://127.0.0.1:${port}`);
-    return parsed.origin === `http://127.0.0.1:${port}`;
+    return parsed.origin === `http://127.0.0.1:${port}` ||
+      parsed.href === `http://127.0.0.1:${appPort}/logout/complete`;
   } catch {
     return false;
   }
@@ -263,6 +264,12 @@ const server = createServer((request, response) => {
     if (token !== "e2e-logout-token" || !isAllowedReturnTo(returnTo)) {
       response.writeHead(400, { "content-type": "application/json" });
       response.end(JSON.stringify({ error: { code: 400 } }));
+      return;
+    }
+
+    if (logoutState.sessionMode !== "active") {
+      response.writeHead(303, { location: `http://127.0.0.1:${appPort}/error?id=session-revoked` });
+      response.end();
       return;
     }
 

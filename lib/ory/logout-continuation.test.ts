@@ -158,6 +158,7 @@ describe("logout continuation token", () => {
 
   it("uses existing ORY_PROJECT_API_TOKEN or optional ORY_LOGOUT_CONTINUATION_SECRET for signing", () => {
     const now = 1_700_000_000_000;
+    vi.stubEnv("ORY_LOGOUT_CONTINUATION_SECRET", "");
     vi.stubEnv("ORY_PROJECT_API_TOKEN", "ory_pat_demo_secret_1");
     const token = createLogoutContinuationToken(baseHandoff, now)!;
 
@@ -176,6 +177,32 @@ describe("logout continuation token", () => {
     expect(
       verifyLogoutContinuationToken(dedicatedToken, { nowMs: now }),
     ).toBeNull();
+  });
+
+  it("uses exclusive expiry for verification and consumption", () => {
+    const now = 1_700_000_000_000;
+    const token = createLogoutContinuationToken(baseHandoff, now)!;
+    const expiry = now + LOGOUT_CONTINUATION_TTL_SECONDS * 1000;
+    const fresh = verifyLogoutContinuationToken(token, { nowMs: expiry - 1000 })!;
+    expect(fresh).not.toBeNull();
+    expect(verifyLogoutContinuationToken(token, { nowMs: expiry })).toBeNull();
+    expect(consumeLogoutContinuation(fresh, expiry)).toBe(false);
+    expect(consumeLogoutContinuation(fresh, expiry - 1000)).toBe(true);
+  });
+
+  it("does not evict live replay records during read-only verification at capacity", () => {
+    const now = 1_700_000_000_000;
+    const token = createLogoutContinuationToken(baseHandoff, now)!;
+    const first = verifyLogoutContinuationToken(token, { nowMs: now })!;
+    expect(consumeLogoutContinuation(first, now)).toBe(true);
+    for (let i = 1; i < 10_000; i++) {
+      expect(consumeLogoutContinuation({ jti: `fixture-${i}`, exp: first.exp }, now)).toBe(true);
+    }
+    const fresh = createLogoutContinuationToken(baseHandoff, now)!;
+    expect(verifyLogoutContinuationToken(fresh, { consume: false, nowMs: now })).not.toBeNull();
+    expect(verifyLogoutContinuationToken(token, { consume: false, nowMs: now })).toBeNull();
+    expect(consumeLogoutContinuation(first, now)).toBe(false);
+    expect(verifyLogoutContinuationToken(token, { consume: true, nowMs: now })).toBeNull();
   });
 
   it("formats browser-bound continuation and clear cookies correctly", () => {

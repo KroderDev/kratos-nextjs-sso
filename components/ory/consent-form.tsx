@@ -38,11 +38,10 @@ export function ConsentForm({ autoSubmit = false, ...props }: ConsentFormProps) 
 
   useEffect(() => {
     function handlePageShow(event: PageTransitionEvent) {
-      if (!event.persisted) {
+      if (!event.persisted || !submittedRef.current) {
         return;
       }
 
-      submittedRef.current = true;
       const form = formRef.current;
       if (!form) {
         return;

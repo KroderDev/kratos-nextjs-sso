@@ -61,6 +61,22 @@ async function loadHandler(environment: Record<string, string> = {}) {
 }
 
 describe("mock-kratos e2e test server", () => {
+  it.each([
+    ["http://127.0.0.1:3002/logout/complete", 303],
+    ["http://127.0.0.1:4010/logout", 303],
+    ["http://127.0.0.1:3002/logout/complete?extra=1", 400],
+    ["http://127.0.0.1:3002/other", 400],
+    ["https://attacker.example/logout/complete", 400],
+  ])("validates logout return destination %s", async (target, status) => {
+    const handler = await loadHandler({ PORT: "4010", APP_PORT: "3002" });
+    const state = createExchange("/__e2e/logout-state?session=active");
+    handler(state.request, state.response);
+    const exchange = createExchange("/self-service/logout?token=e2e-logout-token&return_to=" + encodeURIComponent(target));
+    handler(exchange.request, exchange.response);
+    expect(exchange.getStatus()).toBe(status);
+    if (status === 303) expect(exchange.getHeaders()?.["set-cookie"]).toContain("Max-Age=0");
+  });
+
   it("clears the request log and returns no content", async () => {
     const handler = await loadHandler();
     const request = createExchange("/self-service/login/browser");

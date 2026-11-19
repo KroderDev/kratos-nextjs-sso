@@ -221,7 +221,7 @@ export function verifyLogoutContinuationToken(
     candidate.exp <= candidate.iat ||
     candidate.exp - candidate.iat > LOGOUT_CONTINUATION_TTL_SECONDS ||
     nowSeconds < candidate.iat - MAX_CLOCK_SKEW_SECONDS ||
-    nowSeconds > candidate.exp
+    nowSeconds >= candidate.exp
   ) {
     return null;
   }
@@ -247,12 +247,12 @@ export function verifyLogoutContinuationToken(
   }
 
   const consumed = getConsumedJtis();
-  pruneConsumedJtis(consumed, nowSeconds);
   if (consumed.has(candidate.jti)) {
     return null;
   }
 
   if (options.consume) {
+    pruneConsumedJtis(consumed, nowSeconds);
     consumed.set(candidate.jti, candidate.exp);
   }
 
@@ -282,17 +282,16 @@ export function consumeLogoutContinuation(
   nowMs = Date.now(),
 ): boolean {
   const nowSeconds = Math.floor(nowMs / 1000);
-  if (nowSeconds > continuation.exp) {
+  if (nowSeconds >= continuation.exp) {
     return false;
   }
 
   const consumed = getConsumedJtis();
-  pruneConsumedJtis(consumed, nowSeconds);
-
   if (consumed.has(continuation.jti)) {
     return false;
   }
 
+  pruneConsumedJtis(consumed, nowSeconds);
   consumed.set(continuation.jti, continuation.exp);
   return true;
 }

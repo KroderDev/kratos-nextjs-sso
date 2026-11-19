@@ -8,6 +8,7 @@ import {
 import { getLogoutFlow } from "@ory/nextjs/app";
 
 import { appBaseUrl, oryProviderOrigin, orySdkUrl } from "@/ory.config";
+import { LOGOUT_CONTINUATION_COOKIE } from "./logout-continuation";
 import { httpOrigin } from "./security";
 
 export const KRATOS_REQUEST_TIMEOUT_MS = 5_000;
@@ -21,6 +22,14 @@ export type ProviderLogoutFlowResult =
   | { status: "ready"; logoutUrl: string }
   | { status: "no_session" }
   | { status: "unavailable" };
+
+function kratosCookies(cookieHeader: string | null | undefined): string {
+  return (cookieHeader ?? "")
+    .split(";")
+    .filter((cookie) => cookie.split("=", 1)[0].trim() !== LOGOUT_CONTINUATION_COOKIE)
+    .join(";")
+    .trim();
+}
 
 function createKratosFrontendClient() {
   return new FrontendApi(
@@ -143,7 +152,7 @@ export async function checkKratosSessionStatus(
   try {
     const client = createKratosFrontendClient();
     const response = await client.toSessionRaw(
-      cookieHeader ? { cookie: cookieHeader } : {},
+      kratosCookies(cookieHeader) ? { cookie: kratosCookies(cookieHeader) } : {},
       createKratosRequestInit(),
     );
     const session = await response.value();
@@ -200,7 +209,7 @@ export async function createProviderLogoutFlow(
     const client = createKratosFrontendClient();
     const response = await client.createBrowserLogoutFlowRaw(
       {
-        cookie: cookieHeader ?? "",
+        cookie: kratosCookies(cookieHeader),
         returnTo,
       },
       createKratosRequestInit(),

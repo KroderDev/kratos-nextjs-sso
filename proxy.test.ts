@@ -60,6 +60,26 @@ describe("proxy", () => {
     vi.mocked(rewriteOryResponseLocation).mockClear();
   });
 
+  it.each([401, 500, 303])("recovers failed browser logout (%s) through guarded completion", async (status) => {
+    state.appBaseUrl = "https://sso.example";
+    state.middlewareResponse = new Response(null, {
+      status,
+      headers: { location: "https://sso.example/error?id=revoked" },
+    });
+    const request = new NextRequest("https://sso.example/self-service/logout?token=opaque&return_to=" +
+      encodeURIComponent("https://sso.example/logout/complete"));
+    const response = await proxy(request);
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe("https://sso.example/logout/complete");
+  });
+
+  it("does not recover a browser logout with a different return destination", async () => {
+    state.appBaseUrl = "https://sso.example";
+    state.middlewareResponse = new Response(null, { status: 401 });
+    const response = await proxy(new NextRequest("https://sso.example/self-service/logout?token=opaque&return_to=https://attacker.example"));
+    expect(response.status).toBe(401);
+  });
+
   it("bypasses the Ory middleware entirely when Ory is not configured", async () => {
     state.isOryConfigured = false;
     const nextSpy = vi.spyOn(NextResponse, "next");

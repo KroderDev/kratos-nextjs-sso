@@ -174,3 +174,26 @@ test("refuses provider logout handoff when Kratos whoami fails with 500", async 
   ).json()) as LogoutEvent[];
   expect(events.filter(({ kind }) => kind === "provider_logout_post")).toHaveLength(0);
 });
+
+
+test("resumes completion when the session is revoked before browser logout", async ({ context, page, request }) => {
+  await request.post(`${providerOrigin}/__e2e/logout-state?session=active&transaction=txn-race&csrf=csrf-race`);
+  await context.addCookies([{ name: "ory_kratos_session", value: "e2e-active-session", url: appOrigin }]);
+  await page.route("**/self-service/logout?**", async (route) => {
+    await request.post(`${providerOrigin}/__e2e/logout-state?session=inactive&transaction=txn-race&csrf=csrf-race`);
+    await route.continue();
+  });
+  const paths: string[] = [];
+  page.on("framenavigated", (frame) => {
+    if (frame === page.mainFrame()) paths.push(new URL(frame.url()).pathname);
+  });
+  await page.goto(`${providerOrigin}/logout?logout_challenge=race`);
+  await expect(page).toHaveURL(`${providerOrigin}/post-logout-done`);
+  expect(paths).toContain("/logout/complete");
+  expect(paths).not.toContain("/error");
+  const events = await (await request.get(`${providerOrigin}/__e2e/logout-events`)).json() as LogoutEvent[];
+  expect(events.filter(({ kind }) => kind === "kratos_logout")).toHaveLength(1);
+  expect(events.filter(({ kind }) => kind === "provider_logout_post")).toMatchObject([{
+    form: { transaction: "txn-race", csrf: "csrf-race" },
+  }]);
+});
