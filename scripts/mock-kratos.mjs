@@ -15,6 +15,16 @@ const logoutState = {
   csrf: "e2e-logout-csrf-1",
 };
 
+const isAllowedReturnTo = (target) => {
+  if (!target) return false;
+  try {
+    const parsed = new URL(target, `http://127.0.0.1:${port}`);
+    return parsed.origin === `http://127.0.0.1:${port}`;
+  } catch {
+    return false;
+  }
+};
+
 function resetLogoutState() {
   logoutEvents.length = 0;
   logoutState.sessionMode = "inactive";
@@ -250,7 +260,7 @@ const server = createServer((request, response) => {
       cookie: request.headers.cookie ?? null,
     });
 
-    if (token !== "e2e-logout-token" || !returnTo) {
+    if (token !== "e2e-logout-token" || !isAllowedReturnTo(returnTo)) {
       response.writeHead(400, { "content-type": "application/json" });
       response.end(JSON.stringify({ error: { code: 400 } }));
       return;
