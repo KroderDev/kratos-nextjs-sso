@@ -15,16 +15,7 @@ const logoutState = {
   csrf: "e2e-logout-csrf-1",
 };
 
-const isAllowedReturnTo = (target) => {
-  if (!target) return false;
-  try {
-    const parsed = new URL(target, `http://127.0.0.1:${port}`);
-    return parsed.origin === `http://127.0.0.1:${port}` ||
-      parsed.href === `http://127.0.0.1:${appPort}/logout/complete`;
-  } catch {
-    return false;
-  }
-};
+const allowedLogoutReturnTo = `http://127.0.0.1:${appPort}/logout/complete`;
 
 function resetLogoutState() {
   logoutEvents.length = 0;
@@ -193,13 +184,15 @@ const server = createServer((request, response) => {
       return;
     }
 
+    // Matches Kratos v26.2.0 /sessions/whoami ErrNoSessionFound wire payload.
     response.writeHead(401, { "content-type": "application/json" });
     response.end(
       JSON.stringify({
         error: {
           code: 401,
-          id: "session_inactive",
           status: "Unauthorized",
+          reason: "No valid session credentials found in the request.",
+          message: "The request could not be authorized",
         },
       }),
     );
@@ -220,13 +213,16 @@ const server = createServer((request, response) => {
       logoutState.sessionMode !== "active" ||
       !cookie?.includes("ory_kratos_session=e2e-active-session")
     ) {
+      // Matches Kratos v26.2.0 ErrNoActiveSessionFound wire payload.
       response.writeHead(401, { "content-type": "application/json" });
       response.end(
         JSON.stringify({
           error: {
-            code: 401,
             id: "session_inactive",
+            code: 401,
             status: "Unauthorized",
+            reason: "No active session was found in this request.",
+            message: "request does not have a valid authentication session",
           },
         }),
       );
@@ -261,7 +257,7 @@ const server = createServer((request, response) => {
       cookie: request.headers.cookie ?? null,
     });
 
-    if (token !== "e2e-logout-token" || !isAllowedReturnTo(returnTo)) {
+    if (token !== "e2e-logout-token" || returnTo !== allowedLogoutReturnTo) {
       response.writeHead(400, { "content-type": "application/json" });
       response.end(JSON.stringify({ error: { code: 400 } }));
       return;
@@ -273,7 +269,7 @@ const server = createServer((request, response) => {
       return;
     }
 
-    const headers = { location: returnTo };
+    const headers = { location: allowedLogoutReturnTo };
     if (!logoutState.keepSessionOnLogout) {
       logoutState.sessionMode = "inactive";
       headers["set-cookie"] =

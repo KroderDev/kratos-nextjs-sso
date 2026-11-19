@@ -63,7 +63,7 @@ async function loadHandler(environment: Record<string, string> = {}) {
 describe("mock-kratos e2e test server", () => {
   it.each([
     ["http://127.0.0.1:3002/logout/complete", 303],
-    ["http://127.0.0.1:4010/logout", 303],
+    ["http://127.0.0.1:4010/logout", 400],
     ["http://127.0.0.1:3002/logout/complete?extra=1", 400],
     ["http://127.0.0.1:3002/other", 400],
     ["https://attacker.example/logout/complete", 400],
@@ -333,5 +333,53 @@ describe("mock-kratos e2e test server", () => {
         node.group === "password" || node.group === "code",
     );
     expect(hasPasswordNode).toBe(false);
+  });
+
+  it("redirects /self-service/logout only to the exact configured UI /logout/complete URL", async () => {
+    const handler = await loadHandler({ PORT: "4010", APP_PORT: "3102" });
+    const expectedReturnTo = "http://127.0.0.1:3102/logout/complete";
+    const state = createExchange("/__e2e/logout-state?session=active");
+    handler(state.request, state.response);
+
+    const valid = createExchange(
+      `/self-service/logout?token=e2e-logout-token&return_to=${encodeURIComponent(expectedReturnTo)}`,
+    );
+    handler(valid.request, valid.response);
+
+    expect(valid.getStatus()).toBe(303);
+    expect(valid.getHeaders()?.location).toBe(expectedReturnTo);
+    expect(valid.getHeaders()?.["set-cookie"]).toContain("ory_kratos_session=; Max-Age=0");
+
+    for (const badUrl of [
+      `/self-service/logout?token=wrong&return_to=${encodeURIComponent(expectedReturnTo)}`,
+      `/self-service/logout?token=e2e-logout-token&return_to=${encodeURIComponent("http://127.0.0.1:4010/logout/complete")}`,
+      `/self-service/logout?token=e2e-logout-token&return_to=${encodeURIComponent("http://127.0.0.1:3102/logout/complete?extra=1")}`,
+      `/self-service/logout?token=e2e-logout-token&return_to=${encodeURIComponent("https://attacker.example/logout/complete")}`,
+      "/self-service/logout?token=e2e-logout-token",
+    ]) {
+      const rejected = createExchange(badUrl);
+      handler(rejected.request, rejected.response);
+      expect(rejected.getStatus(), badUrl).toBe(400);
+    }
+  });
+
+  it("returns the Kratos v26.2.0 ErrNoSessionFound payload on /sessions/whoami when inactive", async () => {
+    const handler = await loadHandler();
+    const exchange = createExchange("/sessions/whoami");
+
+    handler(exchange.request, exchange.response);
+
+    expect(exchange.getStatus()).toBe(401);
+    expect(exchange.getHeaders()).toMatchObject({
+      "content-type": "application/json",
+    });
+    expect(exchange.getJson()).toEqual({
+      error: {
+        code: 401,
+        status: "Unauthorized",
+        reason: "No valid session credentials found in the request.",
+        message: "The request could not be authorized",
+      },
+    });
   });
 });
