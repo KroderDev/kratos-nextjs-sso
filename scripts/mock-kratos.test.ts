@@ -1,6 +1,7 @@
+import { EventEmitter } from "node:events";
 import { describe, expect, it, vi } from "vitest";
 
-type MockRequest = { url?: string; headers: Record<string, string> };
+type MockRequest = EventEmitter & { url?: string; method?: string; headers: Record<string, string> };
 type MockResponseHandler = (request: MockRequest, response: MockResponse) => void;
 
 interface MockResponse {
@@ -17,11 +18,13 @@ vi.mock("node:http", () => ({
   }),
 }));
 
-function createExchange(url?: string, headers: Record<string, string> = {}) {
-  const request: MockRequest = { url, headers };
+function createExchange(url?: string, headers: Record<string, string> = {}, method = "GET") {
+  const request: MockRequest = Object.assign(new EventEmitter(), { url, headers, method });
   let statusCode: number | undefined;
   let responseHeaders: Record<string, string> | undefined;
   let body = "";
+  let finish: () => void;
+  const done = new Promise<void>((resolve) => { finish = resolve; });
 
   const response: MockResponse = {
     writeHead(code, hdrs) {
@@ -30,12 +33,14 @@ function createExchange(url?: string, headers: Record<string, string> = {}) {
     },
     end(chunk) {
       if (chunk) body += chunk;
+      finish();
     },
   };
 
   return {
     request,
     response,
+    done,
     getStatus: () => statusCode,
     getHeaders: () => responseHeaders,
     getBody: () => body,
@@ -61,6 +66,99 @@ async function loadHandler(environment: Record<string, string> = {}) {
 }
 
 describe("mock-kratos e2e test server", () => {
+  const sessionCookie = { cookie: "ory_kratos_session=e2e-active-session" };
+  const completion = "http://127.0.0.1:3102/logout/complete";
+  const perform = (handler: MockResponseHandler, path: string, headers?: Record<string, string>) => {
+    const exchange = createExchange(path, headers);
+    handler(exchange.request, exchange.response);
+    return exchange;
+  };
+
+  it("models active, absent and unavailable sessions and emits the browser logout flow only for an authenticated browser", async () => {
+    const handler = await loadHandler({ PORT: "4110", APP_PORT: "3102" });
+    const browserLogout = "/self-service/logout/browser";
+    perform(handler, "/__e2e/logout-state?session=error");
+    expect(perform(handler, "/sessions/whoami").getStatus()).toBe(500);
+    expect(perform(handler, browserLogout, sessionCookie).getJson()).toMatchObject({
+      error: { id: "session_inactive" },
+    });
+
+    perform(handler, "/__e2e/logout-state?session=active&keep_session_on_logout=true");
+    expect(perform(handler, "/sessions/whoami").getStatus()).toBe(401);
+    expect(perform(handler, browserLogout).getStatus()).toBe(401);
+    expect(perform(handler, "/sessions/whoami", sessionCookie).getJson()).toMatchObject({ active: true });
+    const flow = perform(handler, `${browserLogout}?return_to=${encodeURIComponent(completion)}`, sessionCookie);
+    const { logout_url, logout_token } = flow.getJson();
+    expect(new URL(logout_url).searchParams.get("return_to")).toBe(completion);
+    expect(new URL(logout_url).searchParams.get("token")).toBe(logout_token);
+    const standalone = perform(handler, browserLogout, sessionCookie);
+    expect(new URL(standalone.getJson().logout_url).searchParams.has("return_to")).toBe(false);
+
+    expect(perform(handler, logout_url, sessionCookie).getHeaders()).toEqual({ location: completion });
+    expect(perform(handler, "/sessions/whoami", sessionCookie).getStatus()).toBe(200);
+    expect(perform(handler, "/__e2e/logout-events").getJson()).toContainEqual(
+      expect.objectContaining({ kind: "kratos_logout", method: "GET", returnTo: completion }),
+    );
+    perform(handler, "/__e2e/logout-state?session=inactive");
+    expect(perform(handler, logout_url, sessionCookie).getHeaders()?.location).toBe(
+      "http://127.0.0.1:3102/error?id=session-revoked",
+    );
+  });
+
+  it("models the adapter's origin, browser cookie, transaction, CSRF, and single-use checks", async () => {
+    const handler = await loadHandler({ PORT: "4110", APP_PORT: "3102" });
+    const origin = "http://127.0.0.1:3102";
+    const cookie = "provider_logout_adapter=e2e-adapter-cookie";
+    expect(perform(handler, "/logout").getStatus()).toBe(400);
+    perform(handler, "/__e2e/logout-state?transaction=txn-fixture&csrf=csrf-fixture");
+    const initiate = perform(handler, "/logout?logout_challenge=fixture");
+    expect(initiate.getStatus()).toBe(302);
+    expect(initiate.getHeaders()?.["set-cookie"]).toContain(cookie);
+    const handoff = new URL(initiate.getHeaders()?.location ?? "");
+    expect(handoff.origin).toBe(origin);
+    expect(Object.fromEntries(handoff.searchParams)).toEqual({
+      flow: "logout", transaction: "txn-fixture", csrf: "csrf-fixture", return_to: "http://127.0.0.1:4110/logout",
+    });
+
+    async function post(headers: Record<string, string>, rawBody: string) {
+      const exchange = createExchange("/logout", headers, "POST");
+      handler(exchange.request, exchange.response);
+      exchange.request.emit("data", Buffer.from(rawBody));
+      exchange.request.emit("end");
+      await exchange.done;
+      return exchange;
+    }
+
+    const form = "transaction=txn-fixture&csrf=csrf-fixture";
+    expect((await post({ cookie }, form)).getStatus()).toBe(403);
+    expect((await post({ origin: "http://127.0.0.1:3103", cookie }, form)).getStatus()).toBe(403);
+    expect((await post({ origin }, form)).getStatus()).toBe(403);
+    expect((await post({ origin, cookie }, "csrf=csrf-fixture")).getStatus()).toBe(403);
+    expect((await post({ origin, cookie }, "transaction=txn-fixture")).getStatus()).toBe(403);
+
+    const accepted = await post({ origin, cookie }, form);
+    expect(accepted.getStatus()).toBe(303);
+    expect(accepted.getHeaders()?.location).toBe("http://127.0.0.1:4110/post-logout-done");
+    expect(perform(handler, "/post-logout-done").getBody()).toContain("Provider logout finalized");
+    expect((await post({ origin, cookie }, form)).getStatus()).toBe(403);
+  });
+
+  it.each([
+    ["http://127.0.0.1:3002/logout/complete", 303],
+    ["http://127.0.0.1:4010/logout", 400],
+    ["http://127.0.0.1:3002/logout/complete?extra=1", 400],
+    ["http://127.0.0.1:3002/other", 400],
+    ["https://attacker.example/logout/complete", 400],
+  ])("validates logout return destination %s", async (target, status) => {
+    const handler = await loadHandler({ PORT: "4010", APP_PORT: "3002" });
+    const state = createExchange("/__e2e/logout-state?session=active");
+    handler(state.request, state.response);
+    const exchange = createExchange("/self-service/logout?token=e2e-logout-token&return_to=" + encodeURIComponent(target));
+    handler(exchange.request, exchange.response);
+    expect(exchange.getStatus()).toBe(status);
+    if (status === 303) expect(exchange.getHeaders()?.["set-cookie"]).toContain("Max-Age=0");
+  });
+
   it("clears the request log and returns no content", async () => {
     const handler = await loadHandler();
     const request = createExchange("/self-service/login/browser");
@@ -317,5 +415,53 @@ describe("mock-kratos e2e test server", () => {
         node.group === "password" || node.group === "code",
     );
     expect(hasPasswordNode).toBe(false);
+  });
+
+  it("redirects /self-service/logout only to the exact configured UI /logout/complete URL", async () => {
+    const handler = await loadHandler({ PORT: "4010", APP_PORT: "3102" });
+    const expectedReturnTo = "http://127.0.0.1:3102/logout/complete";
+    const state = createExchange("/__e2e/logout-state?session=active");
+    handler(state.request, state.response);
+
+    const valid = createExchange(
+      `/self-service/logout?token=e2e-logout-token&return_to=${encodeURIComponent(expectedReturnTo)}`,
+    );
+    handler(valid.request, valid.response);
+
+    expect(valid.getStatus()).toBe(303);
+    expect(valid.getHeaders()?.location).toBe(expectedReturnTo);
+    expect(valid.getHeaders()?.["set-cookie"]).toContain("ory_kratos_session=; Max-Age=0");
+
+    for (const badUrl of [
+      `/self-service/logout?token=wrong&return_to=${encodeURIComponent(expectedReturnTo)}`,
+      `/self-service/logout?token=e2e-logout-token&return_to=${encodeURIComponent("http://127.0.0.1:4010/logout/complete")}`,
+      `/self-service/logout?token=e2e-logout-token&return_to=${encodeURIComponent("http://127.0.0.1:3102/logout/complete?extra=1")}`,
+      `/self-service/logout?token=e2e-logout-token&return_to=${encodeURIComponent("https://attacker.example/logout/complete")}`,
+      "/self-service/logout?token=e2e-logout-token",
+    ]) {
+      const rejected = createExchange(badUrl);
+      handler(rejected.request, rejected.response);
+      expect(rejected.getStatus(), badUrl).toBe(400);
+    }
+  });
+
+  it("returns the Kratos v26.2.0 ErrNoSessionFound payload on /sessions/whoami when inactive", async () => {
+    const handler = await loadHandler();
+    const exchange = createExchange("/sessions/whoami");
+
+    handler(exchange.request, exchange.response);
+
+    expect(exchange.getStatus()).toBe(401);
+    expect(exchange.getHeaders()).toMatchObject({
+      "content-type": "application/json",
+    });
+    expect(exchange.getJson()).toEqual({
+      error: {
+        code: 401,
+        status: "Unauthorized",
+        reason: "No valid session credentials found in the request.",
+        message: "The request could not be authorized",
+      },
+    });
   });
 });

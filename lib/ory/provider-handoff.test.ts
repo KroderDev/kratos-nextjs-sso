@@ -216,6 +216,21 @@ describe("provider handoff", () => {
         flow: "logout",
         transaction: "transaction-id",
         csrf: "csrf-token",
+        return_to: "https://auth.example.com/logout",
+        lang: "es",
+      }),
+    ).toEqual({
+      csrf: "csrf-token",
+      locale: "es",
+      providerReturnTo: "https://auth.example.com/logout",
+      transaction: "transaction-id",
+    });
+
+    expect(
+      providerLogoutParams({
+        flow: "logout",
+        transaction: "transaction-id",
+        csrf: "csrf-token",
         return_to: "https://attacker.example/logout",
       }),
     ).toBeNull();

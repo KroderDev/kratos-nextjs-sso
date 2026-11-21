@@ -114,6 +114,13 @@ export const en = {
         },
       },
     },
+    logout: {
+      title: "Signing you out",
+      eyebrow: "Sign out",
+      description: "Finishing sign-out with your identity provider.",
+      redirecting: "If you are not redirected automatically, continue below to finish signing out.",
+      continue: "Continue",
+    },
     registration: {
       title: "Create your account",
       eyebrow: "Sign up",

@@ -119,6 +119,9 @@ describe("ory.config", () => {
 
   it("normalizes configured URLs and uses the project name", async () => {
     vi.resetModules();
+    vi.stubEnv("APP_URL", undefined);
+    vi.stubEnv("ORY_SDK_URL", undefined);
+    vi.stubEnv("ORY_CANONICAL_URL", undefined);
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://app.example/");
     vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "https://tenant.oryapis.com/");
     vi.stubEnv("NEXT_PUBLIC_ORY_CANONICAL_URL", "https://ory.example/");
@@ -141,6 +144,7 @@ describe("ory.config", () => {
 
   it("does not treat an Ory network URL as configured without a project token", async () => {
     vi.resetModules();
+    vi.stubEnv("ORY_SDK_URL", undefined);
     vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "https://tenant.oryapis.com");
     vi.stubEnv("ORY_PROJECT_API_TOKEN", "");
 
@@ -175,6 +179,8 @@ describe("ory.config", () => {
     ["https://user:password@auth.example", undefined],
   ])("resolves the public provider origin from canonical %j", async (canonical, expected) => {
     vi.resetModules();
+    vi.stubEnv("ORY_SDK_URL", undefined);
+    vi.stubEnv("ORY_CANONICAL_URL", undefined);
     vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "http://127.0.0.1:4433");
     vi.stubEnv("NEXT_PUBLIC_ORY_CANONICAL_URL", canonical);
     try {

@@ -116,6 +116,13 @@ export const es: TranslationKeys = {
         },
       },
     },
+    logout: {
+      title: "Cerrando sesión",
+      eyebrow: "Cerrar sesión",
+      description: "Finalizando el cierre de sesión con tu proveedor de identidad.",
+      redirecting: "Si no se te redirige automáticamente, continúa abajo para terminar de cerrar sesión.",
+      continue: "Continuar",
+    },
     registration: {
       title: "Crea tu cuenta",
       eyebrow: "Registrarse",

@@ -59,4 +59,25 @@ describe("provider callback CSP", () => {
       expect(csp).not.toContain("https://legacy.example.com");
     }
   });
+
+  it("applies no-store caching and strict referrer headers to logout routes", async () => {
+    const headerRules = await config.headers!();
+    const bySource = new Map(
+      headerRules.map((rule) => [
+        rule.source,
+        new Map(rule.headers.map((entry) => [entry.key, entry.value])),
+      ]),
+    );
+
+    expect(bySource.get("/logout")?.get("Cache-Control")).toContain("no-store");
+    expect(bySource.get("/logout")?.get("Pragma")).toBe("no-cache");
+    expect(bySource.get("/logout")?.get("Referrer-Policy")).toBe("no-referrer");
+
+    expect(bySource.get("/auth/logout")?.get("Cache-Control")).toContain("no-store");
+    expect(bySource.get("/auth/logout")?.get("Referrer-Policy")).toBe("no-referrer");
+
+    expect(bySource.get("/logout/complete")?.get("Cache-Control")).toContain("no-store");
+    expect(bySource.get("/logout/complete")?.get("Pragma")).toBe("no-cache");
+    expect(bySource.get("/logout/complete")?.get("Referrer-Policy")).toBe("strict-origin");
+  });
 });
