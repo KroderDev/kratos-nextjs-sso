@@ -154,6 +154,51 @@ describe("LogoutCompletePage", () => {
     );
   });
 
+  it("cannot render two POST forms for concurrent requests carrying the same continuation", async () => {
+    mockCookieStore(createLogoutContinuationToken({
+      csrf: "csrf-demo-concurrent",
+      providerReturnTo: "https://provider.example/logout",
+      transaction: "txn-demo-concurrent",
+    })!);
+    let releaseWhoami!: () => void;
+    const waitForWhoami = new Promise<void>((resolve) => { releaseWhoami = resolve; });
+    mockCheckKratosSessionStatus.mockImplementation(async () => {
+      await waitForWhoami;
+      return { state: "no_session" };
+    });
+
+    const outcomes = Promise.allSettled([LogoutCompletePage(), LogoutCompletePage()]);
+    try {
+      await vi.waitFor(() => expect(mockCheckKratosSessionStatus).toHaveBeenCalledTimes(2));
+    } finally {
+      releaseWhoami();
+    }
+
+    const results = await outcomes;
+    const forms = results.flatMap((outcome) =>
+      outcome.status === "fulfilled" ? [renderToStaticMarkup(outcome.value)] : [],
+    );
+    expect(forms).toEqual([expect.stringContaining('method="post"')]);
+    expect(results).toContainEqual({
+      status: "rejected",
+      reason: new Error("redirect:/error?reason=invalid_request"),
+    });
+  });
+
+  it("consumes the continuation without calling whoami if Ory is no longer configured", async () => {
+    mockCookieStore(createLogoutContinuationToken({
+      csrf: "csrf-demo-unconfigured",
+      providerReturnTo: "https://provider.example/logout",
+      transaction: "txn-demo-unconfigured",
+    })!);
+    mockConfig.isOryConfigured = false;
+
+    await expect(LogoutCompletePage()).rejects.toThrow("redirect:/error?reason=logout_unavailable");
+    expect(mockCheckKratosSessionStatus).not.toHaveBeenCalled();
+    mockConfig.isOryConfigured = true;
+    await expect(LogoutCompletePage()).rejects.toThrow("redirect:/error?reason=invalid_request");
+  });
+
   it("renders a native auto-submitting POST form to the trusted provider callback after whoami confirms no session, and blocks replay", async () => {
     const token = createLogoutContinuationToken({
       csrf: "csrf-demo-final",

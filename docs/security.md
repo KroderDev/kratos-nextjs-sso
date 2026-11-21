@@ -222,7 +222,10 @@ standalone Kratos dashboard sign-out separate:
    opaque `transaction` and `csrf` values, and `return_to` against
    `oryProviderOrigin` and exact pathname `/logout`. It never forwards the
    provider callback URL to Kratos as a `GET` `return_to` and never logs raw
-   handoff parameters.
+   handoff parameters. `/logout` and `/logout/complete` exclude non-GET
+   requests, browser prefetch/prerender requests and subresource requests
+   identified by Fetch Metadata. Top-level cross-site navigation is supported
+   because the adapter may be hosted on a separate site.
 3. [`/logout`](../app/(auth)/logout/route.ts) calls Kratos `/sessions/whoami`
    directly with `cache: "no-store"`, `redirect: "error"`, and a bounded
    request timeout, distinguishing an active session (`200` active or `403`
@@ -267,6 +270,19 @@ standalone Kratos dashboard sign-out separate:
    client-side single-submit/bfcache guards; **authoritative cross-replica
    one-time completion** is enforced by the trusted login-consent adapter's
    own browser-bound transaction and CSRF state.
+
+   The UI validates the handoff's format and destination before it starts
+   Kratos logout, but does not authenticate the adapter at that step. The
+   navigation checks are not protection against top-level logout CSRF.
+   Deployments that need this protection must authenticate the initiation
+   before invalidating the Kratos session, for example with an adapter-issued
+   proof bound to the browser's session or a CSRF-protected confirmation on
+   the UI's origin.
+
+   With the adapter and UI on different sites, verify that the target browsers
+   send the adapter's transaction cookie on the cross-site POST. The adapter
+   must enforce the exact UI `Origin` and validate its browser-bound CSRF and
+   transaction state before completing logout.
 
 #### Kratos Allowlist and Continuation Signing Requirements
 

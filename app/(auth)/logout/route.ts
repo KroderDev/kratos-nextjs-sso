@@ -29,9 +29,9 @@ const NO_STORE_CACHE_CONTROL = "no-store, no-cache, must-revalidate, max-age=0";
 function searchParamsToRecord(searchParams: URLSearchParams): FlowSearchParams {
   const params: FlowSearchParams = {};
 
-  for (const key of new Set(searchParams.keys())) {
+  for (const key of ["flow", "transaction", "csrf", "return_to", "lang"]) {
     const values = searchParams.getAll(key);
-    params[key] = values.length === 1 ? values[0] : values;
+    if (values.length) params[key] = values.length === 1 ? values[0] : values;
   }
 
   return params;
@@ -52,15 +52,13 @@ function resolveLogoutOrigin(request: NextRequest): string | null {
   return getForwardedOrigin(request.headers, request.nextUrl.origin);
 }
 
-function buildLogoutRedirect(destination: string, cookieHeader?: string) {
+function buildLogoutRedirect(destination: string, cookieHeader: string) {
   const response = NextResponse.redirect(destination, { status: 303 });
   response.headers.set("Cache-Control", NO_STORE_CACHE_CONTROL);
   response.headers.set("Pragma", "no-cache");
   response.headers.set("Referrer-Policy", "no-referrer");
 
-  if (cookieHeader) {
-    response.headers.append("Set-Cookie", cookieHeader);
-  }
+  response.headers.append("Set-Cookie", cookieHeader);
 
   return response;
 }
@@ -103,9 +101,15 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const token = createLogoutContinuationToken(handoff);
+  if (!token) {
+    return buildLogoutRedirect(errorDestination("invalid_request"), clearCookie);
+  }
+  const continuationCookie = formatLogoutContinuationCookie(token, secure);
+  const completeUrl = new URL(LOGOUT_COMPLETE_PATH, publicOrigin).toString();
+
   const cookieHeader = request.headers.get("cookie");
   const sessionStatus = await checkKratosSessionStatus(cookieHeader);
-
   if (sessionStatus.state === "error") {
     return buildLogoutRedirect(
       errorDestination("logout_unavailable"),
@@ -113,21 +117,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const completeUrl = new URL(LOGOUT_COMPLETE_PATH, publicOrigin).toString();
-  const issueContinuationCookie = () => {
-    const token = createLogoutContinuationToken(handoff);
-    return token ? formatLogoutContinuationCookie(token, secure) : null;
-  };
-
   if (sessionStatus.state === "no_session") {
-    const continuationCookie = issueContinuationCookie();
-    if (!continuationCookie) {
-      return buildLogoutRedirect(
-        errorDestination("invalid_request"),
-        clearCookie,
-      );
-    }
-
     return buildLogoutRedirect(completeUrl, continuationCookie);
   }
 
@@ -142,28 +132,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const continuationCookie = issueContinuationCookie();
-    if (!continuationCookie) {
-      return buildLogoutRedirect(
-        errorDestination("invalid_request"),
-        clearCookie,
-      );
-    }
-
     return buildLogoutRedirect(completeUrl, continuationCookie);
   }
 
   if (flowResult.status !== "ready") {
     return buildLogoutRedirect(
       errorDestination("logout_unavailable"),
-      clearCookie,
-    );
-  }
-
-  const continuationCookie = issueContinuationCookie();
-  if (!continuationCookie) {
-    return buildLogoutRedirect(
-      errorDestination("invalid_request"),
       clearCookie,
     );
   }

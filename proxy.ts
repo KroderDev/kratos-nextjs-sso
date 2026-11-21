@@ -72,21 +72,58 @@ function applyLogoutCompleteHeaders(response: NextResponse, secure: boolean) {
   return response;
 }
 
+function rejectNonNavigationLogout(request: NextRequest) {
+  if (request.method !== "GET") {
+    return new NextResponse(null, {
+      status: 405,
+      headers: { Allow: "GET", "Cache-Control": "no-store" },
+    });
+  }
+
+  const { headers } = request;
+  const mode = headers.get("sec-fetch-mode");
+  const destination = headers.get("sec-fetch-dest");
+  const speculative = [headers.get("sec-purpose"), headers.get("purpose")]
+    .some((purpose) => /\b(?:prefetch|prerender)\b/i.test(purpose ?? ""));
+  if (
+    speculative ||
+    headers.has("rsc") ||
+    headers.has("next-router-prefetch") ||
+    (mode !== null && mode !== "navigate") ||
+    (destination !== null && destination !== "document")
+  ) {
+    return new NextResponse(null, {
+      status: 400,
+      headers: { "Cache-Control": "no-store" },
+    });
+  }
+
+  return null;
+}
+
 /**
  * Processes authentication-related requests through Ory middleware and handles dashboard settings requests.
  *
  * @returns The request response, including status `400` for an invalid application origin and status `503` for missing production configuration.
  */
 export async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
   if (
-    isDevPreviewRequest(request.nextUrl.pathname) &&
+    isDevPreviewRequest(pathname) &&
     process.env.NODE_ENV !== "development"
   ) {
     return new NextResponse(null, { status: 404 });
   }
 
+  if (pathname === "/logout" || pathname === LOGOUT_COMPLETE_PATH) {
+    // These entry points expect a browser redirect chain. Don't let probes or
+    // speculative renders create, clear or spend the continuation cookie.
+    const rejected = rejectNonNavigationLogout(request);
+    if (rejected) return rejected;
+  }
+
   if (!isOryConfigured) {
-    if (request.nextUrl.pathname === LOGOUT_COMPLETE_PATH) {
+    if (pathname === LOGOUT_COMPLETE_PATH) {
       const origin = resolveRequestOrigin(request, appBaseUrl);
       return applyLogoutCompleteHeaders(NextResponse.next(), isSecureOrigin(origin));
     }
@@ -111,14 +148,14 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (request.nextUrl.pathname === LOGOUT_COMPLETE_PATH) {
+  if (pathname === LOGOUT_COMPLETE_PATH) {
     return applyLogoutCompleteHeaders(
       NextResponse.next(),
       isSecureOrigin(requestOrigin),
     );
   }
 
-  if (request.nextUrl.pathname === "/dashboard/settings") {
+  if (pathname === "/dashboard/settings") {
     const area = getSettingsArea(request.nextUrl.searchParams.get("section"));
     const response = NextResponse.next();
 
@@ -132,7 +169,7 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  if (!isOryRequest(request.nextUrl.pathname)) {
+  if (!isOryRequest(pathname)) {
     return NextResponse.next();
   }
 
@@ -145,7 +182,7 @@ export async function proxy(request: NextRequest) {
   // it independently verifies the signed cookie and confirms session inactivity.
   if (
     request.method === "GET" &&
-    request.nextUrl.pathname === "/self-service/logout" &&
+    pathname === "/self-service/logout" &&
     params.getAll("return_to").length === 1 &&
     params.get("return_to") === completionUrl &&
     params.getAll("token").length === 1 &&

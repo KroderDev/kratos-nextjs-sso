@@ -64,20 +64,82 @@ describe("proxy", () => {
     state.appBaseUrl = "https://sso.example";
     state.middlewareResponse = new Response(null, {
       status,
-      headers: { location: "https://sso.example/error?id=revoked" },
+      headers: [
+        ["location", "https://sso.example/error?id=revoked"],
+        ["set-cookie", "ory_kratos_session=; Max-Age=0; Path=/"],
+        ["set-cookie", "other=fixture; Path=/"],
+      ],
     });
     const request = new NextRequest("https://sso.example/self-service/logout?token=opaque&return_to=" +
       encodeURIComponent("https://sso.example/logout/complete"));
     const response = await proxy(request);
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toBe("https://sso.example/logout/complete");
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.getSetCookie()).toEqual([
+      "ory_kratos_session=; Max-Age=0; Path=/",
+      "other=fixture; Path=/",
+    ]);
   });
 
-  it("does not recover a browser logout with a different return destination", async () => {
+  it.each([
+    ["GET", "token=fixture&return_to=https://other.example"],
+    ["GET", "token=fixture&return_to=https://sso.example/logout/complete&return_to=https://sso.example/logout/complete"],
+    ["GET", "token=fixture&token=other&return_to=https://sso.example/logout/complete"],
+    ["GET", "token=%20&return_to=https://sso.example/logout/complete"],
+    ["POST", "token=fixture&return_to=https://sso.example/logout/complete"],
+  ])("does not recover a browser logout outside the fixed recovery contract (%s %s)", async (method, query) => {
     state.appBaseUrl = "https://sso.example";
     state.middlewareResponse = new Response(null, { status: 401 });
-    const response = await proxy(new NextRequest("https://sso.example/self-service/logout?token=opaque&return_to=https://attacker.example"));
+    const response = await proxy(new NextRequest(`https://sso.example/self-service/logout?${query}`, { method }));
     expect(response.status).toBe(401);
+  });
+
+  it.each([
+    ["https://other.example/error", 303],
+    ["http://[invalid", 303],
+    ["https://sso.example/logout/complete", 303],
+    ["https://sso.example/error", 200],
+    [null, 303],
+  ])("leaves ordinary Kratos responses alone (%s, %s)", async (location, status) => {
+    state.appBaseUrl = "https://sso.example";
+    state.middlewareResponse = new Response(null, { status, headers: location ? { location } : undefined });
+    const query = new URLSearchParams({ token: "fixture", return_to: "https://sso.example/logout/complete" });
+    const response = await proxy(new NextRequest(`https://sso.example/self-service/logout?${query}`));
+    expect(response.status).toBe(status);
+    expect(response.headers.get("location")).toBe(location);
+    expect(response.headers.get("referrer-policy")).toBeNull();
+  });
+
+  it.each(["/logout", "/logout/complete"])("allows a top-level redirect but rejects prefetches and subresource requests at %s", async (path) => {
+    const url = `https://sso.example${path}`;
+    const navigation = await proxy(new NextRequest(url, {
+      headers: { "sec-fetch-mode": "navigate", "sec-fetch-dest": "document", "sec-fetch-site": "cross-site" },
+    }));
+    expect(navigation.headers.get("x-middleware-next")).toBe("1");
+
+    const nonNavigationHeaders: HeadersInit[] = [
+      { "sec-purpose": "prefetch;prerender" },
+      { purpose: "prefetch" },
+      { rsc: "1" },
+      { "next-router-prefetch": "1" },
+      { "sec-fetch-mode": "cors" },
+      { "sec-fetch-mode": "navigate", "sec-fetch-dest": "iframe" },
+    ];
+    for (const headers of nonNavigationHeaders) {
+      const response = await proxy(new NextRequest(url, { headers }));
+      expect(response.status, JSON.stringify(headers)).toBe(400);
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(response.headers.getSetCookie()).toEqual([]);
+    }
+
+    for (const method of ["HEAD", "POST"]) {
+      const response = await proxy(new NextRequest(url, { method }));
+      expect(response.status).toBe(405);
+      expect(response.headers.get("allow")).toBe("GET");
+      expect(response.headers.getSetCookie()).toEqual([]);
+    }
   });
 
   it("bypasses the Ory middleware entirely when Ory is not configured", async () => {

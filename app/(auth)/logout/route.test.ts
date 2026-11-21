@@ -215,6 +215,29 @@ describe("GET /logout", () => {
     expect(mockCreateProviderLogoutFlow).not.toHaveBeenCalled();
   });
 
+  it.each(["active", "error"])(
+    "refuses the flow-creation race when the second whoami returns %s",
+    async (state) => {
+      mockCheckKratosSessionStatus
+        .mockResolvedValueOnce({ state: "active" })
+        .mockResolvedValueOnce({ state });
+      mockCreateProviderLogoutFlow.mockResolvedValue({ status: "no_session" });
+
+      const url = new URL("https://sso.example/logout");
+      url.searchParams.set("flow", "logout");
+      url.searchParams.set("transaction", "txn-demo-race");
+      url.searchParams.set("csrf", "csrf-demo-race");
+      url.searchParams.set("return_to", "https://provider.example/logout");
+      const response = await GET(new NextRequest(url));
+
+      expect(mockCheckKratosSessionStatus).toHaveBeenCalledTimes(2);
+      expect(response.headers.get("location")).toBe(
+        "https://sso.example/error?reason=logout_unavailable",
+      );
+      expect(response.headers.get("set-cookie")).toContain("Max-Age=0");
+    },
+  );
+
   it("fails closed when Kratos rejects /logout/complete or cannot create a logout flow", async () => {
     mockCheckKratosSessionStatus.mockResolvedValue({ state: "active" });
     mockCreateProviderLogoutFlow.mockResolvedValue({ status: "unavailable" });

@@ -48,38 +48,20 @@ function createKratosRequestInit(): RequestInit {
   };
 }
 
-function getErrorResponse(error: unknown): Response | null {
-  if (error instanceof ResponseError) {
-    return error.response;
+async function readOryError(response: Response): Promise<Record<string, unknown> | null> {
+  const mediaType = response.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase();
+  if (mediaType !== "application/json" && !mediaType?.endsWith("+json")) {
+    return null;
   }
 
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "response" in error &&
-    typeof (error as { response?: unknown }).response === "object" &&
-    (error as { response?: unknown }).response !== null &&
-    typeof (error as { response: { status?: unknown } }).response.status === "number"
-  ) {
-    return (error as { response: Response }).response;
-  }
-
-  return null;
-}
-
-async function readErrorJson(response: Response): Promise<Record<string, unknown> | null | "invalid_json" | "empty"> {
   try {
-    const cloned = typeof response.clone === "function" ? response.clone() : response;
-    const text = await cloned.text();
-    if (!text.trim()) {
-      return "empty";
-    }
-    const parsed = JSON.parse(text);
-    return typeof parsed === "object" && parsed !== null
-      ? (parsed as Record<string, unknown>)
-      : "invalid_json";
+    const payload = await response.json();
+    const error: unknown = payload?.error;
+    return error && typeof error === "object" && !Array.isArray(error)
+      ? (error as Record<string, unknown>)
+      : null;
   } catch {
-    return "invalid_json";
+    return null;
   }
 }
 
@@ -87,46 +69,15 @@ const KRATOS_NO_SESSION_MESSAGE = "The request could not be authorized";
 const KRATOS_NO_SESSION_REASON =
   "No valid session credentials found in the request.";
 
-function extractOryErrorField(payload: Record<string, unknown>): {
-  code?: unknown;
-  id?: unknown;
-  message?: unknown;
-  reason?: unknown;
-  status?: unknown;
-} {
-  const inner = payload.error;
-  if (typeof inner === "object" && inner !== null) {
-    return inner as {
-      code?: unknown;
-      id?: unknown;
-      message?: unknown;
-      reason?: unknown;
-      status?: unknown;
-    };
-  }
-  return {};
-}
-
 async function isKratosNoSessionResponse(response: Response): Promise<boolean> {
-  if (response.status !== 401) {
+  if (response.status !== 401 || response.headers.has("www-authenticate")) {
     return false;
   }
 
-  if (response.headers?.get("www-authenticate")) {
+  const error = await readOryError(response);
+  if (!error) {
     return false;
   }
-
-  const contentType = response.headers?.get("content-type")?.toLowerCase() ?? "";
-  if (!contentType.includes("json")) {
-    return false;
-  }
-
-  const parsed = await readErrorJson(response);
-  if (!parsed || parsed === "empty" || parsed === "invalid_json") {
-    return false;
-  }
-
-  const error = extractOryErrorField(parsed);
 
   // Kratos ErrNoActiveSessionFound (session/manager.go, returned by /self-service/logout/browser
   // and documented whoami responses) carries error.id = "session_inactive".
@@ -146,24 +97,6 @@ async function isKratosNoSessionResponse(response: Response): Promise<boolean> {
   );
 }
 
-async function isKratosAal2RequiredResponse(response: Response): Promise<boolean> {
-  if (response.status !== 403) {
-    return false;
-  }
-
-  const contentType = response.headers?.get("content-type")?.toLowerCase() ?? "";
-  if (!contentType.includes("json")) {
-    return false;
-  }
-
-  const parsed = await readErrorJson(response);
-  if (!parsed || parsed === "empty" || parsed === "invalid_json") {
-    return false;
-  }
-
-  return extractOryErrorField(parsed).id === "session_aal2_required";
-}
-
 /**
  * Checks Kratos `/sessions/whoami` directly so callers can distinguish an active
  * session, a genuine Kratos `401` `session_inactive` response, and upstream/network errors.
@@ -180,8 +113,9 @@ export async function checkKratosSessionStatus(
 
   try {
     const client = createKratosFrontendClient();
+    const cookie = kratosCookies(cookieHeader);
     const response = await client.toSessionRaw(
-      kratosCookies(cookieHeader) ? { cookie: kratosCookies(cookieHeader) } : {},
+      cookie ? { cookie } : {},
       createKratosRequestInit(),
     );
     const session = await response.value();
@@ -200,16 +134,16 @@ export async function checkKratosSessionStatus(
 
     return { state: "error" };
   } catch (error) {
-    const response = getErrorResponse(error);
-    if (!response) {
+    if (!(error instanceof ResponseError)) {
       return { state: "error" };
     }
 
+    const { response } = error;
     if (await isKratosNoSessionResponse(response)) {
       return { state: "no_session" };
     }
 
-    if (await isKratosAal2RequiredResponse(response)) {
+    if (response.status === 403 && (await readOryError(response))?.id === "session_aal2_required") {
       return { state: "active" };
     }
 
@@ -274,10 +208,9 @@ export async function createProviderLogoutFlow(
       return { status: "unavailable" };
     }
 
-    return { status: "ready", logoutUrl: processed.logout_url };
+    return { status: "ready", logoutUrl: parsed.href };
   } catch (error) {
-    const response = getErrorResponse(error);
-    if (response && (await isKratosNoSessionResponse(response))) {
+    if (error instanceof ResponseError && (await isKratosNoSessionResponse(error.response))) {
       return { status: "no_session" };
     }
 
