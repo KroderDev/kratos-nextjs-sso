@@ -477,14 +477,9 @@ test("refuses provider-mediated logout handoff when real Kratos session is still
   await registerIdentity(page, `provider-logout-active-${Date.now()}@example.com`);
   await expect(page).toHaveURL(/\/dashboard$/);
 
-  // Skip the actual Kratos logout call so the browser arrives at /logout/complete
-  // with a valid continuation cookie while the Kratos session is still active.
-  await page.route(`${appOrigin}/self-service/logout?*`, async (route) => {
-    await route.fulfill({
-      status: 303,
-      headers: { location: `${appOrigin}/logout/complete` },
-    });
-  });
+  const initialWhoami = await page.request.get("/sessions/whoami");
+  expect(initialWhoami.status()).toBe(200);
+  expect(((await initialWhoami.json()) as { active?: boolean }).active).toBe(true);
 
   const handoff = new URL("/logout", appOrigin);
   handoff.searchParams.set("flow", "logout");
@@ -492,8 +487,41 @@ test("refuses provider-mediated logout handoff when real Kratos session is still
   handoff.searchParams.set("csrf", "csrf-real-demo-3");
   handoff.searchParams.set("return_to", `${providerOrigin}/logout`);
 
-  await page.goto(handoff.toString());
+  // Start the real /logout handoff without following the Kratos /self-service/logout
+  // redirect so BrowserContext holds both the active Kratos session and the signed
+  // continuation cookie when visiting /logout/complete.
+  const handoffResponse = await page.request.get(handoff.toString(), {
+    maxRedirects: 0,
+  });
+  expect(handoffResponse.status()).toBe(303);
+
+  const logoutLocation = handoffResponse.headers()["location"];
+  expect(logoutLocation).toBeDefined();
+  const logoutUrl = new URL(logoutLocation ?? "", appOrigin);
+  expect(logoutUrl.origin).toBe(appOrigin);
+  expect(logoutUrl.pathname).toBe("/self-service/logout");
+  expect(logoutUrl.searchParams.get("token")).toBeTruthy();
+  expect(logoutUrl.searchParams.get("return_to")).toBe(`${appOrigin}/logout/complete`);
+
+  const continuationCookies = await page
+    .context()
+    .cookies(`${appOrigin}/logout/complete`);
+  expect(
+    continuationCookies.some(
+      ({ name, path, httpOnly, value }) =>
+        name === "kratos_logout_handoff" &&
+        path === "/logout/complete" &&
+        httpOnly &&
+        value.length > 0,
+    ),
+  ).toBe(true);
+
+  await page.goto(`${appOrigin}/logout/complete`);
 
   await expect(page).toHaveURL(/\/error\?reason=logout_unavailable$/);
   expect(providerPostCount).toBe(0);
+
+  const afterWhoami = await page.request.get("/sessions/whoami");
+  expect(afterWhoami.status()).toBe(200);
+  expect(((await afterWhoami.json()) as { active?: boolean }).active).toBe(true);
 });
