@@ -97,7 +97,7 @@ describe("mock-kratos e2e test server", () => {
     expect(perform(handler, logout_url, sessionCookie).getHeaders()).toEqual({ location: completion });
     expect(perform(handler, "/sessions/whoami", sessionCookie).getStatus()).toBe(200);
     expect(perform(handler, "/__e2e/logout-events").getJson()).toContainEqual(
-      expect.objectContaining({ kind: "kratos_logout", returnTo: completion }),
+      expect.objectContaining({ kind: "kratos_logout", method: "GET", returnTo: completion }),
     );
     perform(handler, "/__e2e/logout-state?session=inactive");
     expect(perform(handler, logout_url, sessionCookie).getHeaders()?.location).toBe(

@@ -148,7 +148,7 @@ const server = createServer((request, response) => {
     const cookie = request.headers.cookie ?? null;
     logoutEvents.push({
       kind: "whoami",
-      method: request.method ?? "GET",
+      method: request.method,
       cookie,
     });
 
@@ -200,7 +200,7 @@ const server = createServer((request, response) => {
     const returnTo = url.searchParams.get("return_to");
     logoutEvents.push({
       kind: "logout_flow",
-      method: request.method ?? "GET",
+      method: request.method,
       cookie,
       returnTo,
     });
@@ -246,7 +246,7 @@ const server = createServer((request, response) => {
     const returnTo = url.searchParams.get("return_to");
     logoutEvents.push({
       kind: "kratos_logout",
-      method: request.method ?? "GET",
+      method: request.method,
       token,
       returnTo,
       referer: request.headers.referer ?? null,
