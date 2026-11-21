@@ -29,10 +29,6 @@ function resetLogoutState() {
 function readRequestBody(request) {
   return new Promise((resolve) => {
     let body = "";
-    if (typeof request.on !== "function") {
-      resolve("");
-      return;
-    }
     request.on("data", (chunk) => {
       body += chunk.toString();
     });
@@ -281,7 +277,7 @@ const server = createServer((request, response) => {
     return;
   }
 
-  if (url.pathname === "/logout" && (request.method ?? "GET") === "GET") {
+  if (url.pathname === "/logout" && request.method === "GET") {
     const challenge = url.searchParams.get("logout_challenge");
     logoutEvents.push({
       kind: "provider_logout_get",

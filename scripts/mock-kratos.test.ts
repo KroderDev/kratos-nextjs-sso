@@ -130,6 +130,7 @@ describe("mock-kratos e2e test server", () => {
     }
 
     const form = "transaction=txn-fixture&csrf=csrf-fixture";
+    expect((await post({ cookie }, form)).getStatus()).toBe(403);
     expect((await post({ origin: "http://127.0.0.1:3103", cookie }, form)).getStatus()).toBe(403);
     expect((await post({ origin }, form)).getStatus()).toBe(403);
     expect((await post({ origin, cookie }, "csrf=csrf-fixture")).getStatus()).toBe(403);

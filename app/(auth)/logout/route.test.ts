@@ -129,9 +129,7 @@ describe("GET /logout", () => {
     expect(setCookie).toContain("SameSite=Lax");
     expect(setCookie).toContain("Secure");
 
-    const verified = verifyLogoutContinuationToken(extractCookieValue(setCookie), {
-      consume: false,
-    });
+    const verified = verifyLogoutContinuationToken(extractCookieValue(setCookie));
     expect(verified).toMatchObject({
       csrf: "csrf-secret-demo-1",
       locale: "es",
@@ -166,13 +164,32 @@ describe("GET /logout", () => {
 
     const verified = verifyLogoutContinuationToken(
       extractCookieValue(response.headers.get("set-cookie")),
-      { consume: false },
     );
     expect(verified).toMatchObject({
       csrf: "csrf-demo-already-out",
       providerReturnTo: "https://provider.example/logout",
       transaction: "txn-demo-already-out",
     });
+  });
+
+  it("does not begin a Kratos logout if the handoff cannot fit in a continuation cookie", async () => {
+    // WHATWG URL accepts an oversized host in configuration; it must not induce
+    // a logout that cannot subsequently be completed by the browser.
+    mockConfig.oryProviderOrigin = `https://${"test.".repeat(280)}example`;
+    const url = new URL("https://sso.example/logout");
+    url.searchParams.set("flow", "logout");
+    url.searchParams.set("transaction", "t".repeat(256));
+    url.searchParams.set("csrf", "c".repeat(256));
+    url.searchParams.set("return_to", `${mockConfig.oryProviderOrigin}/logout`);
+
+    const response = await GET(new NextRequest(url));
+
+    expect(response.headers.get("location")).toBe(
+      "https://sso.example/error?reason=invalid_request",
+    );
+    expect(response.headers.get("set-cookie")).toContain("Max-Age=0");
+    expect(mockCheckKratosSessionStatus).not.toHaveBeenCalled();
+    expect(mockCreateProviderLogoutFlow).not.toHaveBeenCalled();
   });
 
   it("re-checks whoami and proceeds to /logout/complete if the Kratos session expires before logout flow creation", async () => {
@@ -288,5 +305,36 @@ describe("GET /logout", () => {
     expect(response.status).toBe(503);
     expect(response.headers.get("cache-control")).toContain("no-store");
     expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+  });
+
+  it("ignores forwarded origins when the configured application URL is invalid", async () => {
+    mockConfig.appBaseUrl = "not-an-origin";
+
+    const response = await GET(new NextRequest("https://sso.example/logout", {
+      headers: { "x-forwarded-host": "forwarded.example", "x-forwarded-proto": "https" },
+    }));
+
+    expect(response.status).toBe(503);
+    expect(response.headers.has("location")).toBe(false);
+    expect(mockCheckKratosSessionStatus).not.toHaveBeenCalled();
+  });
+
+  it("uses the request origin for the completion URL in local development", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    mockConfig.appBaseUrl = "";
+    mockCheckKratosSessionStatus.mockResolvedValue({ state: "no_session" });
+    const url = new URL("http://localhost:3000/logout");
+    url.search = new URLSearchParams({
+      flow: "logout",
+      transaction: "txn-demo",
+      csrf: "csrf-demo",
+      return_to: "https://provider.example/logout",
+      unrelated: "ignored",
+    }).toString();
+
+    const response = await GET(new NextRequest(url));
+
+    expect(response.headers.get("location")).toBe("http://localhost:3000/logout/complete");
+    expect(response.headers.get("set-cookie")).not.toContain("Secure");
   });
 });

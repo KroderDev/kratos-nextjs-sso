@@ -22,7 +22,6 @@ export async function generateMetadata() {
   const cookieStore = await cookies();
   const continuation = verifyLogoutContinuationToken(
     cookieStore.get(LOGOUT_CONTINUATION_COOKIE)?.value,
-    { consume: false },
   );
   const { t } = await getTranslations(undefined, continuation?.locale);
   return { title: t("auth.logout.title") };
@@ -37,7 +36,6 @@ export default async function LogoutCompletePage() {
   const cookieStore = await cookies();
   const continuation = verifyLogoutContinuationToken(
     cookieStore.get(LOGOUT_CONTINUATION_COOKIE)?.value,
-    { consume: false },
   );
 
   if (!continuation) {

@@ -60,12 +60,11 @@ function pruneConsumedJtis(consumed: Map<string, number>, nowSeconds: number) {
     }
   }
 
-  while (consumed.size >= MAX_CONSUMED_JTIS) {
-    const oldest = consumed.keys().next().value;
-    if (!oldest) {
+  if (consumed.size >= MAX_CONSUMED_JTIS) {
+    for (const oldest of consumed.keys()) {
+      consumed.delete(oldest);
       break;
     }
-    consumed.delete(oldest);
   }
 }
 
@@ -159,12 +158,12 @@ export function createLogoutContinuationToken(
  * lifetime bounds, single-use replay table, and configured provider callback.
  *
  * @param rawToken - The raw cookie value read from the browser request
- * @param options - Optional verification controls (`nowMs` and `consume`)
+ * @param options - Optional verification timestamp (`nowMs`)
  * @returns The validated continuation context, or `null` when missing, forged, expired, replayed, or invalid
  */
 export function verifyLogoutContinuationToken(
   rawToken: string | undefined,
-  options: { consume?: boolean; nowMs?: number } = {},
+  options: { nowMs?: number } = {},
 ): VerifiedLogoutContinuation | null {
   if (
     !rawToken ||
@@ -177,10 +176,6 @@ export function verifyLogoutContinuationToken(
   const separatorIndex = rawToken.indexOf(".");
   const payloadEncoded = rawToken.slice(0, separatorIndex);
   const providedSignature = rawToken.slice(separatorIndex + 1);
-  if (!payloadEncoded || !providedSignature) {
-    return null;
-  }
-
   const expectedSignature = signPayload(payloadEncoded, getSigningKey());
   const providedBuf = Buffer.from(providedSignature, "utf8");
   const expectedBuf = Buffer.from(expectedSignature, "utf8");
@@ -246,14 +241,8 @@ export function verifyLogoutContinuationToken(
     return null;
   }
 
-  const consumed = getConsumedJtis();
-  if (consumed.has(candidate.jti)) {
+  if (getConsumedJtis().has(candidate.jti)) {
     return null;
-  }
-
-  if (options.consume) {
-    pruneConsumedJtis(consumed, nowSeconds);
-    consumed.set(candidate.jti, candidate.exp);
   }
 
   return {

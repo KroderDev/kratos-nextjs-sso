@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockConfig = vi.hoisted(() => ({
@@ -22,6 +23,7 @@ import {
 } from "./logout-continuation";
 
 describe("logout continuation token", () => {
+  const now = 1_700_000_000_000;
   const baseHandoff = {
     csrf: "csrf-demo-1",
     providerReturnTo: "https://provider.example/logout",
@@ -49,7 +51,6 @@ describe("logout continuation token", () => {
     expect(token).toBeTruthy();
 
     const verified = verifyLogoutContinuationToken(token ?? undefined, {
-      consume: false,
       nowMs: now + 10_000,
     });
 
@@ -93,6 +94,7 @@ describe("logout continuation token", () => {
     expect(verifyLogoutContinuationToken("not-a-token", { nowMs: now })).toBeNull();
     expect(verifyLogoutContinuationToken(`${payload}.${signature}.extra`, { nowMs: now })).toBeNull();
     expect(verifyLogoutContinuationToken(`${"a".repeat(2049)}.sig`, { nowMs: now })).toBeNull();
+    expect(verifyLogoutContinuationToken(`${payload}.short`, { nowMs: now })).toBeNull();
 
     // Tamper with signature
     const badSig =
@@ -110,6 +112,67 @@ describe("logout continuation token", () => {
     expect(
       verifyLogoutContinuationToken(`${tamperedPayload}.${signature}`, { nowMs: now }),
     ).toBeNull();
+  });
+
+  describe("signed v1 fixtures", () => {
+    const secret = "unit-test-only-continuation-secret";
+    const iat = Math.floor(now / 1000);
+    const fixture = {
+      v: 1,
+      jti: "continuation-fixture-id",
+      t: baseHandoff.transaction,
+      c: baseHandoff.csrf,
+      r: baseHandoff.providerReturnTo,
+      iat,
+      exp: iat + 300,
+    };
+
+    function signFixture(json: string) {
+      const encoded = Buffer.from(json).toString("base64url");
+      const key = createHmac("sha256", secret)
+        .update("kratos-nextjs-sso:logout-continuation:v1")
+        .digest();
+      const signature = createHmac("sha256", key).update(`v1.${encoded}`).digest("base64url");
+      return `${encoded}.${signature}`;
+    }
+
+    beforeEach(() => {
+      vi.stubEnv("ORY_LOGOUT_CONTINUATION_SECRET", secret);
+    });
+
+    it("accepts an existing well-formed v1 continuation within the allowed clock skew", () => {
+      const valid = signFixture(JSON.stringify({ ...fixture, l: "en" }));
+      expect(verifyLogoutContinuationToken(valid, { nowMs: now - 30_000 })).toMatchObject({
+        ...baseHandoff,
+        jti: fixture.jti,
+        locale: "en",
+      });
+    });
+
+    it.each([
+      ["unsupported version", { v: 2 }],
+      ["non-string JTI", { jti: 12 }],
+      ["short JTI", { jti: "short" }],
+      ["long JTI", { jti: "a".repeat(65) }],
+      ["invalid JTI alphabet", { jti: "not a valid fixture id" }],
+      ["missing transaction", { t: undefined }],
+      ["missing CSRF", { c: undefined }],
+      ["missing destination", { r: undefined }],
+      ["unsupported locale", { l: "fr" }],
+      ["string issued time", { iat: String(iat) }],
+      ["string expiry", { exp: String(iat + 300) }],
+      ["fractional issued time", { iat: iat + 0.5 }],
+      ["fractional expiry", { exp: iat + 299.5 }],
+      ["empty lifetime", { exp: iat }],
+      ["excessive lifetime", { exp: iat + 301 }],
+    ])("rejects a signed continuation with %s", (_label, fields) => {
+      const token = signFixture(JSON.stringify({ ...fixture, ...fields }));
+      expect(verifyLogoutContinuationToken(token, { nowMs: now })).toBeNull();
+    });
+
+    it.each(["{", "null", '"fixture"'])("rejects signed non-object JSON %s", (json) => {
+      expect(verifyLogoutContinuationToken(signFixture(json), { nowMs: now })).toBeNull();
+    });
   });
 
   it("rejects expired or future-skewed tokens", () => {
@@ -134,7 +197,6 @@ describe("logout continuation token", () => {
     const token = createLogoutContinuationToken(baseHandoff, now)!;
 
     const first = verifyLogoutContinuationToken(token, {
-      consume: false,
       nowMs: now + 1000,
     });
     expect(first).not.toBeNull();
@@ -142,7 +204,6 @@ describe("logout continuation token", () => {
     expect(consumeLogoutContinuation(first!, now + 1000)).toBe(false);
     expect(
       verifyLogoutContinuationToken(token, {
-        consume: false,
         nowMs: now + 2000,
       }),
     ).toBeNull();
@@ -169,6 +230,7 @@ describe("logout continuation token", () => {
 
     vi.stubEnv("ORY_LOGOUT_CONTINUATION_SECRET", "dedicated-demo-secret");
     const dedicatedToken = createLogoutContinuationToken(baseHandoff, now)!;
+    vi.stubEnv("ORY_PROJECT_API_TOKEN", "rotated-api-token");
     expect(
       verifyLogoutContinuationToken(dedicatedToken, { nowMs: now }),
     ).not.toBeNull();
@@ -190,19 +252,26 @@ describe("logout continuation token", () => {
     expect(consumeLogoutContinuation(fresh, expiry - 1000)).toBe(true);
   });
 
-  it("does not evict live replay records during read-only verification at capacity", () => {
-    const now = 1_700_000_000_000;
+  it("preserves live replay records during verification and frees expired records before evicting at capacity", () => {
     const token = createLogoutContinuationToken(baseHandoff, now)!;
     const first = verifyLogoutContinuationToken(token, { nowMs: now })!;
     expect(consumeLogoutContinuation(first, now)).toBe(true);
-    for (let i = 1; i < 10_000; i++) {
+    expect(consumeLogoutContinuation({ jti: "expiring", exp: first.iat + 1 }, now)).toBe(true);
+    for (let i = 2; i < 10_000; i++) {
       expect(consumeLogoutContinuation({ jti: `fixture-${i}`, exp: first.exp }, now)).toBe(true);
     }
     const fresh = createLogoutContinuationToken(baseHandoff, now)!;
-    expect(verifyLogoutContinuationToken(fresh, { consume: false, nowMs: now })).not.toBeNull();
-    expect(verifyLogoutContinuationToken(token, { consume: false, nowMs: now })).toBeNull();
-    expect(consumeLogoutContinuation(first, now)).toBe(false);
-    expect(verifyLogoutContinuationToken(token, { consume: true, nowMs: now })).toBeNull();
+    expect(verifyLogoutContinuationToken(fresh, { nowMs: now })).not.toBeNull();
+    expect(verifyLogoutContinuationToken(token, { nowMs: now })).toBeNull();
+
+    const afterExpiry = now + 1_000;
+    expect(consumeLogoutContinuation(verifyLogoutContinuationToken(fresh, { nowMs: afterExpiry })!, afterExpiry)).toBe(true);
+    expect(verifyLogoutContinuationToken(token, { nowMs: afterExpiry })).toBeNull();
+
+    const another = createLogoutContinuationToken(baseHandoff, now)!;
+    expect(consumeLogoutContinuation(verifyLogoutContinuationToken(another, { nowMs: afterExpiry })!, afterExpiry)).toBe(true);
+    const latest = verifyLogoutContinuationToken(another, { nowMs: afterExpiry });
+    expect(latest).toBeNull();
   });
 
   it("formats browser-bound continuation and clear cookies correctly", () => {

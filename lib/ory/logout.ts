@@ -75,7 +75,7 @@ async function isKratosNoSessionResponse(response: Response): Promise<boolean> {
   }
 
   const error = await readOryError(response);
-  if (!error) {
+  if (!error || error.code !== 401) {
     return false;
   }
 
@@ -90,7 +90,6 @@ async function isKratosNoSessionResponse(response: Response): Promise<boolean> {
   // IDField), omitting error.id and serializing these exact fields. Fail closed on any other 401.
   return (
     (error.id === undefined || error.id === "") &&
-    error.code === 401 &&
     error.status === "Unauthorized" &&
     error.message === KRATOS_NO_SESSION_MESSAGE &&
     error.reason === KRATOS_NO_SESSION_REASON
@@ -184,13 +183,8 @@ export async function createProviderLogoutFlow(
       return { status: "unavailable" };
     }
 
-    const parsed = new URL(processed.logout_url, appBaseUrl || orySdkUrl);
-    if (
-      parsed.username ||
-      parsed.password ||
-      parsed.hash ||
-      parsed.pathname !== "/self-service/logout"
-    ) {
+    const parsed = new URL(processed.logout_url, appBaseUrl ?? orySdkUrl);
+    if (parsed.hash || parsed.pathname !== "/self-service/logout") {
       return { status: "unavailable" };
     }
 
@@ -199,7 +193,7 @@ export async function createProviderLogoutFlow(
       return { status: "unavailable" };
     }
 
-    if (rawFlow.logout_token && tokens[0] !== rawFlow.logout_token) {
+    if (tokens[0] !== rawFlow.logout_token) {
       return { status: "unavailable" };
     }
 

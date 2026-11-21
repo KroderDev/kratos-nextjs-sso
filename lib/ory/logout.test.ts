@@ -300,6 +300,46 @@ describe("checkKratosSessionStatus", () => {
     });
   });
 
+  it.each([
+    ["malformed JSON", "{", {}],
+    ["non-object error", JSON.stringify({ error: ["session_inactive"] }), {}],
+    ["empty payload", "null", {}],
+    ["contradictory error code", JSON.stringify({ error: { id: "session_inactive", code: 403 } }), {}],
+    ["an upstream authentication challenge", JSON.stringify({ error: { id: "session_inactive", code: 401 } }),
+      { "www-authenticate": 'Basic realm="proxy"' }],
+  ] as const)("does not clear a session for a 401 with %s", async (_label, body, extraHeaders) => {
+    const mod = await importConfiguredLogout();
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(body, {
+      status: 401,
+      headers: { "content-type": "application/json", ...extraHeaders },
+    }));
+
+    await expect(mod.checkKratosSessionStatus("ory_kratos_session=demo")).resolves.toEqual({ state: "error" });
+  });
+
+  it("accepts an empty error id only with the pinned no-session response shape", async () => {
+    const mod = await importConfiguredLogout();
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(
+      JSON.stringify({ error: {
+        id: "", code: 401, status: "Unauthorized",
+        reason: "No valid session credentials found in the request.",
+        message: "The request could not be authorized",
+      } }),
+      { status: 401, headers: { "content-type": "application/problem+json" } },
+    ));
+
+    await expect(mod.checkKratosSessionStatus(undefined)).resolves.toEqual({ state: "no_session" });
+  });
+
+  it.each(["null", "{}", '{"active":"true"}'])("fails closed on an invalid successful session response %s", async (body) => {
+    const mod = await importConfiguredLogout();
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(body, {
+      headers: { "content-type": "application/json" },
+    }));
+
+    await expect(mod.checkKratosSessionStatus(undefined)).resolves.toEqual({ state: "error" });
+  });
+
   it("fails closed on 5xx, timeout/redirect/network errors, non-AAL2 403, and empty/generic/gateway/HTML 401 responses", async () => {
     const mod = await importConfiguredLogout();
     vi.spyOn(globalThis, "fetch")
@@ -389,7 +429,11 @@ describe("createProviderLogoutFlow", () => {
     vi.doUnmock("@/ory.config");
   });
 
-  async function importConfiguredLogout(config = {
+  async function importConfiguredLogout(config: {
+    appBaseUrl: string | undefined;
+    orySdkUrl: string;
+    oryProviderOrigin: string;
+  } = {
     appBaseUrl: "https://sso.example",
     orySdkUrl: "https://kratos.example",
     oryProviderOrigin: "https://provider.example",
@@ -473,6 +517,26 @@ describe("createProviderLogoutFlow", () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1);
   });
 
+  it("resolves a relative Kratos logout target against the configured provider when no app URL is set", async () => {
+    const orySdkUrl = "https://provider.example";
+    const mod = await importConfiguredLogout({
+      appBaseUrl: undefined,
+      orySdkUrl,
+      oryProviderOrigin: orySdkUrl,
+    });
+    const returnTo = "http://localhost:3000/logout/complete";
+    const path = `/self-service/logout?token=fixture&return_to=${encodeURIComponent(returnTo)}`;
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(Response.json({
+      logout_url: path,
+      logout_token: "fixture",
+    }));
+
+    await expect(mod.createProviderLogoutFlow(returnTo, "cookie=1")).resolves.toEqual({
+      status: "ready",
+      logoutUrl: `${orySdkUrl}${path}`,
+    });
+  });
+
   it("returns no_session only when Kratos responds with genuine 401 session_inactive", async () => {
     const mod = await importConfiguredLogout();
     vi.spyOn(globalThis, "fetch")
@@ -540,6 +604,17 @@ describe("createProviderLogoutFlow", () => {
       // Mismatched token
       {
         logout_url: `https://kratos.example/self-service/logout?token=other-tok&return_to=${encodedReturnTo}`,
+        logout_token: "demo-tok",
+      },
+      {
+        logout_url: `https://kratos.example/self-service/logout?token=&return_to=${encodedReturnTo}`,
+        logout_token: "demo-tok",
+      },
+      {
+        logout_url: `https://kratos.example/self-service/logout?token=demo-tok&return_to=${encodedReturnTo}`,
+      },
+      {
+        logout_url: `https://user:password@kratos.example/self-service/logout?token=demo-tok&return_to=${encodedReturnTo}`,
         logout_token: "demo-tok",
       },
       // Missing return_to
