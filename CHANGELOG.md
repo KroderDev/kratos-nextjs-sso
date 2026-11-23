@@ -1,5 +1,78 @@
 # Changelog
 
+## [0.7.0](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.6.2...v0.7.0) (2026-11-23)
+
+
+### Features
+
+* **auth:** refine flow cards and feedback ([f4449a2](https://github.com/KroderDev/kratos-nextjs-sso/commit/f4449a246392ca21743b061fc042c96b4fe5c71f))
+* **auth:** refine flows and local previews ([44a1eed](https://github.com/KroderDev/kratos-nextjs-sso/commit/44a1eed95a428b7319d259b64d461630c6a8eb99))
+* consume OIDC login context hints ([e3abe22](https://github.com/KroderDev/kratos-nextjs-sso/commit/e3abe221a9dcab3ac23984696005518678fc384c))
+* polish auth flows and add local UI previews ([94eefa0](https://github.com/KroderDev/kratos-nextjs-sso/commit/94eefa031f81502e3957e9eaa27d80e7f1718891))
+* support configurable required AAL defaulting to aal1 ([b52f105](https://github.com/KroderDev/kratos-nextjs-sso/commit/b52f10582effcf79108407b8c8409771e1dd68eb))
+
+
+### Bug Fixes
+
+* 'CodeQL / Server-side URL redirect' ([c568101](https://github.com/KroderDev/kratos-nextjs-sso/commit/c568101de4ce7860ccb522de7edc4987cb101c18))
+* **auth:** harden Ory URLs and resolve landing-page issues ([6b4c475](https://github.com/KroderDev/kratos-nextjs-sso/commit/6b4c475a9efee38152d4b22c00da06bc58e5a194))
+* **auth:** redirect signed-in visitors and honor registration settings ([b6a2b36](https://github.com/KroderDev/kratos-nextjs-sso/commit/b6a2b360756d7c1b4740e34da12474c75a8653d8))
+* bound OIDC login hints by UTF-8 bytes ([806a51b](https://github.com/KroderDev/kratos-nextjs-sso/commit/806a51bebb628d6de84ef436509f32760b4e8687))
+* complete provider-mediated browser logout ([1c98ffc](https://github.com/KroderDev/kratos-nextjs-sso/commit/1c98ffcdfe92378d69a8de0c88c6fae53101d44f))
+* complete provider-mediated browser logout ([2cbfd47](https://github.com/KroderDev/kratos-nextjs-sso/commit/2cbfd47d8141a7884b94a6e8dc97a747db632914))
+* harden provider logout navigation and session checks ([226f6f8](https://github.com/KroderDev/kratos-nextjs-sso/commit/226f6f8b04d2877483dd22f8fef655a12cebdb85))
+* **i18n:** polish product copy and localize Ory setup state ([7ed75d9](https://github.com/KroderDev/kratos-nextjs-sso/commit/7ed75d9a7bcba15abbc1273aabbc6a3fa2d4a717))
+* **i18n:** polish product copy and localize setup state ([db63c56](https://github.com/KroderDev/kratos-nextjs-sso/commit/db63c569356ede86c18203b1f9c1c1c628ffa5aa))
+* **ory:** preserve flow data and canonical provider callbacks ([541c599](https://github.com/KroderDev/kratos-nextjs-sso/commit/541c5999e07c2aec78b9741f7c4a805a4f06ad2c))
+* **proxy:** match app host accounting for ports, shortnames, and cluster services ([db53f9d](https://github.com/KroderDev/kratos-nextjs-sso/commit/db53f9dfeeea893993cded73096fa9c11822da8e))
+* **proxy:** resolve request origin using trusted host when forwarded headers are absent ([79375e8](https://github.com/KroderDev/kratos-nextjs-sso/commit/79375e856f4bc6fb6d251fa0b023b5f493094a17))
+* recognize Kratos no-session responses during logout ([8be2f89](https://github.com/KroderDev/kratos-nextjs-sso/commit/8be2f89c03a081ecbb3440032c79e3840201f0a1))
+* recover logout session races, harden continuation replay checks, and preserve unsubmitted consent forms ([b23c607](https://github.com/KroderDev/kratos-nextjs-sso/commit/b23c60785ea01855b21083e3d4b77705e2d7e55d))
+* **release:** prioritize workflow inputs over repo vars and allow runtime APP_URL override ([352439f](https://github.com/KroderDev/kratos-nextjs-sso/commit/352439fbe0bf36af9956ed9a1053e8debff88e1b))
+* **security:** reject normalized provider URL escapes ([23ec22d](https://github.com/KroderDev/kratos-nextjs-sso/commit/23ec22d9b8b9293f61f3d21592a2c118fa93ea49))
+* **url:** treat cluster local and svc hosts as internal sdk endpoints ([02f3883](https://github.com/KroderDev/kratos-nextjs-sso/commit/02f38833e3b96868b2e946ee07829f87f043eb0d))
+
+
+### Dependencies
+
+* **deps-dev:** bump the dev-dependencies group across 1 directory with 2 updates ([86b8ff7](https://github.com/KroderDev/kratos-nextjs-sso/commit/86b8ff794d64ba6f1278bce6e5308ddf4b558f90))
+* **deps-dev:** bump the dev-dependencies group across 1 directory with 3 updates ([17e6a25](https://github.com/KroderDev/kratos-nextjs-sso/commit/17e6a25df9c21f91c91c546952746bf3681283aa))
+* **deps-dev:** bump the dev-dependencies group across 1 directory with 4 updates ([bae3190](https://github.com/KroderDev/kratos-nextjs-sso/commit/bae3190b18cc658110e334d5c9a91e2571c03dec))
+* **deps-dev:** bump the dev-dependencies group across 1 directory with 5 updates ([4d8ce95](https://github.com/KroderDev/kratos-nextjs-sso/commit/4d8ce95b1ee6ac84a8ec81b6ff3c76b001dac5c1))
+* **deps:** bump fast-uri from 4.2.1 to 4.2.3 ([22d9a8f](https://github.com/KroderDev/kratos-nextjs-sso/commit/22d9a8f1b81a849f64c36d5a5098397faaa5e029))
+* **deps:** bump ip-address from 10.7.3 to 10.7.6 ([6c4a9fd](https://github.com/KroderDev/kratos-nextjs-sso/commit/6c4a9fdaee18fc1faaea854399404bf1a452ddd2))
+* **deps:** bump pnpm/action-setup from 6.1.0 to 6.1.1 ([bfea6cf](https://github.com/KroderDev/kratos-nextjs-sso/commit/bfea6cf5df091e9fffc47e3b7c842c0d92acbbe2))
+* **deps:** bump the production-dependencies group across 1 directory with 7 updates ([be251c9](https://github.com/KroderDev/kratos-nextjs-sso/commit/be251c9bf12823dbfa19c125c3ca56b9fe6be419))
+* **deps:** bump the production-dependencies group across 1 directory with 8 updates ([caa762c](https://github.com/KroderDev/kratos-nextjs-sso/commit/caa762c6bbff44eba02f0fd21a7f93f42a173441))
+* **deps:** bump the production-dependencies group with 3 updates ([4f32500](https://github.com/KroderDev/kratos-nextjs-sso/commit/4f32500dfdc274cf27d84c1a41a7bbf17eb3c659))
+* **deps:** bump the production-dependencies group with 5 updates ([803950a](https://github.com/KroderDev/kratos-nextjs-sso/commit/803950a2bc1f8957a56c1f07d7433129d9c35157))
+* **deps:** bump zod from 4.6.5 to 4.6.7 ([438e28b](https://github.com/KroderDev/kratos-nextjs-sso/commit/438e28bc10b8b7582109e90f3d7e1adde7ae435a))
+
+
+### Tests
+
+* align assertions with polished copy ([13632cb](https://github.com/KroderDev/kratos-nextjs-sso/commit/13632cb4347527386de5e400802116e093a06853))
+* align assertions with polished copy ([6e19c66](https://github.com/KroderDev/kratos-nextjs-sso/commit/6e19c6648597d3148d40a85c1e47f9e009d7e87d))
+* align real auth assertions with polished copy ([393cc68](https://github.com/KroderDev/kratos-nextjs-sso/commit/393cc6882d656f6a45beea8551d45044260fb881))
+* cover auth flow branches flagged by codecov ([97dc097](https://github.com/KroderDev/kratos-nextjs-sso/commit/97dc0978cf096665086ebafb506d92737eb38a4e))
+* cover browser logout and isolate Ory configuration ([b17469c](https://github.com/KroderDev/kratos-nextjs-sso/commit/b17469cbbbba47629885db572955d5c27447520c))
+* cover logout continuation and provider response boundaries ([e7f391e](https://github.com/KroderDev/kratos-nextjs-sso/commit/e7f391e26e853d13ca610ef716722c6338ffe8de))
+* cover null and missing login identifiers ([01a4e7c](https://github.com/KroderDev/kratos-nextjs-sso/commit/01a4e7cb23c579af40174d2e053e7e64bf9bb75a))
+* cover provider logout race with real Kratos ([f308f15](https://github.com/KroderDev/kratos-nextjs-sso/commit/f308f15c4eeca75be2f68d86549c87468f414100))
+* cover provider URL and CSP fallback branches ([e1e7188](https://github.com/KroderDev/kratos-nextjs-sso/commit/e1e7188d063544dd384d4038ed42f4bc7fa356e2))
+* record actual HTTP methods in the Kratos fixture ([50601a5](https://github.com/KroderDev/kratos-nextjs-sso/commit/50601a5f58bb91ed4dc649fd71335ddfe38cc0ca))
+* update Ory setup mocks ([e4f0d8d](https://github.com/KroderDev/kratos-nextjs-sso/commit/e4f0d8d7de4d8a718a62523d50efd7a3b0de1357))
+* update Ory setup mocks ([3643b5e](https://github.com/KroderDev/kratos-nextjs-sso/commit/3643b5e17f8ff0a4e93be36f298a3c3cc198a73a))
+* update Ory setup mocks ([03d7717](https://github.com/KroderDev/kratos-nextjs-sso/commit/03d77171ec4424f423aae3abc6d5dbd73b93f595))
+* update Ory setup mocks ([980d806](https://github.com/KroderDev/kratos-nextjs-sso/commit/980d806637b9ca62867c7825f8326fb1227172f3))
+* update sign-in label assertion ([98be17f](https://github.com/KroderDev/kratos-nextjs-sso/commit/98be17ffd8cace3604c07012e7a479f02ca23414))
+* verify logout rejects an active Kratos session ([165e5ea](https://github.com/KroderDev/kratos-nextjs-sso/commit/165e5ea8845295e78e1de67af6176f40306e9339))
+
+
+### Continuous Integration
+
+* **release:** publish signed standalone image ([2a8cde2](https://github.com/KroderDev/kratos-nextjs-sso/commit/2a8cde2657da345b8e2fc887849e45f659be46ca))
+
 ## [0.6.2](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.6.1...v0.6.2) (2026-09-22)
 
 
