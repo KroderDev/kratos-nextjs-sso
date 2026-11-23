@@ -410,6 +410,69 @@ test("completes provider-mediated browser logout with real Kratos via /logout ->
   expect(capturedPosts).toHaveLength(1);
 });
 
+test("resumes provider logout when real Kratos revokes the session before the browser logout GET", async ({
+  page,
+  request,
+}) => {
+  const appOrigin = `http://127.0.0.1:${process.env.PLAYWRIGHT_APP_PORT ?? "3002"}`;
+  const providerOrigin = `http://127.0.0.1:${process.env.PLAYWRIGHT_KRATOS_PORT ?? "4010"}`;
+  const completionUrl = `${appOrigin}/logout/complete`;
+  const capturedPosts: Array<{ method: string; origin?: string; form: string | null }> = [];
+  await page.route(`${providerOrigin}/logout`, async (route) => {
+    const req = route.request();
+    capturedPosts.push({
+      method: req.method(),
+      origin: req.headers().origin,
+      form: req.postData(),
+    });
+    await route.fulfill({ status: 200, body: "Provider logout finalized" });
+  });
+
+  await registerIdentity(page, `provider-logout-race-${Date.now()}@example.com`);
+  const whoami = await page.request.get("/sessions/whoami");
+  expect(whoami.status()).toBe(200);
+  const session = (await whoami.json()) as { id: string; active: boolean };
+  expect(session.active).toBe(true);
+  expect(session.id).toMatch(/^[a-f0-9-]{36}$/i);
+
+  const handoff = new URL("/logout", appOrigin);
+  handoff.search = new URLSearchParams({
+    flow: "logout",
+    transaction: "txn-real-race",
+    csrf: "csrf-real-race",
+    return_to: `${providerOrigin}/logout`,
+  }).toString();
+  const start = await page.request.get(handoff.href, { maxRedirects: 0 });
+  expect(start.status()).toBe(303);
+  const browserLogout = new URL(start.headers().location, appOrigin);
+  expect(browserLogout.origin).toBe(appOrigin);
+  expect(browserLogout.pathname).toBe("/self-service/logout");
+  expect(browserLogout.searchParams.get("token")).toBeTruthy();
+  expect(browserLogout.searchParams.get("return_to")).toBe(completionUrl);
+
+  // Revoke only this test session on the loopback fixture, without clearing the
+  // browser cookie, after issuing the flow and before following its redirect.
+  const revoked = await request.delete(
+    `http://127.0.0.1:4434/admin/sessions/${encodeURIComponent(session.id)}`,
+    { maxRedirects: 0 },
+  );
+  expect(revoked.status()).toBe(204);
+
+  const [response] = await Promise.all([
+    page.waitForResponse((candidate) => candidate.url() === browserLogout.href),
+    page.goto(browserLogout.href),
+  ]);
+  expect(response.status()).toBe(303);
+  expect(new URL(response.headers().location, appOrigin).href).toBe(completionUrl);
+  await expect(page.getByText("Provider logout finalized")).toBeVisible();
+  expect(capturedPosts).toHaveLength(1);
+  expect(capturedPosts[0]).toMatchObject({ method: "POST", origin: appOrigin });
+  expect(Object.fromEntries(new URLSearchParams(capturedPosts[0].form ?? ""))).toEqual({
+    transaction: "txn-real-race",
+    csrf: "csrf-real-race",
+  });
+});
+
 test("finalizes provider-mediated logout when real Kratos already has no active session", async ({
   page,
 }) => {
