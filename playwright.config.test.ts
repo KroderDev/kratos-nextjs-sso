@@ -16,6 +16,7 @@ type LooseConfig = {
   testIgnore?: string[];
   webServer?: WebServer | WebServer[];
   use?: { baseURL?: string; extraHTTPHeaders?: Record<string, string> };
+  projects?: { name?: string; use?: { launchOptions?: { executablePath?: string } } }[];
 };
 
 function asArray(server: WebServer | WebServer[] | undefined): WebServer[] {
@@ -74,6 +75,9 @@ describe("playwright.config.ts", () => {
     expect(appServer?.env?.NEXT_PUBLIC_ORY_SDK_URL).toBe(
       "http://127.0.0.1:4010",
     );
+    expect(appServer?.env?.ORY_SDK_URL).toBe(
+      "http://127.0.0.1:4010",
+    );
     expect(servers.every((server) => server.reuseExistingServer === false)).toBe(true);
   });
 
@@ -96,6 +100,9 @@ describe("playwright.config.ts", () => {
     expect(oidcServer?.port).toBe(4020);
     expect(appServer?.port).toBe(3002);
     expect(appServer?.env?.NEXT_PUBLIC_ORY_SDK_URL).toBe(
+      "http://127.0.0.1:4010",
+    );
+    expect(appServer?.env?.ORY_SDK_URL).toBe(
       "http://127.0.0.1:4010",
     );
     expect(appServer?.env?.NEXT_PUBLIC_ORY_OAUTH_ORIGINS).toBe(
@@ -129,6 +136,18 @@ describe("playwright.config.ts", () => {
     expect(config.use?.baseURL).toBe("http://127.0.0.1:3102");
     expect(appServer?.port).toBe(3102);
     expect(servers[0]?.port).toBe(4110);
+    expect(servers[0]?.env?.APP_PORT).toBe("3102");
+  });
+
+  it("honors an explicit local Chromium binary for auth validation", async () => {
+    const executablePath = "/local/tools/chromium";
+    const config = await loadConfig({
+      PLAYWRIGHT_AUTH: "1",
+      PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: executablePath,
+    });
+
+    expect(config.projects?.find(({ name }) => name === "chromium")?.use?.launchOptions)
+      .toEqual({ executablePath });
   });
 });
 

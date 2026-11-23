@@ -146,4 +146,52 @@ describe("ConsentForm", () => {
     expect(form?.getAttribute("aria-busy")).toBeNull();
     expect(button?.hasAttribute("disabled")).toBe(false);
   });
+
+  it("keeps an unsubmitted form usable after a persisted restore", () => {
+    mountedContainer = document.createElement("div");
+    document.body.append(mountedContainer);
+    mountedRoot = createRoot(mountedContainer);
+    act(() => mountedRoot?.render(<ConsentForm><button type="submit">Allow</button></ConsentForm>));
+    const event = new Event("pageshow");
+    Object.defineProperty(event, "persisted", { value: true });
+    act(() => window.dispatchEvent(event));
+    expect(mountedContainer.querySelector("button")?.disabled).toBe(false);
+    const submit = new Event("submit", { bubbles: true, cancelable: true });
+    act(() => { mountedContainer?.querySelector("form")?.dispatchEvent(submit); });
+    expect(submit.defaultPrevented).toBe(false);
+  });
+
+  it("blocks replay if the page is restored from bfcache", () => {
+    mountedContainer = document.createElement("div");
+    document.body.append(mountedContainer);
+    mountedRoot = createRoot(mountedContainer);
+
+    act(() => {
+      mountedRoot?.render(
+        <ConsentForm action="https://provider.example/logout" method="post">
+          <button type="submit">Continue</button>
+        </ConsentForm>,
+      );
+    });
+
+    const form = mountedContainer.querySelector("form");
+    const button = mountedContainer.querySelector("button");
+    form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    button?.removeAttribute("disabled");
+    const persistedEvent = new Event("pageshow") as PageTransitionEvent;
+    Object.defineProperty(persistedEvent, "persisted", { value: true });
+
+    act(() => {
+      window.dispatchEvent(persistedEvent);
+    });
+
+    const submit = new Event("submit", { bubbles: true, cancelable: true });
+    act(() => {
+      form?.dispatchEvent(submit);
+    });
+
+    expect(submit.defaultPrevented).toBe(true);
+    expect(form?.getAttribute("aria-busy")).toBe("true");
+    expect(button?.hasAttribute("disabled")).toBe(true);
+  });
 });

@@ -18,6 +18,7 @@ selfservice:
     - http://127.0.0.1:3002/verification
     - http://127.0.0.1:3002/consent
     - http://127.0.0.1:3002/logout
+    - http://127.0.0.1:3002/logout/complete
     - http://127.0.0.1:3002/error
     - http://127.0.0.1:3002/dashboard
     - http://127.0.0.1:3002/dashboard/settings
