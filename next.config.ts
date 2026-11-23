@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 import { getConfiguredOrigins, getFormActionSources } from "./lib/ory/csp";
 import { isValidApplicationOrigin } from "./lib/ory/request";
+import { httpOrigin } from "./lib/ory/security";
 
 /**
  * Validates the application origin when Ory is configured in production.
@@ -30,6 +31,7 @@ function assertApplicationOrigin() {
 assertApplicationOrigin();
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["127.0.0.1"],
   output: process.env.VERCEL ? undefined : "standalone",
   devIndicators: { position: "bottom-left" },
   async redirects() {
@@ -67,8 +69,13 @@ const nextConfig: NextConfig = {
     const formActionOrigins = getConfiguredOrigins(
       process.env.NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS,
     );
+    const providerOrigin = httpOrigin(
+      process.env.NEXT_PUBLIC_ORY_CANONICAL_URL ||
+        (process.env.NEXT_PUBLIC_ORY_SDK_URL ?? process.env.ORY_SDK_URL),
+    );
     const formSources = getFormActionSources(
       sdkOrigin,
+      providerOrigin ? [providerOrigin] : [],
       oauthOrigins,
       formActionOrigins,
     );
@@ -105,6 +112,30 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: securityHeaders,
+      },
+      {
+        source: "/logout",
+        headers: [
+          { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
+          { key: "Pragma", value: "no-cache" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
+      {
+        source: "/auth/logout",
+        headers: [
+          { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
+          { key: "Pragma", value: "no-cache" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
+      {
+        source: "/logout/complete",
+        headers: [
+          { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
+          { key: "Pragma", value: "no-cache" },
+          { key: "Referrer-Policy", value: "strict-origin" },
+        ],
       },
     ];
   },

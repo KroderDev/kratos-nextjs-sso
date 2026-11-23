@@ -233,6 +233,11 @@ describe("Ory flow helpers", () => {
   it("translates text to Spanish when es locale is passed", () => {
     expect(translateOryText("email", "es")).toBe("Correo electrónico");
     expect(translateOryText("sign in", "es")).toBe("Iniciar sesión");
+    expect(translateOryText("Authentication code", "es")).toBe("Código de autenticación");
+    expect(translateOryText("Create account", "es")).toBe("Crear una cuenta");
+    expect(translateOryText("Send recovery link", "es")).toBe("Enviar enlace de recuperación");
+    expect(translateOryText("Send recovery code", "es")).toBe("Enviar código de recuperación");
+    expect(translateOryText("Send verification link", "es")).toBe("Enviar enlace de verificación");
     expect(translateOryText("Generate new backup recovery codes", "es")).toBe(
       "Generar nuevos códigos de recuperación de respaldo",
     );

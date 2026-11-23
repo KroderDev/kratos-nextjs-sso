@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 import Link from "next/link";
 
-import { AccountMenu } from "@/components/dashboard/account-menu";
+import { AccountMenu, type AccountMenuAction } from "@/components/dashboard/account-menu";
 import { Brand } from "@/components/layout/brand";
 import { DashboardContentReady } from "@/components/layout/dashboard-content-ready";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -20,9 +20,10 @@ type DashboardShellProps = {
     label: string;
     logoutUrl: string;
   };
+  onAccountAction?: (action: AccountMenuAction) => void;
 };
 
-export function DashboardShell({ activeNav, account, children }: DashboardShellProps) {
+export function DashboardShell({ activeNav, account, children, onAccountAction }: DashboardShellProps) {
   const { t } = useTranslation();
 
   return (
@@ -55,7 +56,7 @@ export function DashboardShell({ activeNav, account, children }: DashboardShellP
           </nav>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            {account ? <AccountMenu {...account} /> : null}
+            {account ? <AccountMenu {...account} onAction={onAccountAction} /> : null}
           </div>
         </div>
       </header>

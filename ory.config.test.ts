@@ -4,8 +4,10 @@ import config, {
   consentRememberMode,
   isRegistrationEnabled,
   orySdkUrl,
-  orySetupMessage,
+  orySetupReason,
   parseConsentRememberMode,
+  parseRequiredAal,
+  requiredAal,
 } from "./ory.config";
 
 describe("ory.config", () => {
@@ -33,6 +35,27 @@ describe("ory.config", () => {
     expect(parseConsentRememberMode(" NEVER ")).toBe("never");
     expect(parseConsentRememberMode("unsupported")).toBe("always");
     expect(parseConsentRememberMode(undefined)).toBe("always");
+  });
+
+  it("normalizes required AAL settings and defaults to aal1", () => {
+    expect(requiredAal).toBe("aal1");
+    expect(parseRequiredAal("aal2")).toBe("aal2");
+    expect(parseRequiredAal(" AAL3 ")).toBe("aal3");
+    expect(parseRequiredAal("aal1")).toBe("aal1");
+    expect(parseRequiredAal("invalid")).toBe("aal1");
+    expect(parseRequiredAal(undefined)).toBe("aal1");
+  });
+
+  it("reads required AAL from environment variables", async () => {
+    vi.resetModules();
+    vi.stubEnv("ORY_REQUIRED_AAL", "aal2");
+
+    try {
+      const configured = await import("./ory.config");
+      expect(configured.requiredAal).toBe("aal2");
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("reads the consent remember mode from the server environment", async () => {
@@ -89,16 +112,16 @@ describe("ory.config", () => {
     }
   });
 
-  it("provides appropriate setup message depending on configuration state", () => {
-    if (!orySdkUrl) {
-      expect(orySetupMessage).toContain("not configured");
-    } else {
-      expect(orySetupMessage).toContain("unavailable");
-    }
+  it("exposes a localization-safe setup reason instead of user-facing copy", () => {
+    expect(orySetupReason).toBe(orySdkUrl ? "unavailable" : "notConfigured");
+    expect(orySetupReason).not.toMatch(/\s/);
   });
 
   it("normalizes configured URLs and uses the project name", async () => {
     vi.resetModules();
+    vi.stubEnv("APP_URL", undefined);
+    vi.stubEnv("ORY_SDK_URL", undefined);
+    vi.stubEnv("ORY_CANONICAL_URL", undefined);
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://app.example/");
     vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "https://tenant.oryapis.com/");
     vi.stubEnv("NEXT_PUBLIC_ORY_CANONICAL_URL", "https://ory.example/");
@@ -110,9 +133,10 @@ describe("ory.config", () => {
       expect(configured.appBaseUrl).toBe("https://app.example");
       expect(configured.orySdkUrl).toBe("https://tenant.oryapis.com");
       expect(configured.oryCanonicalUrl).toBe("https://ory.example");
+      expect(configured.oryProviderOrigin).toBe("https://ory.example");
       expect(configured.isOryConfigured).toBe(true);
       expect(configured.default.project.name).toBe("Example project");
-      expect(configured.orySetupMessage).toContain("unavailable");
+      expect(configured.orySetupReason).toBe("unavailable");
     } finally {
       vi.unstubAllEnvs();
     }
@@ -120,6 +144,7 @@ describe("ory.config", () => {
 
   it("does not treat an Ory network URL as configured without a project token", async () => {
     vi.resetModules();
+    vi.stubEnv("ORY_SDK_URL", undefined);
     vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "https://tenant.oryapis.com");
     vi.stubEnv("ORY_PROJECT_API_TOKEN", "");
 
@@ -141,6 +166,27 @@ describe("ory.config", () => {
       const configured = await import("./ory.config");
       expect(configured.orySdkUrl).toBe("http://localhost:4010");
       expect(configured.isOryConfigured).toBe(true);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it.each([
+    ["https://auth.example:443/base/", "https://auth.example"],
+    ["", "http://127.0.0.1:4433"],
+    ["not-a-url", undefined],
+    ["ftp://auth.example", undefined],
+    ["https://user:password@auth.example", undefined],
+  ])("resolves the public provider origin from canonical %j", async (canonical, expected) => {
+    vi.resetModules();
+    vi.stubEnv("ORY_SDK_URL", undefined);
+    vi.stubEnv("ORY_CANONICAL_URL", undefined);
+    vi.stubEnv("NEXT_PUBLIC_ORY_SDK_URL", "http://127.0.0.1:4433");
+    vi.stubEnv("NEXT_PUBLIC_ORY_CANONICAL_URL", canonical);
+    try {
+      const configured = await import("./ory.config");
+      expect(configured.oryProviderOrigin).toBe(expected);
+      expect(configured.orySdkUrl).toBe("http://127.0.0.1:4433");
     } finally {
       vi.unstubAllEnvs();
     }

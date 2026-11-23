@@ -1,4 +1,4 @@
-import { appBaseUrl, orySdkUrl } from "@/ory.config";
+import { appBaseUrl, oryProviderOrigin } from "@/ory.config";
 
 export type ProviderFlow = "login" | "consent" | "logout";
 type ProviderFlowValue = ProviderFlow | "logout";
@@ -70,19 +70,6 @@ function isOpaqueValue(value: string | undefined): value is string {
 }
 
 /**
- * Extracts the origin from the configured Ory SDK URL.
- *
- * @returns The URL origin, or `undefined` when the configured URL is invalid.
- */
-function providerOrigin() {
-  try {
-    return new URL(orySdkUrl).origin;
-  } catch {
-    return undefined;
-  }
-}
-
-/**
  * Validates a provider callback URL for the specified flow.
  *
  * @param value - The callback URL to validate
@@ -107,7 +94,7 @@ export function validateProviderCallback(
   try {
     const parsed = new URL(value);
     if (
-      parsed.origin !== providerOrigin() ||
+      parsed.origin !== oryProviderOrigin ||
       parsed.username ||
       parsed.password ||
       parsed.hash ||
@@ -314,13 +301,20 @@ export function providerLoginParams(params: FlowSearchParams): FlowSearchParams 
   return clean;
 }
 
+export type LogoutHandoff = {
+  csrf: string;
+  locale?: LocaleParam;
+  providerReturnTo: string;
+  transaction: string;
+};
+
 /**
  * Validates the logout handoff before the UI starts the Kratos logout flow.
  *
  * @param params - Query parameters from the login-consent provider
  * @returns The validated provider callback data, or `null` for an invalid handoff
  */
-export function providerLogoutParams(params: FlowSearchParams) {
+export function providerLogoutParams(params: FlowSearchParams): LogoutHandoff | null {
   if (providerFlow(params) !== "logout") {
     return null;
   }
@@ -340,8 +334,11 @@ export function providerLogoutParams(params: FlowSearchParams) {
     return null;
   }
 
+  const locale = localeFromParams(params);
+
   return {
     csrf,
+    ...(locale ? { locale } : {}),
     providerReturnTo: providerReturnTo.toString(),
     transaction,
   };

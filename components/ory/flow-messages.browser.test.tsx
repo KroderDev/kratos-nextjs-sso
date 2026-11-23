@@ -65,7 +65,7 @@ describe("FlowMessages browser behavior", () => {
     expect(mountedContainer.innerHTML).toBe("");
   });
 
-  it("does not announce inline messages from the client effect", async () => {
+  it("renders inline info messages as status notices without sending toasts", async () => {
     mountedContainer = document.createElement("div");
     document.body.append(mountedContainer);
     mountedRoot = createRoot(mountedContainer);
@@ -78,6 +78,9 @@ describe("FlowMessages browser behavior", () => {
 
     expect(toast.add).not.toHaveBeenCalled();
     expect(mountedContainer.textContent).toContain("An inline message");
+    expect(mountedContainer.querySelector('[data-flow-message="info"]')).not.toBeNull();
+    expect(mountedContainer.querySelector('[role="status"]')).not.toBeNull();
+    expect(mountedContainer.querySelector('[data-slot="alert"]')).not.toBeNull();
   });
 
   it("does not announce a toast flow with no messages", async () => {

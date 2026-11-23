@@ -19,6 +19,30 @@ describe("provider URL security", () => {
     expect(isSafeProviderUrl("https://project.oryapis.com/self-service/login", origins)).toBe(true);
   });
 
+  it.each([
+    "/\\attacker.example/login",
+    "\\\\attacker.example/login",
+    "\\/attacker.example/login",
+    " //attacker.example/login",
+    "\t//attacker.example/login",
+    "\n//attacker.example/login",
+    "\r\n/\\attacker.example/login",
+    "/\t/attacker.example/login",
+    "//project.oryapis.com/login",
+    " /\\project.oryapis.com/login",
+    " //invalid.local/login",
+    "/\\invalid.local/login",
+    "\u0000//invalid.local/login",
+  ])("rejects normalized network-path inputs: %j", (value) => {
+    expect(isSafeProviderUrl(value, origins)).toBe(false);
+    expect(isSafeFlowAction(value, origins)).toBe(false);
+  });
+
+  it.each(["self-service/login", "./login", "../login", "?flow=123", "/login?return_to=https%3A%2F%2Fexample.com"])(
+    "allows same-origin relative input: %s",
+    (value) => expect(isSafeProviderUrl(value, origins)).toBe(true),
+  );
+
   it("handles null, empty, or undefined input gracefully", () => {
     expect(isSafeProviderUrl(undefined, origins)).toBe(false);
     expect(isSafeProviderUrl("", origins)).toBe(false);

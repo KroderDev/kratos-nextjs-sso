@@ -29,7 +29,7 @@ vi.mock("@/ory.config", () => ({
   },
   oryCanonicalUrl: "",
   orySdkUrl: "",
-  orySetupMessage: "",
+  orySetupReason: "notConfigured",
 }));
 
 vi.mock("@/lib/i18n/server", () => ({
@@ -132,6 +132,7 @@ describe("RegistrationPage", () => {
     );
 
     expect(markup).toContain('name="traits.email"');
+    expect(markup).toContain('data-slot="auth-legal-links"');
   });
 
   it("renders the unavailable state when the provider returns no flow", async () => {
@@ -152,6 +153,7 @@ describe("RegistrationPage", () => {
     );
 
     expect(markup).toContain("Access is temporarily unavailable");
+    expect(markup).toContain('data-slot="auth-legal-links"');
     expect(mockGetRegistrationFlow).not.toHaveBeenCalled();
   });
 });

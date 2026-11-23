@@ -17,11 +17,12 @@ const appServer = {
     HOSTNAME: "127.0.0.1",
     PORT: PORT.toString(),
     NEXT_PUBLIC_BRAND_NAME: "CI",
-    NEXT_PUBLIC_BRAND_MARK: "C",
     NEXT_PUBLIC_APP_URL: `http://127.0.0.1:${PORT}`,
     NEXT_PUBLIC_ORY_SDK_URL: isAuthMode ? `http://127.0.0.1:${KRATOS_PORT}` : "",
+    NEXT_PUBLIC_ORY_CANONICAL_URL: "",
+    NEXT_PUBLIC_ORY_REGISTRATION_ENABLED: "true",
     NEXT_PUBLIC_ORY_OAUTH_ORIGINS: isRealKratosMode ? `http://127.0.0.1:${OIDC_PORT}` : "",
-    ORY_SDK_URL: "",
+    ORY_SDK_URL: isAuthMode ? `http://127.0.0.1:${KRATOS_PORT}` : "",
     NEXT_PUBLIC_ORY_PROJECT_NAME: "CI",
     ORY_PROJECT_API_TOKEN: "",
     NEXT_TELEMETRY_DISABLED: "1",
@@ -59,7 +60,16 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+          ? {
+              launchOptions: {
+                executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+              },
+            }
+          : {}),
+      },
     },
   ],
 
@@ -81,7 +91,10 @@ export default defineConfig({
                 port: KRATOS_PORT,
                 reuseExistingServer: !process.env.CI,
                 timeout: 30_000,
-                env: { PORT: KRATOS_PORT.toString() },
+                env: {
+                  PORT: KRATOS_PORT.toString(),
+                  APP_PORT: PORT.toString(),
+                },
               },
             ]),
         appServer,

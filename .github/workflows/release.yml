@@ -16,19 +16,15 @@ on:
       next_public_brand_name:
         description: Brand name (NEXT_PUBLIC_BRAND_NAME)
         required: false
-        default: "Your Platform"
-      next_public_brand_mark:
-        description: Brand mark (NEXT_PUBLIC_BRAND_MARK)
-        required: false
-        default: YP
+        default: ""
       next_public_brand_logo_light:
         description: Light logo path (NEXT_PUBLIC_BRAND_LOGO_LIGHT)
         required: false
-        default: /next.svg
+        default: ""
       next_public_brand_logo_dark:
         description: Dark logo path (NEXT_PUBLIC_BRAND_LOGO_DARK)
         required: false
-        default: /next-dark.svg
+        default: ""
       next_public_brand_favicon_light:
         description: Light favicon path (NEXT_PUBLIC_BRAND_FAVICON_LIGHT)
         required: false
@@ -60,7 +56,7 @@ on:
       next_public_ory_registration_enabled:
         description: Show the registration link (NEXT_PUBLIC_ORY_REGISTRATION_ENABLED)
         required: false
-        default: "true"
+        default: ""
 
 jobs:
   push:
@@ -72,19 +68,18 @@ jobs:
       attestations: write
 
     env:
-      NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL || inputs.next_public_app_url || '' }}
-      NEXT_PUBLIC_BRAND_NAME: ${{ vars.NEXT_PUBLIC_BRAND_NAME || inputs.next_public_brand_name || 'Your Platform' }}
-      NEXT_PUBLIC_BRAND_MARK: ${{ vars.NEXT_PUBLIC_BRAND_MARK || inputs.next_public_brand_mark || 'YP' }}
-      NEXT_PUBLIC_BRAND_LOGO_LIGHT: ${{ vars.NEXT_PUBLIC_BRAND_LOGO_LIGHT || inputs.next_public_brand_logo_light || '/next.svg' }}
-      NEXT_PUBLIC_BRAND_LOGO_DARK: ${{ vars.NEXT_PUBLIC_BRAND_LOGO_DARK || inputs.next_public_brand_logo_dark || '/next-dark.svg' }}
-      NEXT_PUBLIC_BRAND_FAVICON_LIGHT: ${{ vars.NEXT_PUBLIC_BRAND_FAVICON_LIGHT || inputs.next_public_brand_favicon_light || '' }}
-      NEXT_PUBLIC_BRAND_FAVICON_DARK: ${{ vars.NEXT_PUBLIC_BRAND_FAVICON_DARK || inputs.next_public_brand_favicon_dark || '' }}
-      NEXT_PUBLIC_ORY_SDK_URL: ${{ vars.NEXT_PUBLIC_ORY_SDK_URL || inputs.next_public_ory_sdk_url || '' }}
-      NEXT_PUBLIC_ORY_CANONICAL_URL: ${{ vars.NEXT_PUBLIC_ORY_CANONICAL_URL || inputs.next_public_ory_canonical_url || '' }}
-      NEXT_PUBLIC_ORY_OAUTH_ORIGINS: ${{ vars.NEXT_PUBLIC_ORY_OAUTH_ORIGINS || inputs.next_public_ory_oauth_origins || '' }}
-      NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS: ${{ vars.NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS || inputs.next_public_ory_form_action_origins || '' }}
-      NEXT_PUBLIC_ORY_PROJECT_NAME: ${{ vars.NEXT_PUBLIC_ORY_PROJECT_NAME || inputs.next_public_ory_project_name || 'Your Platform' }}
-      NEXT_PUBLIC_ORY_REGISTRATION_ENABLED: ${{ vars.NEXT_PUBLIC_ORY_REGISTRATION_ENABLED || inputs.next_public_ory_registration_enabled || 'true' }}
+      NEXT_PUBLIC_APP_URL: ${{ inputs.next_public_app_url || vars.NEXT_PUBLIC_APP_URL || '' }}
+      NEXT_PUBLIC_BRAND_NAME: ${{ inputs.next_public_brand_name || vars.NEXT_PUBLIC_BRAND_NAME || 'Kratos SSO' }}
+      NEXT_PUBLIC_BRAND_LOGO_LIGHT: ${{ inputs.next_public_brand_logo_light || vars.NEXT_PUBLIC_BRAND_LOGO_LIGHT || '' }}
+      NEXT_PUBLIC_BRAND_LOGO_DARK: ${{ inputs.next_public_brand_logo_dark || vars.NEXT_PUBLIC_BRAND_LOGO_DARK || '' }}
+      NEXT_PUBLIC_BRAND_FAVICON_LIGHT: ${{ inputs.next_public_brand_favicon_light || vars.NEXT_PUBLIC_BRAND_FAVICON_LIGHT || '' }}
+      NEXT_PUBLIC_BRAND_FAVICON_DARK: ${{ inputs.next_public_brand_favicon_dark || vars.NEXT_PUBLIC_BRAND_FAVICON_DARK || '' }}
+      NEXT_PUBLIC_ORY_SDK_URL: ${{ inputs.next_public_ory_sdk_url || vars.NEXT_PUBLIC_ORY_SDK_URL || '' }}
+      NEXT_PUBLIC_ORY_CANONICAL_URL: ${{ inputs.next_public_ory_canonical_url || vars.NEXT_PUBLIC_ORY_CANONICAL_URL || '' }}
+      NEXT_PUBLIC_ORY_OAUTH_ORIGINS: ${{ inputs.next_public_ory_oauth_origins || vars.NEXT_PUBLIC_ORY_OAUTH_ORIGINS || '' }}
+      NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS: ${{ inputs.next_public_ory_form_action_origins || vars.NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS || '' }}
+      NEXT_PUBLIC_ORY_PROJECT_NAME: ${{ inputs.next_public_ory_project_name || vars.NEXT_PUBLIC_ORY_PROJECT_NAME || 'Kratos SSO' }}
+      NEXT_PUBLIC_ORY_REGISTRATION_ENABLED: ${{ inputs.next_public_ory_registration_enabled || vars.NEXT_PUBLIC_ORY_REGISTRATION_ENABLED || 'true' }}
 
     steps:
       - uses: actions/checkout@v7
@@ -150,7 +145,6 @@ jobs:
           build-args: |
             NEXT_PUBLIC_APP_URL=${{ env.NEXT_PUBLIC_APP_URL }}
             NEXT_PUBLIC_BRAND_NAME=${{ env.NEXT_PUBLIC_BRAND_NAME }}
-            NEXT_PUBLIC_BRAND_MARK=${{ env.NEXT_PUBLIC_BRAND_MARK }}
             NEXT_PUBLIC_BRAND_LOGO_LIGHT=${{ env.NEXT_PUBLIC_BRAND_LOGO_LIGHT }}
             NEXT_PUBLIC_BRAND_LOGO_DARK=${{ env.NEXT_PUBLIC_BRAND_LOGO_DARK }}
             NEXT_PUBLIC_BRAND_FAVICON_LIGHT=${{ env.NEXT_PUBLIC_BRAND_FAVICON_LIGHT }}

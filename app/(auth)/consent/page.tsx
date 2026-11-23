@@ -5,18 +5,11 @@ import { AuthContent } from "@/components/layout/auth-shell";
 import { ConsentForm } from "@/components/ory/consent-form";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { consentHandoff } from "@/lib/ory/provider-handoff";
 import { getTranslations } from "@/lib/i18n/server";
 import { applicationUrl } from "@/lib/ory/url";
+import { getConsentScopeTranslationKeys } from "@/lib/ory/consent-scopes";
 import { consentRememberMode } from "@/ory.config";
 
 export const dynamic = "force-dynamic";
@@ -69,69 +62,95 @@ export default async function ConsentPage({ searchParams }: ConsentPageProps) {
   return (
     <AuthContent
       description={t("auth.consent.description", { client: clientName })}
-      eyebrow={t("auth.consent.eyebrow")}
       title={t("auth.consent.title", { client: clientName })}
     >
-      <Card className="border-border/70 bg-card/85 shadow-xl shadow-foreground/5 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle>{t("auth.consent.permissionsTitle")}</CardTitle>
-          <CardDescription>{t("auth.consent.permissionsDescription")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {handoff.scopes.length > 0 ? (
-            <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-              {handoff.scopes.map((scope) => (
-                <li key={scope}>{scope}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">{t("auth.consent.basicAccess")}</p>
-          )}
-        </CardContent>
-        <CardFooter className="flex flex-col items-stretch gap-3 sm:flex-row sm:justify-end">
-          <ConsentForm
-            action={handoff.providerReturnTo}
-            autoSubmit={handoff.skipConsent}
-            className="flex flex-col gap-3 sm:flex-row sm:items-center"
-            method="post"
-          >
-            <input name="transaction" type="hidden" value={handoff.transaction} />
-            <input name="csrf" type="hidden" value={handoff.csrf} />
-            <input name="decision" type="hidden" value="accept" />
-            {handoff.scopes.map((scope) => (
-              <input key={scope} name="grant_scope" type="hidden" value={scope} />
-            ))}
-            {consentRememberMode === "always" ? (
-              <input name="remember" type="hidden" value="true" />
-            ) : consentRememberMode === "prompt" ? (
-              <Field className="w-auto items-center" orientation="horizontal">
-                <Checkbox
-                  id="consent-remember"
-                  name="remember"
-                  value="true"
-                />
-                <FieldLabel
-                  className="text-muted-foreground"
-                  htmlFor="consent-remember"
+      <section
+        aria-labelledby="consent-permissions-title"
+        className="border-t border-border/70 pt-5"
+      >
+        <h2 className="text-sm font-semibold" id="consent-permissions-title">
+          {t("auth.consent.permissionsTitle")}
+        </h2>
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">
+          {t("auth.consent.permissionsDescription")}
+        </p>
+        {handoff.scopes.length > 0 ? (
+          <ul className="mt-4 flex flex-col gap-2.5">
+            {handoff.scopes.map((scope, index) => {
+              const translationKeys = getConsentScopeTranslationKeys(scope);
+
+              return (
+                <li
+                  className="flex items-start gap-3 rounded-lg border border-border/70 bg-muted/30 px-3.5 py-3"
+                  key={`${scope}-${index}`}
                 >
-                  {t("auth.consent.remember")}
-                </FieldLabel>
-              </Field>
-            ) : null}
-            <Button className="w-full sm:w-auto" type="submit">
-              {t("auth.consent.allow")}
-            </Button>
-          </ConsentForm>
-          <form action={handoff.providerReturnTo} method="post">
-            <input name="transaction" type="hidden" value={handoff.transaction} />
-            <input name="csrf" type="hidden" value={handoff.csrf} />
-            <input name="decision" type="hidden" value="deny" />
-            <Button className="w-full sm:w-auto" type="submit" variant="outline">
-              {t("auth.consent.deny")}
-            </Button>
-          </form>
-        </CardFooter>
-      </Card>
+                  <span
+                    aria-hidden="true"
+                    className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary"
+                  />
+                  <div className="min-w-0">
+                    <p className="break-words text-sm font-medium text-foreground">
+                      {translationKeys ? t(translationKeys.title) : scope}
+                    </p>
+                    {translationKeys ? (
+                      <p className="mt-0.5 text-xs leading-5 text-muted-foreground sm:text-sm">
+                        {t(translationKeys.description)}
+                      </p>
+                    ) : null}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="mt-4 rounded-lg border border-border/70 bg-muted/30 px-3.5 py-3 text-sm text-muted-foreground">
+            {t("auth.consent.basicAccess")}
+          </p>
+        )}
+      </section>
+      <div className="flex flex-col gap-3 border-t border-border/70 pt-5 sm:flex-row sm:items-center">
+        <ConsentForm
+          action={handoff.providerReturnTo}
+          autoSubmit={handoff.skipConsent}
+          className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-center"
+          method="post"
+        >
+          <input name="transaction" type="hidden" value={handoff.transaction} />
+          <input name="csrf" type="hidden" value={handoff.csrf} />
+          <input name="decision" type="hidden" value="accept" />
+          {handoff.scopes.map((scope) => (
+            <input key={scope} name="grant_scope" type="hidden" value={scope} />
+          ))}
+          {consentRememberMode === "always" ? (
+            <input name="remember" type="hidden" value="true" />
+          ) : consentRememberMode === "prompt" ? (
+            <Field className="w-auto items-center" orientation="horizontal">
+              <Checkbox
+                id="consent-remember"
+                name="remember"
+                value="true"
+              />
+              <FieldLabel
+                className="text-sm text-foreground"
+                htmlFor="consent-remember"
+              >
+                {t("auth.consent.remember")}
+              </FieldLabel>
+            </Field>
+          ) : null}
+          <Button className="min-h-11 w-full sm:ml-auto sm:w-auto" type="submit">
+            {t("auth.consent.allow")}
+          </Button>
+        </ConsentForm>
+        <form action={handoff.providerReturnTo} className="sm:shrink-0" method="post">
+          <input name="transaction" type="hidden" value={handoff.transaction} />
+          <input name="csrf" type="hidden" value={handoff.csrf} />
+          <input name="decision" type="hidden" value="deny" />
+          <Button className="min-h-11 w-full sm:w-auto" type="submit" variant="outline">
+            {t("auth.consent.deny")}
+          </Button>
+        </form>
+      </div>
     </AuthContent>
   );
 }

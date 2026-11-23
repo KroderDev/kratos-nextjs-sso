@@ -1,4 +1,5 @@
 import { brandName } from "@/lib/branding";
+import { httpOrigin } from "@/lib/ory/security";
 
 export const consentRememberModes = ["always", "prompt", "never"] as const;
 export type ConsentRememberMode = (typeof consentRememberModes)[number];
@@ -14,14 +15,24 @@ export function parseConsentRememberMode(value: string | undefined): ConsentReme
     : "always";
 }
 
-const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
+export function parseRequiredAal(value: string | undefined): "aal1" | "aal2" | "aal3" {
+  const normalized = value?.trim().toLowerCase();
+  if (normalized === "aal2" || normalized === "aal3") {
+    return normalized;
+  }
+  return "aal1";
+}
+
+const configuredAppUrl = (
+  process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? ""
+).replace(/\/$/, "");
 
 const sdkUrl = (
-  process.env.NEXT_PUBLIC_ORY_SDK_URL ?? process.env.ORY_SDK_URL ?? ""
+  process.env.ORY_SDK_URL ?? process.env.NEXT_PUBLIC_ORY_SDK_URL ?? ""
 ).replace(/\/$/, "");
 
 const canonicalOryUrl = (
-  process.env.NEXT_PUBLIC_ORY_CANONICAL_URL ?? ""
+  process.env.ORY_CANONICAL_URL ?? process.env.NEXT_PUBLIC_ORY_CANONICAL_URL ?? ""
 ).replace(/\/$/, "");
 
 const pageUrl = (path: string) => path;
@@ -54,15 +65,20 @@ const config = {
 export const appBaseUrl = configuredAppUrl;
 export const orySdkUrl = sdkUrl;
 export const oryCanonicalUrl = canonicalOryUrl;
+// An invalid explicit canonical URL must not fall back to a private SDK endpoint.
+export const oryProviderOrigin = httpOrigin(canonicalOryUrl || sdkUrl);
 export const consentRememberMode = parseConsentRememberMode(
   process.env.ORY_CONSENT_REMEMBER_MODE,
+);
+export const requiredAal = parseRequiredAal(
+  process.env.ORY_REQUIRED_AAL ??
+    process.env.NEXT_PUBLIC_ORY_REQUIRED_AAL ??
+    process.env.REQUIRED_AAL,
 );
 export const isOryConfigured =
   Boolean(sdkUrl) && (!isOryNetworkUrl || hasProjectApiToken);
 export const isRegistrationEnabled =
   process.env.NEXT_PUBLIC_ORY_REGISTRATION_ENABLED !== "false";
-export const orySetupMessage = !sdkUrl
-  ? "The authentication service is not configured. Contact an administrator to enable access."
-  : "The authentication service is unavailable. Contact an administrator to enable access.";
+export const orySetupReason = !sdkUrl ? "notConfigured" : "unavailable";
 
 export default config;

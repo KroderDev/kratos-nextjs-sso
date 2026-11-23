@@ -29,7 +29,7 @@ describe("i18n locale registry", () => {
   });
 
   it("exports the localized provider actions", () => {
-    expect(en.ory.nodes.login).toBe("Login");
+    expect(en.ory.nodes.login).toBe("Sign in");
     expect(en.ory.nodes.continueWith).toBe("Continue with {provider}");
     expect(en.ory.nodes.connectWith).toBe("Connect with {provider}");
     expect(en.ory.nodes.unlinkWith).toBe("Unlink {provider}");
@@ -63,6 +63,10 @@ describe("i18n locale registry", () => {
     expect(en.auth.recovery.title).toBe("Recover your account");
     expect(en.auth.verification.title).toBe("Verify your email address");
     expect(en.auth.error.title).toBe("Unable to complete request");
+    expect(en.ory.setup.notConfigured).toContain("not configured");
+    expect(en.ory.setup.unavailable).toContain("unavailable");
+    expect(dictionaries.es.ory.setup.notConfigured).toContain("no está configurada");
+    expect(dictionaries.es.ory.setup.unavailable).toContain("no está disponible");
   });
 
   it("contains the recovery-code controls in every locale", () => {

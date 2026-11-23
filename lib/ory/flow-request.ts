@@ -13,6 +13,8 @@ import {
 import { getFlowFactory } from "@ory/nextjs/app";
 
 import { appBaseUrl, orySdkUrl } from "@/ory.config";
+import type { OryFlow } from "./types";
+import { rewriteOryFlow } from "./url";
 
 import {
   flowRequestHeaders,
@@ -77,14 +79,14 @@ function publicOrigin(incoming: Headers) {
  * @param params - Query parameters containing the flow identifier
  * @param flowType - The browser flow type to retrieve
  * @param route - The route associated with the flow
- * @returns The requested flow, `null`, or `undefined`
+ * @returns The requested flow, or `null` when unavailable
  */
-async function getBrowserFlow<T extends object>(
+async function getBrowserFlow<T extends OryFlow>(
   params: BrowserFlowParams | Promise<BrowserFlowParams>,
   flowType: FlowType,
   route: string,
   fetchFlow: RawFlowFetcher<T>,
-): Promise<T | null | void> {
+): Promise<T | null> {
   const resolvedParams = await params;
   const incoming = await headers();
   const request: FlowRequest = {
@@ -97,7 +99,8 @@ async function getBrowserFlow<T extends object>(
     }),
   );
 
-  return getFlowFactory<T>(
+  const origin = publicOrigin(incoming);
+  const flow = await getFlowFactory<T>(
     resolvedParams,
     () =>
       fetchFlow(client, request, {
@@ -105,20 +108,22 @@ async function getBrowserFlow<T extends object>(
         headers: flowRequestHeaders(incoming),
       }),
     flowType,
-    publicOrigin(incoming),
+    origin,
     route,
+    { disableRewrite: true },
   );
+  return rewriteOryFlow(flow, origin);
 }
 
 /**
  * Retrieves the login flow using the incoming request headers.
  *
  * @param params - Login flow query parameters or a promise resolving to them
- * @returns The login flow, `null`, or `void`
+ * @returns The login flow, or `null` when unavailable
  */
 export function getLoginFlowWithRequestHeaders(
   params: BrowserFlowParams | Promise<BrowserFlowParams>,
-): Promise<LoginFlow | null | void> {
+): Promise<LoginFlow | null> {
   return getBrowserFlow(
     params,
     FlowType.Login,
@@ -131,11 +136,11 @@ export function getLoginFlowWithRequestHeaders(
  * Retrieves the Ory registration flow using the incoming request headers.
  *
  * @param params - Registration flow query parameters
- * @returns The registration flow, `null`, or `void`
+ * @returns The registration flow, or `null` when unavailable
  */
 export function getRegistrationFlowWithRequestHeaders(
   params: BrowserFlowParams | Promise<BrowserFlowParams>,
-): Promise<RegistrationFlow | null | void> {
+): Promise<RegistrationFlow | null> {
   return getBrowserFlow(
     params,
     FlowType.Registration,
@@ -148,11 +153,11 @@ export function getRegistrationFlowWithRequestHeaders(
  * Retrieves the Ory recovery flow using the incoming request headers.
  *
  * @param params - Query parameters for the recovery flow
- * @returns The recovery flow, `null`, or `void`
+ * @returns The recovery flow, or `null` when unavailable
  */
 export function getRecoveryFlowWithRequestHeaders(
   params: BrowserFlowParams | Promise<BrowserFlowParams>,
-): Promise<RecoveryFlow | null | void> {
+): Promise<RecoveryFlow | null> {
   return getBrowserFlow(
     params,
     FlowType.Recovery,
@@ -165,11 +170,11 @@ export function getRecoveryFlowWithRequestHeaders(
  * Retrieves the Ory verification flow using the incoming request headers.
  *
  * @param params - Parameters used to identify the verification flow
- * @returns The verification flow, `null`, or `void` when no flow is available
+ * @returns The verification flow, or `null` when unavailable
  */
 export function getVerificationFlowWithRequestHeaders(
   params: BrowserFlowParams | Promise<BrowserFlowParams>,
-): Promise<VerificationFlow | null | void> {
+): Promise<VerificationFlow | null> {
   return getBrowserFlow(
     params,
     FlowType.Verification,
@@ -182,11 +187,11 @@ export function getVerificationFlowWithRequestHeaders(
  * Retrieves the Ory settings flow using the incoming request headers.
  *
  * @param params - Query parameters for the settings flow
- * @returns The settings flow, `null`, or `void`
+ * @returns The settings flow, or `null` when unavailable
  */
 export function getSettingsFlowWithRequestHeaders(
   params: BrowserFlowParams | Promise<BrowserFlowParams>,
-): Promise<SettingsFlow | null | void> {
+): Promise<SettingsFlow | null> {
   return getBrowserFlow(
     params,
     FlowType.Settings,

@@ -9,6 +9,6 @@ describe("FlowUnavailable", () => {
 
     expect(markup).toContain('role="alert"');
     expect(markup).toContain("This flow is no longer available");
-    expect(markup).toContain("Start again from the beginning");
+    expect(markup).toContain("Start again to request a new authentication session.");
   });
 });

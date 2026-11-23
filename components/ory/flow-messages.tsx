@@ -20,7 +20,7 @@ import { toast } from "@/components/ui/toast";
 type FlowMessagesProps = {
   flowState?: string | null;
   messages?: UiText[];
-  mode?: "inline" | "toast";
+  mode?: "inline" | "status" | "toast";
 };
 
 type FlowMessageTranslator = (key: string) => string;
@@ -129,11 +129,11 @@ export function announceFlowMessages({
 }
 
 /**
- * Displays localized flow messages inline or announces them as toast notifications.
+ * Displays localized flow notices inline or announces them as toast notifications.
  *
  * @param flowState - Optional state of the flow used to classify informational messages.
  * @param messages - Messages to display or announce.
- * @param mode - Rendering mode: `inline` displays alerts, while `toast` announces notifications.
+ * @param mode - Rendering mode: `inline` displays flow notices, `status` presents a flow result, and `toast` announces notifications.
  */
 export function FlowMessages({ flowState, messages, mode = "inline" }: FlowMessagesProps) {
   const { t, locale } = useTranslation();
@@ -161,28 +161,60 @@ export function FlowMessages({ flowState, messages, mode = "inline" }: FlowMessa
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div
+      className={`flex flex-col gap-3 ${mode === "status" ? "w-full" : ""}`}
+      data-flow-messages={mode}
+    >
       {visibleMessages.map((message, index) => {
         const isError = message.type === "error";
         const isSuccess = message.type === "success";
-        const Icon = isError ? CircleAlert : isSuccess ? CircleCheck : Info;
-
-        const titleText = isError
-          ? t("ory.messages.actionNeeded")
+        const Icon = isError
+          ? CircleAlert
           : isSuccess
-            ? t("ory.messages.updated")
-            : t("ory.messages.note");
+            ? CircleCheck
+            : Info;
 
         return (
-          <Alert
-            key={`${message.id}-${index}`}
-            variant={isError ? "destructive" : "default"}
-            className={isSuccess ? "border-primary/25 bg-primary/5" : undefined}
-          >
-            <Icon aria-hidden="true" />
-            <AlertTitle>{titleText}</AlertTitle>
-            <AlertDescription>{getMessageText(message, locale)}</AlertDescription>
-          </Alert>
+          isError ? (
+            <Alert
+              className="border-destructive/25 bg-destructive/5"
+              key={`${message.id}-${index}`}
+              variant="destructive"
+            >
+              <Icon aria-hidden="true" />
+              <AlertTitle>{t("ory.messages.actionNeeded")}</AlertTitle>
+              <AlertDescription>{getMessageText(message, locale)}</AlertDescription>
+            </Alert>
+          ) : mode === "status" ? (
+            <div
+              aria-live="polite"
+              className="flex flex-col items-center gap-2 text-center"
+              data-flow-message={message.type}
+              key={`${message.id}-${index}`}
+              role="status"
+            >
+              <p className="max-w-sm text-base leading-7 text-foreground" data-slot="flow-message">
+                {getMessageText(message, locale)}
+              </p>
+            </div>
+          ) : (
+            <Alert
+              aria-live="polite"
+              className={
+                isSuccess
+                  ? "border-primary/25 bg-primary/5 [&>svg]:text-primary"
+                  : "border-border/70 bg-muted/35 [&>svg]:text-muted-foreground"
+              }
+              data-flow-message={message.type}
+              key={`${message.id}-${index}`}
+              role="status"
+            >
+              <Icon aria-hidden="true" />
+              <AlertDescription className="text-foreground/85">
+                {getMessageText(message, locale)}
+              </AlertDescription>
+            </Alert>
+          )
         );
       })}
     </div>

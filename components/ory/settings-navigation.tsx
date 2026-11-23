@@ -51,6 +51,7 @@ type SettingsNavigationProps = {
   flowId?: string;
   locale?: string;
   onAreaChange?: (area: SettingsArea) => void;
+  persistSelection?: boolean;
 };
 
 /**
@@ -91,11 +92,14 @@ export function SettingsNavigation({
   flowId,
   locale,
   onAreaChange,
+  persistSelection = true,
 }: SettingsNavigationProps) {
   const { t } = useTranslation();
 
   function selectArea(area: SettingsArea, event: MouseEvent<HTMLAnchorElement>) {
-    rememberSettingsArea(area);
+    if (persistSelection) {
+      rememberSettingsArea(area);
+    }
 
     if (
       !onAreaChange ||

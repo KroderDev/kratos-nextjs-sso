@@ -18,7 +18,6 @@ import {
   getIdentityName,
 } from "@/lib/ory/identity";
 import { isValidLocale } from "@/lib/i18n/config";
-import { rewriteOryFlow } from "@/lib/ory/url";
 import { isOryFlowRestartRedirect } from "@/lib/ory/redirect";
 import { buildCleanFlowUrl } from "@/lib/ory/params";
 import { SETTINGS_AREA_COOKIE } from "@/lib/ory/settings-state";
@@ -145,7 +144,7 @@ export default async function SettingsPage({ searchParams }: OryPageParams) {
   let flow = null;
 
   try {
-    flow = rewriteOryFlow(await getSettingsFlowWithRequestHeaders(params)) || null;
+    flow = (await getSettingsFlowWithRequestHeaders(params)) || null;
   } catch (e) {
     if (typeof params.flow === "string" && isOryFlowRestartRedirect(e, "settings")) {
       redirect(buildCleanFlowUrl("/dashboard/settings", params, ["lang", "section"]));

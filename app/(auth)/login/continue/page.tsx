@@ -3,8 +3,10 @@ import { AuthenticatorAssuranceLevel } from "@ory/client-fetch";
 import { redirect } from "next/navigation";
 
 import { getTranslations } from "@/lib/i18n/server";
+import { stripLoginContextHints } from "@/lib/ory/login-context";
 import { validateProviderCallback } from "@/lib/ory/provider-handoff";
 import { applicationUrl } from "@/lib/ory/url";
+import { requiredAal } from "@/ory.config";
 
 export const dynamic = "force-dynamic";
 
@@ -58,7 +60,7 @@ export default async function LoginContinuePage({ searchParams }: LoginContinueP
   const session = await getServerSession();
   if (!session) {
     const loginSearch = new URLSearchParams();
-    for (const [key, value] of Object.entries(params)) {
+    for (const [key, value] of Object.entries(stripLoginContextHints(params))) {
       if (typeof value === "string") {
         loginSearch.set(key, value);
       }
@@ -70,9 +72,16 @@ export default async function LoginContinuePage({ searchParams }: LoginContinueP
   }
 
   const aal = session.authenticator_assurance_level;
-  if (aal !== AuthenticatorAssuranceLevel.Aal2 && aal !== AuthenticatorAssuranceLevel.Aal3) {
+  const isAalSatisfied =
+    requiredAal === "aal1"
+      ? Boolean(aal)
+      : requiredAal === "aal3"
+        ? aal === AuthenticatorAssuranceLevel.Aal3
+        : aal === AuthenticatorAssuranceLevel.Aal2 || aal === AuthenticatorAssuranceLevel.Aal3;
+
+  if (!isAalSatisfied) {
     const continueSearch = new URLSearchParams();
-    for (const [key, value] of Object.entries(params)) {
+    for (const [key, value] of Object.entries(stripLoginContextHints(params))) {
       if (typeof value === "string") {
         continueSearch.set(key, value);
       }
@@ -80,7 +89,7 @@ export default async function LoginContinuePage({ searchParams }: LoginContinueP
     const continueQs = continueSearch.toString();
     const returnToPath = applicationUrl(`/login/continue?${continueQs}`);
     const stepUp = new URL("/self-service/login/browser", "https://sso.invalid");
-    stepUp.searchParams.set("aal", "aal2");
+    stepUp.searchParams.set("aal", requiredAal === "aal3" ? "aal3" : "aal2");
     stepUp.searchParams.set("return_to", returnToPath);
     stepUp.searchParams.set("refresh", "true");
     redirect(stepUp.pathname + stepUp.search);

@@ -3,8 +3,15 @@ import { expect, test } from "@playwright/test";
 test("landing page loads", async ({ page }) => {
   const response = await page.goto("/");
   expect(response?.status()).toBe(200);
-  await expect(page.locator("h1")).toContainText("A calmer way to enter the work");
-  await expect(page.getByRole("link", { name: "CI" })).toBeVisible();
+  await expect(page.locator("h1")).toContainText("Secure access to your workspace");
+  const brand = page.getByRole("link", { name: "CI" });
+  await expect(brand).toBeVisible();
+  await expect(brand.locator("img")).toHaveCount(0);
+});
+
+test("local UI previews are not exposed in production", async ({ request }) => {
+  const response = await request.get("/dev/ui-preview");
+  expect(response.status()).toBe(404);
 });
 
 test("theme control switches between light and dark", async ({ page }) => {
@@ -168,6 +175,8 @@ test("sign-in page shows setup state when unconfigured", async ({ page }) => {
   expect(response?.status()).toBe(200);
   await expect(page.getByText("Welcome back")).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
+  await expect(page.getByText("Authentication is not configured for this application.")).toBeVisible();
+  await expect(page.locator('[data-slot="auth-legal-links"]')).toBeVisible();
 });
 
 test("sign-in page shows create-account link and hides password recovery when unconfigured", async ({
@@ -184,6 +193,9 @@ test("registration page shows setup state when unconfigured", async ({ page }) =
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
+  const legalLinks = page.locator('[data-slot="auth-legal-links"]');
+  await expect(legalLinks).toBeVisible();
+  await expect(page.locator('[data-slot="card"] [data-slot="auth-legal-links"]')).toHaveCount(0);
 });
 
 test("recovery page shows setup state when unconfigured", async ({ page }) => {
@@ -191,6 +203,7 @@ test("recovery page shows setup state when unconfigured", async ({ page }) => {
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("heading", { name: "Recover your account" })).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
+  await expect(page.locator('[data-slot="auth-legal-links"]')).toBeVisible();
 });
 
 test("verification page shows setup state when unconfigured", async ({ page }) => {
@@ -198,12 +211,13 @@ test("verification page shows setup state when unconfigured", async ({ page }) =
   expect(response?.status()).toBe(200);
   await expect(page.getByText("Verify your email address")).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
+  await expect(page.locator('[data-slot="auth-legal-links"]')).toBeVisible();
 });
 
 test("dashboard shows setup state when the service is unconfigured", async ({ page }) => {
   const response = await page.goto("/dashboard");
   expect(response?.status()).toBe(200);
-  await expect(page.getByText("Your control room is waiting")).toBeVisible();
+  await expect(page.getByText("Account access is unavailable")).toBeVisible();
   await expect(page.getByText("Access is temporarily unavailable")).toBeVisible();
 });
 
@@ -212,7 +226,7 @@ test("settings uses the dashboard frame when the service is unconfigured", async
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("link", { name: "Settings", exact: true })).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Keep your identity current.", exact: true }),
+    page.getByRole("heading", { name: "Manage your account.", exact: true }),
   ).toBeVisible();
   await expect(page.getByRole("complementary").first()).toBeVisible();
 });
@@ -229,13 +243,14 @@ test("settings navigation skips the auth loading frame", async ({ page }) => {
   await expect(page.getByRole("status", { name: "Loading dashboard" })).toBeVisible();
   await expect(page.getByRole("status", { name: "Loading authentication form" })).toHaveCount(0);
   await navigation;
-  await expect(page.getByText("Keep your identity current")).toBeVisible();
+  await expect(page.getByText("Manage your account")).toBeVisible();
 });
 
 test("error page loads", async ({ page }) => {
   const response = await page.goto("/error");
   expect(response?.status()).toBe(200);
   await expect(page.getByText("Unable to complete request")).toBeVisible();
+  await expect(page.locator('[data-slot="auth-legal-links"]')).toBeVisible();
 });
 
 test("health endpoint returns healthy", async ({ request }) => {

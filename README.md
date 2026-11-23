@@ -55,7 +55,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_ORY_SDK_URL=https://your-project.projects.oryapis.com
 NEXT_PUBLIC_ORY_OAUTH_ORIGINS=https://accounts.google.com
 NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS=https://your-client.example.com
-NEXT_PUBLIC_ORY_PROJECT_NAME=Your Platform
+NEXT_PUBLIC_ORY_PROJECT_NAME=Kratos SSO
 ORY_PROJECT_API_TOKEN=ory_pat_...
 ORY_CONSENT_REMEMBER_MODE=always
 ```
@@ -81,10 +81,13 @@ Open [http://localhost:3000](http://localhost:3000).
 Set these values in `.env.local` or in your deployment build configuration:
 
 ```env
-NEXT_PUBLIC_BRAND_NAME=Your Platform
-NEXT_PUBLIC_BRAND_MARK=YP
-NEXT_PUBLIC_BRAND_LOGO_LIGHT=/your-logo.svg
-NEXT_PUBLIC_BRAND_LOGO_DARK=/your-logo-dark.svg
+# Neutral repository default (leave empty to use it):
+NEXT_PUBLIC_BRAND_NAME=
+
+# Example customization for a downstream product:
+NEXT_PUBLIC_BRAND_NAME=Acme
+NEXT_PUBLIC_BRAND_LOGO_LIGHT=/acme.svg
+NEXT_PUBLIC_BRAND_LOGO_DARK=/acme-dark.svg
 NEXT_PUBLIC_BRAND_FAVICON_LIGHT=/your-favicon.ico
 NEXT_PUBLIC_BRAND_FAVICON_DARK=/your-favicon-dark.ico
 ```
@@ -117,8 +120,7 @@ The application builds as a Next.js standalone server and runs in Docker as the 
 ```bash
 docker build \
   --build-arg "NEXT_PUBLIC_APP_URL=https://auth.example.com" \
-  --build-arg "NEXT_PUBLIC_BRAND_NAME=Your Platform" \
-  --build-arg "NEXT_PUBLIC_BRAND_MARK=YP" \
+  --build-arg "NEXT_PUBLIC_BRAND_NAME=Kratos SSO" \
   --build-arg "NEXT_PUBLIC_ORY_SDK_URL=https://your-project.projects.oryapis.com" \
   --build-arg "NEXT_PUBLIC_ORY_OAUTH_ORIGINS=https://accounts.google.com" \
   --build-arg "NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS=https://your-client.example.com" \
@@ -147,7 +149,7 @@ Before going live, confirm:
 - **Provide `ORY_PROJECT_API_TOKEN` only at runtime** when proxying requires it.
 - **Configure `NEXT_PUBLIC_ORY_FORM_ACTION_ORIGINS`** with exact OAuth client origins that receive form redirects; do not use wildcards.
 - **Put the app behind an ingress or reverse proxy** that terminates TLS and correctly sets `Host`, `X-Forwarded-Host`, and `X-Forwarded-Proto`.
-- **Configure Ory return URLs and allowed origins** for the deployed application URL.
+- **Configure Ory return URLs and allowed origins** for the deployed application URL, including `<NEXT_PUBLIC_APP_URL>/logout/complete` in Kratos `selfservice.allowed_return_urls` when using Hydra provider-mediated logout.
 - **Point liveness checks at `/api/health`.** It confirms that the Next.js process can serve requests; it does not verify Ory provider readiness.
 - **Use a separate provider readiness check** when your platform requires authentication-service dependency health.
 - **Run the complete validation suite against staging** before release.
@@ -164,7 +166,8 @@ Read [`docs/security.md`](docs/security.md) for the threat model, proxy requirem
 | `/recovery` | Account recovery browser flow |
 | `/verification` | Address verification browser flow |
 | `/consent` | OAuth consent handoff |
-| `/logout` | OAuth logout handoff |
+| `/logout` | Provider-mediated logout handoff start |
+| `/logout/complete` | Provider-mediated logout finalization |
 | `/dashboard/settings` | Protected settings browser flow |
 | `/error` | Safe error destination for failed flows |
 | `/dashboard` | Protected session dashboard |
