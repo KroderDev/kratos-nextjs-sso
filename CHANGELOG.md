@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.1](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.7.0...v0.7.1) (2026-11-24)
+
+
+### Bug Fixes
+
+* **deps:** patch open security advisories ([77c850c](https://github.com/KroderDev/kratos-nextjs-sso/commit/77c850cc123d0fcbc4affcd3cb9d2437a6c7df0f))
+* **deps:** resolve 14 Dependabot alerts ([36eba18](https://github.com/KroderDev/kratos-nextjs-sso/commit/36eba182cf7680ccf74099f0f1581037e39a80ac))
+
 ## [0.7.0](https://github.com/KroderDev/kratos-nextjs-sso/compare/v0.6.2...v0.7.0) (2026-11-23)
 
 
